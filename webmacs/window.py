@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout
+from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout
 from PyQt5.QtCore import QEvent, QObject
 
 from .webview import WebView
 from .keymap import KeyPress, current_global_map
+from .minibuffer import Minibuffer
 
 
 class KeyboardHandler(QObject):
@@ -35,13 +36,27 @@ class KeyboardHandler(QObject):
             return True
 
 
+def remove_layout_spaces(layout):
+    layout.setContentsMargins(0, 0, 0, 0)
+    layout.setSpacing(0)
+
+
 class Window(QWidget):
     def __init__(self):
         QWidget.__init__(self)
-        self._layout = QGridLayout()
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
+        self._layout = QVBoxLayout()
+        remove_layout_spaces(self._layout)
         self.setLayout(self._layout)
+
+        self._central_widget = QWidget()
+        self._layout.addWidget(self._central_widget)
+        self._webviews_layout = QGridLayout()
+        remove_layout_spaces(self._webviews_layout)
+        self._central_widget.setLayout(self._webviews_layout)
+
+        self.minibuffer = Minibuffer(self)
+        self._layout.addWidget(self.minibuffer)
+
         self.keyboardHandler = KeyboardHandler()
 
         self._webviews = []
@@ -49,7 +64,7 @@ class Window(QWidget):
         # create the main view
         view = self._create_webview()
         self._currentWebView = view
-        self._layout.addWidget(view)
+        self._webviews_layout.addWidget(view)
 
     def _create_webview(self):
         view = WebView(self)
@@ -60,16 +75,16 @@ class Window(QWidget):
         return self._currentWebView
 
     def _currentPosition(self):
-        for row in range(self._layout.rowCount()):
-            for col in range(self._layout.columnCount()):
-                item = self._layout.itemAtPosition(row, col)
+        for row in range(self._webviews_layout.rowCount()):
+            for col in range(self._webviews_layout.columnCount()):
+                item = self._webviews_layout.itemAtPosition(row, col)
                 if item.widget() == self._currentWebView:
                     return (row, col)
 
     def createViewOnRight(self):
         row, col = self._currentPosition()
         view = self._create_webview()
-        self._layout.addWidget(view, row, col + 1)
+        self._webviews_layout.addWidget(view, row, col + 1)
         return view
 
     def paintEvent(self, _):
