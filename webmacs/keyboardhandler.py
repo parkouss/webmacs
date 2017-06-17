@@ -3,23 +3,44 @@ from PyQt5.QtCore import QObject, QEvent
 from .keymap import KeyPress
 
 
-class KeyboardHandler(QObject):
-    def __init__(self, keymaps, parent=None):
-        QObject.__init__(self, parent)
+def is_keypress(event):
+    return event.type() == QEvent.KeyPress
+
+
+class KeyboardHandler(object):
+    """
+    Handle qt keypress event against a list of keymaps.
+
+    THE way to get full key events in qt is to override the event() method of a
+    given QObject. Using an event filter (aba KeyboardEventFilterHandler) will
+    not catch Tab keys in some circumstances; So to be sure to catch
+    everything, use a construct like::
+
+      class MyObject(SomeQObjectSubclass):
+          def __init__(self):
+              SomeQObjectSubclass.__init__(self)
+              self.self.keyboard_handler = KeyboardHandler(keymaps)
+
+          def event(self, event):
+              if is_keypress(event) and \
+                  self.keyboard_handler.handle_keypress(event):
+
+                  return True
+
+              return SomeQObjectSubclass.event(self, event)
+    """
+    def __init__(self, keymaps):
         self._keymaps = keymaps
         self._keypresses = []
 
-    def eventFilter(self, obj, event):
-        if (event.type() == QEvent.KeyPress):
-            key = KeyPress.from_qevent(event)
-            if key is None:
-                return True
-            if self.handle_keypress(key):
-                return True
+    def handle_keypress(self, event):
+        key = KeyPress.from_qevent(event)
+        if key is None:
+            return True
+        if self._handle_keypress(key):
+            return True
 
-        return QObject.eventFilter(self, obj, event)
-
-    def handle_keypress(self, keypress):
+    def _handle_keypress(self, keypress):
         incomplete_keychord = False
         command_called = False
         self._keypresses.append(keypress)
@@ -39,3 +60,14 @@ class KeyboardHandler(QObject):
             self._keypresses = []
 
         return command_called or incomplete_keychord
+
+
+class KeyboardEventFilterHandler(QObject):
+    def __init__(self, keymaps, parent=None):
+        QObject.__init__(self, parent)
+        self.keyboard_handler = KeyboardHandler(keymaps)
+
+    def eventFilter(self, obj, event):
+        if is_keypress(event) and self.keyboard_handler.handle_keypress(event):
+            return True
+        return QObject.eventFilter(self, obj, event)

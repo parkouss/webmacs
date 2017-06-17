@@ -91,7 +91,7 @@ class Keymap(object):
         self.parent = parent
         self.bindings = {}
 
-    def define_key(self, key, binding):
+    def _define_key(self, key, binding):
         keys = [KeyPress.from_str(k) for k in key.split()]
         assert keys, "key should not be empty"
         assert callable(binding), "binding should be callable"
@@ -108,6 +108,20 @@ class Keymap(object):
             othermap = kmap
 
         kmap.bindings[keys[-1]] = binding
+
+    def define_key(self, key, binding=None):
+        """
+        Define a binding (callable) for a key chord on the keymap.
+
+        Note that if binding is not given, it should be used as a decorator.
+        """
+        if binding is None:
+            def wrapper(func):
+                self._define_key(key, func)
+                return func
+            return wrapper
+        else:
+            self._define_key(key, binding)
 
     def _look_up(self, keypress):
         keymap = self

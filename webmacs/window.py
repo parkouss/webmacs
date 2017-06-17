@@ -3,7 +3,7 @@ from PyQt5.QtCore import QEvent, QObject
 
 from .webview import WebView
 from .minibuffer import Minibuffer
-from .keyboardhandler import KeyboardHandler
+from .keyboardhandler import KeyboardEventFilterHandler
 
 
 class WindowsHandler(QObject):
@@ -65,11 +65,11 @@ class Window(QWidget):
         remove_layout_spaces(self._webviews_layout)
         self._central_widget.setLayout(self._webviews_layout)
 
-        self.minibuffer = Minibuffer(self)
-        self._layout.addWidget(self.minibuffer)
+        self._minibuffer = Minibuffer(self)
+        self._layout.addWidget(self._minibuffer)
 
         # TODO, define real keymap(s)
-        self.keyboard_handler = KeyboardHandler([])
+        self.keyboard_handler = KeyboardEventFilterHandler([])
 
         self._webviews = []
 
@@ -100,6 +100,9 @@ class Window(QWidget):
         view = self._create_webview()
         self._webviews_layout.addWidget(view, row, col + 1)
         return view
+
+    def minibuffer(self):
+        return self._minibuffer
 
     def paintEvent(self, _):
         # to allow custom styling from stylesheet
