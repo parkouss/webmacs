@@ -56,6 +56,7 @@ class Application(QApplication):
             script = QWebEngineScript()
             script.setInjectionPoint(QWebEngineScript.DocumentCreation)
             script.setSourceCode(src)
+            script.setWorldId(QWebEngineScript.ApplicationWorld)
             default_profile.scripts().insert(script)
 
         for script in ("qwebchannel.js", "setup.js"):
@@ -76,11 +77,11 @@ def main():
     buffer.load("http://www.google.fr")
     window.currentWebView().setBuffer(buffer)
 
-    view = window.createViewOnRight()
-    buffer2 = WebBuffer(window)
-    buffer2.load("http://www.google.fr")
-    view.setBuffer(buffer2)
-    view.setFocus()
+    # view = window.createViewOnRight()
+    # buffer2 = WebBuffer(window)
+    # buffer2.load("http://www.google.fr")
+    # view.setBuffer(buffer2)
+    # view.setFocus()
 
     window.show()
 
