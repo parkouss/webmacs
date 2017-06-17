@@ -1,5 +1,6 @@
 import re
 
+from collections import namedtuple
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
 
@@ -59,6 +60,9 @@ class KeyPress(object):
     def __ne__(self, other):
         return self.key != other.key
 
+    def __hash__(self):
+        return self.key
+
     def __str__(self):
         string = QKeySequence(self.key).toString()
 
@@ -70,3 +74,74 @@ class KeyPress(object):
             return p
 
         return "-".join(to_s(p) for p in RE_FROM_QT.split(string) if p)
+
+    def __repr__(self):
+        return "<%s (%s)>" % (self.__class__.__name__, str(self))
+
+
+KeymapLookupResult = namedtuple("KeymapLookupResult",
+                                ("complete", "command"))
+
+
+class Keymap(object):
+    __slots__ = ("name", "bindings", "parent")
+
+    def __init__(self, name=None, parent=None):
+        self.name = name
+        self.parent = parent
+        self.bindings = {}
+
+    def define_key(self, key, binding):
+        keys = [KeyPress.from_str(k) for k in key.split()]
+        assert keys, "key should not be empty"
+        assert callable(binding), "binding should be callable"
+
+        kmap = self
+        for keypress in keys[:-1]:
+            if keypress in kmap.bindings:
+                othermap = kmap.bindings[keypress]
+                if not isinstance(othermap, Keymap):
+                    othermap = Keymap()
+            else:
+                othermap = Keymap()
+            kmap.bindings[keypress] = othermap
+            othermap = kmap
+
+        kmap.bindings[keys[-1]] = binding
+
+    def _look_up(self, keypress):
+        keymap = self
+        while keymap:
+            try:
+                return keymap.bindings[keypress]
+            except KeyError:
+                keymap = keymap.parent
+
+    def lookup(self, keypresses):
+        partial_match = False
+        keymap = self
+        for keypress in keypresses:
+            while keymap:
+                entry = keymap.bindings.get(keypress)
+                if entry is not None:
+                    if isinstance(entry, Keymap):
+                        keymap = entry
+                        partial_match = True
+                        break
+                    else:
+                        return KeymapLookupResult(True, entry)
+                keymap = keymap.parent
+
+        if keymap is None:
+            return None
+        elif partial_match:
+            return KeymapLookupResult(False, None)
+        else:
+            return None
+
+
+GLOBAL_KEYMAP = Keymap("global")
+
+
+def current_global_map():
+    return GLOBAL_KEYMAP
