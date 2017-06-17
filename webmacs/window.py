@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QGridLayout
-from PyQt5.QtCore import QEvent, QObject, Qt
+from PyQt5.QtCore import QEvent, QObject
 
 from .webview import WebView
 from .keymap import KeyPress
