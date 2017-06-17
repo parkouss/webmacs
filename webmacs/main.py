@@ -1,17 +1,10 @@
-import os
 import signal
 import socket
 
-from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript
-from PyQt5.QtWidgets import QApplication
 from PyQt5.QtNetwork import QAbstractSocket
 
-from .websocket import WebSocketClientWrapper
-from .window import Window
 from .webbuffer import WebBuffer
-
-
-THIS_DIR = os.path.dirname(os.path.realpath(__file__))
+from .application import Application
 
 
 def signal_wakeup(app):
@@ -33,45 +26,10 @@ def signal_wakeup(app):
     sock.readyRead.connect(lambda: None)
 
 
-class Application(QApplication):
-    def __init__(self, args):
-        QApplication.__init__(self, args)
-
-        with open(os.path.join(THIS_DIR, "app_style.css")) as f:
-            self.setStyleSheet(f.read())
-        self._setup_websocket()
-        self._setup_default_profile(self.sock_client.port)
-
-    def _setup_websocket(self):
-        """
-        An internal websocket is used to communicate between web page content
-        (using javascript) and the python code.
-        """
-        self.sock_client = WebSocketClientWrapper()
-
-    def _setup_default_profile(self, port):
-        default_profile = QWebEngineProfile.defaultProfile()
-
-        def inject_js(src):
-            script = QWebEngineScript()
-            script.setInjectionPoint(QWebEngineScript.DocumentCreation)
-            script.setSourceCode(src)
-            script.setWorldId(QWebEngineScript.ApplicationWorld)
-            default_profile.scripts().insert(script)
-
-        for script in ("qwebchannel.js", "setup.js"):
-            with open(os.path.join(THIS_DIR, script)) as f:
-                src = f.read()
-            if script == "setup.js":
-                src = ("var webmacsBaseUrl = 'ws://localhost:%d';\n%s"
-                       % (port, src))
-            inject_js(src)
-
-
 def main():
     app = Application([])
 
-    window = Window()
+    window = app.createWindow()
 
     buffer = WebBuffer(window)
     buffer.load("http://www.google.fr")
