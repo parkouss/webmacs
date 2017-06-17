@@ -19,6 +19,31 @@ class MinibufferInput(QLineEdit):
         return QLineEdit.event(self, event)
 
 
+class Completer(QCompleter):
+    def highlight_next_completion(self, forward=True):
+        if not self.popup().isVisible():
+            return
+
+        row = self.currentRow()
+
+        # weird case, the first highlight on forward go to the second item
+        # without this fix
+        if row == 0 and forward:
+            sel = self.popup().selectionModel()
+            if not sel or not sel.hasSelection():
+                row = -1
+
+        count = self.completionModel().rowCount()
+        pos = row + (1 if forward else -1)
+
+        if pos < 0:
+            pos = count - 1
+        elif pos >= count:
+            pos = 0
+        self.setCurrentRow(pos)
+        self.popup().setCurrentIndex(self.currentIndex())
+
+
 class Minibuffer(QWidget):
     def __init__(self, window):
         QWidget.__init__(self, window)
@@ -34,7 +59,7 @@ class Minibuffer(QWidget):
 
         model = QFileSystemModel(self)
         model.setRootPath("/")
-        self.completer = QCompleter(self)
+        self.completer = Completer(self)
         self.completer.setMaxVisibleItems(10)
         self.completer.setModel(model)
         self.line_edit.setCompleter(self.completer)
@@ -49,17 +74,20 @@ def minibuffer():
 def complete():
     completer = minibuffer().completer
 
-    def next_completion():
-        index = completer.currentIndex()
-        completer.popup().setCurrentIndex(index)
-        start = index.row()
-        if not completer.setCurrentRow(start + 1):
-            completer.setCurrentRow(0)
-
     if not completer.popup().isVisible():
         completer.complete()
     else:
-        next_completion()
+        completer.highlight_next_completion()
+
+
+@KEYMAP.define_key("C-n")
+def next_completion():
+    minibuffer().completer.highlight_next_completion()
+
+
+@KEYMAP.define_key("C-p")
+def previous_completion():
+    minibuffer().completer.highlight_next_completion(False)
 
 
 @KEYMAP.define_key("C-g")
