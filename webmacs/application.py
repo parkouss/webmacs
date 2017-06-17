@@ -2,35 +2,11 @@ import os
 
 from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QObject, QEvent
 
 from .websocket import WebSocketClientWrapper
-from .window import Window
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
-
-
-class WindowsHandler(QObject):
-    def __init__(self, parent=None):
-        QObject.__init__(self, parent)
-        self.windows = []
-        self.current_window = None
-
-    def register_window(self, window):
-        window.installEventFilter(self)
-        self.windows.append(window)
-
-    def eventFilter(self, window, event):
-        t = event.type()
-        if t == QEvent.WindowActivate:
-            self.current_window = window
-        elif t == QEvent.Close:
-            self.windows.remove(window)
-            if window == self.current_window:
-                self.current_window = None
-
-        return QObject.eventFilter(self, window, event)
 
 
 class Application(QApplication):
@@ -39,8 +15,6 @@ class Application(QApplication):
     def __init__(self, args):
         QApplication.__init__(self, args)
         self.__class__.INSTANCE = self
-
-        self._windows_handler = WindowsHandler(self)
 
         with open(os.path.join(THIS_DIR, "app_style.css")) as f:
             self.setStyleSheet(f.read())
@@ -71,30 +45,3 @@ class Application(QApplication):
                 src = ("var webmacsBaseUrl = 'ws://localhost:%d';\n%s"
                        % (port, src))
             inject_js(src)
-
-    def createWindow(self):
-        """
-        Create and returns a browser window.
-
-        Note the created window is not shown, and only contains a webview with
-        no buffer.
-
-        This must be used so the window get registered correctly.
-        """
-        window = Window()
-        self._windows_handler.register_window(window)
-        return window
-
-    def windows(self):
-        """
-        Returns the window list.
-
-        Do not modify this list.
-        """
-        return self._windows_handler.windows
-
-    def current_window(self):
-        """
-        Returns the currently activated window.
-        """
-        return self._windows_handler.current_window

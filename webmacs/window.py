@@ -36,9 +36,50 @@ class KeyboardHandler(QObject):
             return True
 
 
+class WindowsHandler(QObject):
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
+        self.windows = []
+        self.current_window = None
+
+    def register_window(self, window):
+        window.installEventFilter(self)
+        self.windows.append(window)
+
+    def eventFilter(self, window, event):
+        t = event.type()
+        if t == QEvent.WindowActivate:
+            self.current_window = window
+        elif t == QEvent.Close:
+            self.windows.remove(window)
+            if window == self.current_window:
+                self.current_window = None
+
+        return QObject.eventFilter(self, window, event)
+
+
+HANDLER = WindowsHandler()
+
+
 def remove_layout_spaces(layout):
     layout.setContentsMargins(0, 0, 0, 0)
     layout.setSpacing(0)
+
+
+def windows():
+    """
+    Returns the window list.
+
+    Do not modify this list.
+    """
+    return HANDLER.windows
+
+
+def current_window():
+    """
+    Returns the currently activated window.
+    """
+    return HANDLER.current_window
 
 
 class Window(QWidget):
@@ -65,6 +106,8 @@ class Window(QWidget):
         view = self._create_webview()
         self._currentWebView = view
         self._webviews_layout.addWidget(view)
+
+        HANDLER.register_window(self)
 
     def _create_webview(self):
         view = WebView(self)

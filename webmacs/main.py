@@ -5,6 +5,7 @@ from PyQt5.QtNetwork import QAbstractSocket
 
 from .webbuffer import WebBuffer
 from .application import Application
+from .window import Window
 
 
 def signal_wakeup(app):
@@ -29,7 +30,7 @@ def signal_wakeup(app):
 def main():
     app = Application([])
 
-    window = app.createWindow()
+    window = Window()
 
     buffer = WebBuffer(window)
     buffer.load("http://www.google.fr")
