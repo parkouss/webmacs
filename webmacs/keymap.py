@@ -26,9 +26,14 @@ class KeyPress(object):
         self.key = key
 
     @classmethod
-    def fromQEvent(cls, event):
+    def from_qevent(cls, event):
         # see https://stackoverflow.com/a/6665017
         key = event.key()
+        # key is a either a single modifier press or unknown
+        if key in (Qt.Key_Control, Qt.Key_Shift, Qt.Key_Alt, Qt.Key_Meta,
+                   Qt.Key_unknown):
+            return None
+
         modifiers = event.modifiers()
         if modifiers & Qt.ShiftModifier:
             key += Qt.SHIFT
@@ -38,10 +43,11 @@ class KeyPress(object):
             key += Qt.ALT
         if modifiers & Qt.MetaModifier:
             key += Qt.META
+
         return cls(key)
 
     @classmethod
-    def fromStr(cls, string):
+    def from_str(cls, string):
         parts = [p for p in RE_TO_QT.split(string) if p]
         key = QKeySequence.fromString(
             "+".join(TO_QT.get(p, p) for p in parts))[0]
@@ -55,5 +61,12 @@ class KeyPress(object):
 
     def __str__(self):
         string = QKeySequence(self.key).toString()
-        parts = [p for p in RE_FROM_QT.split(string) if p]
-        return "-".join(FROM_QT.get(p, p) for p in parts)
+
+        def to_s(p):
+            if p in FROM_QT:
+                return FROM_QT[p]
+            elif len(p) == 1 and p.isalpha():
+                return p.lower()
+            return p
+
+        return "-".join(to_s(p) for p in RE_FROM_QT.split(string) if p)

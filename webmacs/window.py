@@ -2,22 +2,14 @@ from PyQt5.QtWidgets import QWidget, QGridLayout
 from PyQt5.QtCore import QEvent, QObject, Qt
 
 from .webview import WebView
+from .keymap import KeyPress
 
 
 class KeyboardHandler(QObject):
     def eventFilter(self, obj, event):
         if (event.type() == QEvent.KeyPress):
-            # see https://stackoverflow.com/a/6665017
-            key = event.key()
-            modifiers = event.modifiers()
-            if modifiers & Qt.ShiftModifier:
-                key += Qt.SHIFT
-            if modifiers & Qt.ControlModifier:
-                key += Qt.CTRL
-            if modifiers & Qt.AltModifier:
-                key += Qt.ALT
-            if modifiers & Qt.MetaModifier:
-                key += Qt.META
+            key = KeyPress.from_qevent(event)
+            print(key)
 
         return QObject.eventFilter(self, obj, event)
 
