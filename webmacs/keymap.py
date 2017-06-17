@@ -138,10 +138,3 @@ class Keymap(object):
             return KeymapLookupResult(False, None)
         else:
             return None
-
-
-GLOBAL_KEYMAP = Keymap("global")
-
-
-def current_global_map():
-    return GLOBAL_KEYMAP

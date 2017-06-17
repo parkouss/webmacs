@@ -2,38 +2,8 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout
 from PyQt5.QtCore import QEvent, QObject
 
 from .webview import WebView
-from .keymap import KeyPress, current_global_map
 from .minibuffer import Minibuffer
-
-
-class KeyboardHandler(QObject):
-    def __init__(self, parent=None):
-        QObject.__init__(self, parent)
-        self.keypresses = []
-
-    def eventFilter(self, obj, event):
-        if (event.type() == QEvent.KeyPress):
-            key = KeyPress.from_qevent(event)
-            if key is None:
-                return True
-            if self.handle_keypress(key):
-                return True
-
-        return QObject.eventFilter(self, obj, event)
-
-    def handle_keypress(self, keypress):
-        self.keypresses.append(keypress)
-        result = current_global_map().lookup(self.keypresses)
-
-        if result is None:
-            self.keypresses = []
-            return False
-        if not result.complete:
-            return True
-        else:
-            self.keypresses = []
-            result.command()
-            return True
+from .keyboardhandler import KeyboardHandler
 
 
 class WindowsHandler(QObject):
@@ -98,7 +68,8 @@ class Window(QWidget):
         self.minibuffer = Minibuffer(self)
         self._layout.addWidget(self.minibuffer)
 
-        self.keyboardHandler = KeyboardHandler()
+        # TODO, define real keymap(s)
+        self.keyboard_handler = KeyboardHandler([])
 
         self._webviews = []
 
