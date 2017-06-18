@@ -1,13 +1,13 @@
 var socket = new WebSocket(webmacsBaseUrl);
 
 socket.onclose = function() {
-  console.error("web channel closed");
+  console.log("web channel closed");
 };
 socket.onerror = function(error) {
   console.error("web channel error: " + error);
 };
 socket.onopen = function() {
-  console.error("WebSocket connected, setting up QWebChannel.");
+  console.log("WebSocket connected, setting up QWebChannel.");
   new QWebChannel(socket, function(channel) {
     window.__webmacsHandler__ = channel.objects.contentHandler;
 
