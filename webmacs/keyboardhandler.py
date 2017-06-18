@@ -1,6 +1,7 @@
 from PyQt5.QtCore import QObject, QEvent
 
-from .keymap import KeyPress
+from .keymap import KeyPress, global_key_map
+from .commands import COMMANDS
 
 
 def is_keypress(event):
@@ -29,8 +30,10 @@ class KeyboardHandler(object):
 
               return SomeQObjectSubclass.event(self, event)
     """
-    def __init__(self, keymaps):
+    def __init__(self, keymaps, use_global=True):
         self._keymaps = keymaps
+        if use_global:
+            self._keymaps.append(global_key_map())
         self._keypresses = []
 
     def handle_keypress(self, event):
@@ -53,7 +56,12 @@ class KeyboardHandler(object):
             elif not result.complete:
                 incomplete_keychord = True
             else:
-                result.command()
+                try:
+                    self._call_command(result.command)
+                except Exception as exc:
+                    print("Error calling command: %s" % exc)
+                    import traceback
+                    traceback.print_exc()
                 command_called = True
 
         if command_called or not incomplete_keychord:
@@ -61,11 +69,20 @@ class KeyboardHandler(object):
 
         return command_called or incomplete_keychord
 
+    def _call_command(self, command):
+        if isinstance(command, str):
+            try:
+                command = COMMANDS[command]
+            except KeyError:
+                raise KeyError("No such command: %s" % command)
+
+        command()
+
 
 class KeyboardEventFilterHandler(QObject):
-    def __init__(self, keymaps, parent=None):
+    def __init__(self, keymaps, parent=None, **kwargs):
         QObject.__init__(self, parent)
-        self.keyboard_handler = KeyboardHandler(keymaps)
+        self.keyboard_handler = KeyboardHandler(keymaps, **kwargs)
 
     def eventFilter(self, obj, event):
         if is_keypress(event) and self.keyboard_handler.handle_keypress(event):

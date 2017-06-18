@@ -94,7 +94,8 @@ class Keymap(object):
     def _define_key(self, key, binding):
         keys = [KeyPress.from_str(k) for k in key.split()]
         assert keys, "key should not be empty"
-        assert callable(binding), "binding should be callable"
+        assert callable(binding) or isinstance(binding, str), \
+            "binding should be callable or a command name"
 
         kmap = self
         for keypress in keys[:-1]:
@@ -152,3 +153,10 @@ class Keymap(object):
             return KeymapLookupResult(False, None)
         else:
             return None
+
+
+GLOBAL_KEYMAP = Keymap("global")
+
+
+def global_key_map():
+    return GLOBAL_KEYMAP
