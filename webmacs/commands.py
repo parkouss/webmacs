@@ -1,4 +1,5 @@
 from PyQt5.QtCore import QObject, pyqtSlot as Slot
+from .minibuffer import Prompt, current_minibuffer
 
 COMMANDS = {}
 
@@ -31,13 +32,11 @@ class InteractiveCommand(object):
         self.binding = binding
         self.prompt = prompt
         if prompt is not None:
-            from .minibuffer import Prompt
             assert issubclass(prompt, Prompt), \
                 "prompt should be a Prompt subclass"
 
     def __call__(self):
         if self.prompt:
-            from .minibuffer import current_minibuffer
             prompt = self.prompt()
             # executor will be destroyed with its parent, the prompt
             executor = CommandExecutor(self.binding, prompt)

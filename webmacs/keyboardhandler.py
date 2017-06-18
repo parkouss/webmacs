@@ -1,7 +1,6 @@
 from PyQt5.QtCore import QObject, QEvent
 
 from .keymap import KeyPress, global_key_map
-from .commands import COMMANDS
 
 
 def is_keypress(event):
@@ -35,6 +34,10 @@ class KeyboardHandler(object):
         if use_global:
             self._keymaps.append(global_key_map())
         self._keypresses = []
+
+        # late import to avoid import issues
+        from .commands import COMMANDS
+        self._commands = COMMANDS
 
     def handle_keypress(self, event):
         key = KeyPress.from_qevent(event)
@@ -72,7 +75,7 @@ class KeyboardHandler(object):
     def _call_command(self, command):
         if isinstance(command, str):
             try:
-                command = COMMANDS[command]
+                command = self._commands[command]
             except KeyError:
                 raise KeyError("No such command: %s" % command)
 
