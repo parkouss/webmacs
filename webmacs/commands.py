@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QObject, pyqtSlot as Slot
+from PyQt5.QtCore import QObject, pyqtSlot as Slot, QStringListModel
 from .minibuffer import Prompt, current_minibuffer
 
 COMMANDS = {}
@@ -25,12 +25,14 @@ class InteractiveCommand(object):
 
     :param binding: a callable to run when invoking the command.
     :param prompt: a Prompt derived class
+    :param visible: whether or not to list the command using M-x
     """
-    __slots__ = ("binding", "prompt")
+    __slots__ = ("binding", "prompt", "visible")
 
-    def __init__(self, binding, prompt=None):
+    def __init__(self, binding, prompt=None, visible=True):
         self.binding = binding
         self.prompt = prompt
+        self.visible = visible
         if prompt is not None:
             assert issubclass(prompt, Prompt), \
                 "prompt should be a Prompt subclass"
@@ -57,3 +59,16 @@ def define_command(name, binding=None, **args):
             command.binding = func
             return func
         return wrapper
+
+
+class CommandsListPrompt(Prompt):
+    label = "M-x: "
+
+    def validate(self, name):
+        return name
+
+    def completer_model(self):
+        model = QStringListModel(self)
+        model.setStringList(sorted(k for k, v in COMMANDS.items()
+                                   if v.visible))
+        return model

@@ -21,6 +21,9 @@ class Application(QApplication):
         self._setup_websocket()
         self._setup_default_profile(self.sock_client.port)
 
+        from .global_comands import register_global_commands
+        register_global_commands()
+
     def _setup_websocket(self):
         """
         An internal websocket is used to communicate between web page content
