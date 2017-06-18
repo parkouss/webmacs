@@ -106,7 +106,7 @@ class Keymap(object):
             else:
                 othermap = Keymap()
             kmap.bindings[keypress] = othermap
-            othermap = kmap
+            kmap = othermap
 
         kmap.bindings[keys[-1]] = binding
 
