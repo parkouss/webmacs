@@ -1,3 +1,5 @@
+import logging
+
 from PyQt5.QtCore import QObject, QEvent
 
 from .keymap import KeyPress, global_key_map
@@ -50,6 +52,7 @@ class KeyboardHandler(object):
         incomplete_keychord = False
         command_called = False
         self._keypresses.append(keypress)
+        logging.info("keychord: %s" % self._keypresses)
 
         for keymap in self._keymaps:
             result = keymap.lookup(self._keypresses)

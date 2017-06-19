@@ -1,3 +1,5 @@
+import re
+
 from PyQt5.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, \
     QTableView, QHeaderView, QApplication
 from PyQt5.QtCore import QObject, pyqtSignal as Signal, pyqtSlot as Slot, \
@@ -101,6 +103,7 @@ class MinibufferInput(QLineEdit):
         self._popup.activated.connect(self._on_completion_activated)
         self._filter_type = self.SimpleFilter
         self.keyboard_handler = KeyboardHandler([KEYMAP])
+        self._mark = False
 
     def event(self, event):
         if is_keypress(event) and self.keyboard_handler.handle_keypress(event):
@@ -204,6 +207,15 @@ class MinibufferInput(QLineEdit):
 
         self._popup.selectRow(row)
 
+    def mark(self):
+        return self._mark
+
+    def set_mark(self, value=None):
+        if value is None:
+            value = not self._mark
+        self._mark = value
+        return self._mark
+
 
 class Minibuffer(QWidget):
     def __init__(self, window):
@@ -254,11 +266,13 @@ def complete():
 
 
 @KEYMAP.define_key("C-n")
+@KEYMAP.define_key("Down")
 def next_completion():
     current_minibuffer().line_edit.select_next_completion()
 
 
 @KEYMAP.define_key("C-p")
+@KEYMAP.define_key("Top")
 def previous_completion():
     current_minibuffer().line_edit.select_next_completion(False)
 
@@ -270,10 +284,113 @@ def edition_finished():
 
 
 @KEYMAP.define_key("C-g")
+@KEYMAP.define_key("Esc")
 def cancel():
     minibuffer = current_minibuffer()
     input = minibuffer.line_edit
     if input.popup().isVisible():
         input.popup().hide()
+    elif input.selectedText():
+        input.deselect()
     else:
         minibuffer.close_prompt()
+
+
+@KEYMAP.define_key("M-Backspace")
+def clean_aindent_bsunindent():
+    input = current_minibuffer().line_edit
+
+    parts = re.split(r"([-_ ])", input.text())
+    while parts:
+        if parts[-1] in ("", "-", "_", " "):
+            parts.pop()
+        else:
+            break
+    input.setText("".join(parts[:-1]))
+
+
+@KEYMAP.define_key("C-Space")
+def set_mark():
+    if not current_minibuffer().line_edit.set_mark():
+        current_minibuffer().line_edit.deselect()
+
+
+@KEYMAP.define_key("C-f")
+@KEYMAP.define_key("Right")
+def forward_char():
+    edit = current_minibuffer().line_edit
+    edit.cursorForward(edit.mark(), 1)
+
+
+@KEYMAP.define_key("C-b")
+@KEYMAP.define_key("Left")
+def backward_char():
+    edit = current_minibuffer().line_edit
+    edit.cursorBackward(edit.mark(), 1)
+
+
+@KEYMAP.define_key("M-f")
+@KEYMAP.define_key("M-Right")
+def forward_word():
+    edit = current_minibuffer().line_edit
+    edit.cursorWordForward(edit.mark())
+
+
+@KEYMAP.define_key("M-b")
+@KEYMAP.define_key("M-Left")
+def backward_word():
+    edit = current_minibuffer().line_edit
+    edit.cursorWordBackward(edit.mark())
+
+
+@KEYMAP.define_key("M-w")
+def copy():
+    current_minibuffer().line_edit.copy()
+    current_minibuffer().line_edit.deselect()
+
+
+@KEYMAP.define_key("C-w")
+def cut():
+    current_minibuffer().line_edit.cut()
+
+
+@KEYMAP.define_key("C-y")
+def paste():
+    current_minibuffer().line_edit.paste()
+
+
+@KEYMAP.define_key("C-d")
+def delete_char():
+    current_minibuffer().line_edit.del_()
+
+
+@KEYMAP.define_key("M-d")
+def delete_word():
+    edit = current_minibuffer().line_edit
+    if edit.hasSelectedText():
+        edit.del_()
+    else:
+        pos = edit.cursorPosition()
+        text = edit.text()
+        deleted_some = False
+        for i in range(pos, len(text)):
+            char = text[i]
+            if char in ("-", "_", " "):
+                if deleted_some:
+                    break
+                edit.del_()
+            else:
+                deleted_some = True
+                edit.del_()
+
+
+@KEYMAP.define_key("C-a")
+def beginning_of_line():
+    edit = current_minibuffer().line_edit
+    edit.home(edit.mark())
+
+
+@KEYMAP.define_key("C-e")
+def end_of_line():
+    edit = current_minibuffer().line_edit
+    edit.end(edit.mark())
