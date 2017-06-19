@@ -280,6 +280,7 @@ def previous_completion():
 @KEYMAP.define_key("Return")
 def edition_finished():
     current_minibuffer().line_edit.complete()
+    current_minibuffer().line_edit.popup().hide()
     current_minibuffer().line_edit.returnPressed.emit()
 
 
