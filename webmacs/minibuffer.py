@@ -26,7 +26,7 @@ class Prompt(QObject):
     def enable(self, minibuffer):
         self.minibuffer = minibuffer
         minibuffer.label.setText(self.label)
-        buffer_input = minibuffer.line_edit
+        buffer_input = minibuffer.input()
         buffer_input.show()
         buffer_input.setFocus()
         buffer_input.set_completer_model(self.completer_model())
@@ -35,7 +35,7 @@ class Prompt(QObject):
     def close(self):
         minibuffer = self.minibuffer
         minibuffer.label.setText("")
-        buffer_input = minibuffer.line_edit
+        buffer_input = minibuffer.input()
         buffer_input.hide()
         buffer_input.setText("")
         c_model = buffer_input.completer_model()
@@ -46,7 +46,7 @@ class Prompt(QObject):
 
     @Slot()
     def _on_edition_finished(self):
-        txt = self.minibuffer.line_edit.text()
+        txt = self.minibuffer.input().text()
         value = self.validate(txt)
         self.got_value.emit(value)
         self.close()
@@ -227,11 +227,14 @@ class Minibuffer(QWidget):
         self.label = QLabel(self)
         layout.addWidget(self.label)
 
-        self.line_edit = MinibufferInput(self)
-        layout.addWidget(self.line_edit)
+        self._input = MinibufferInput(self)
+        layout.addWidget(self._input)
 
-        self.line_edit.hide()
+        self._input.hide()
         self._prompt = None
+
+    def input(self):
+        return self._input
 
     def prompt(self, prompt):
         self.close_prompt()
@@ -257,7 +260,7 @@ def current_minibuffer():
 
 @KEYMAP.define_key("Tab")
 def complete():
-    input = current_minibuffer().line_edit
+    input = current_minibuffer().input()
 
     if not input.popup().isVisible():
         input.show_completions()
@@ -268,27 +271,27 @@ def complete():
 @KEYMAP.define_key("C-n")
 @KEYMAP.define_key("Down")
 def next_completion():
-    current_minibuffer().line_edit.select_next_completion()
+    current_minibuffer().input().select_next_completion()
 
 
 @KEYMAP.define_key("C-p")
 @KEYMAP.define_key("Top")
 def previous_completion():
-    current_minibuffer().line_edit.select_next_completion(False)
+    current_minibuffer().input().select_next_completion(False)
 
 
 @KEYMAP.define_key("Return")
 def edition_finished():
-    current_minibuffer().line_edit.complete()
-    current_minibuffer().line_edit.popup().hide()
-    current_minibuffer().line_edit.returnPressed.emit()
+    current_minibuffer().input().complete()
+    current_minibuffer().input().popup().hide()
+    current_minibuffer().input().returnPressed.emit()
 
 
 @KEYMAP.define_key("C-g")
 @KEYMAP.define_key("Esc")
 def cancel():
     minibuffer = current_minibuffer()
-    input = minibuffer.line_edit
+    input = minibuffer.input()
     if input.popup().isVisible():
         input.popup().hide()
     elif input.selectedText():
@@ -299,7 +302,7 @@ def cancel():
 
 @KEYMAP.define_key("M-Backspace")
 def clean_aindent_bsunindent():
-    input = current_minibuffer().line_edit
+    input = current_minibuffer().input()
 
     parts = re.split(r"([-_ ])", input.text())
     while parts:
@@ -312,62 +315,62 @@ def clean_aindent_bsunindent():
 
 @KEYMAP.define_key("C-Space")
 def set_mark():
-    if not current_minibuffer().line_edit.set_mark():
-        current_minibuffer().line_edit.deselect()
+    if not current_minibuffer().input().set_mark():
+        current_minibuffer().input().deselect()
 
 
 @KEYMAP.define_key("C-f")
 @KEYMAP.define_key("Right")
 def forward_char():
-    edit = current_minibuffer().line_edit
+    edit = current_minibuffer().input()
     edit.cursorForward(edit.mark(), 1)
 
 
 @KEYMAP.define_key("C-b")
 @KEYMAP.define_key("Left")
 def backward_char():
-    edit = current_minibuffer().line_edit
+    edit = current_minibuffer().input()
     edit.cursorBackward(edit.mark(), 1)
 
 
 @KEYMAP.define_key("M-f")
 @KEYMAP.define_key("M-Right")
 def forward_word():
-    edit = current_minibuffer().line_edit
+    edit = current_minibuffer().input()
     edit.cursorWordForward(edit.mark())
 
 
 @KEYMAP.define_key("M-b")
 @KEYMAP.define_key("M-Left")
 def backward_word():
-    edit = current_minibuffer().line_edit
+    edit = current_minibuffer().input()
     edit.cursorWordBackward(edit.mark())
 
 
 @KEYMAP.define_key("M-w")
 def copy():
-    current_minibuffer().line_edit.copy()
-    current_minibuffer().line_edit.deselect()
+    current_minibuffer().input().copy()
+    current_minibuffer().input().deselect()
 
 
 @KEYMAP.define_key("C-w")
 def cut():
-    current_minibuffer().line_edit.cut()
+    current_minibuffer().input().cut()
 
 
 @KEYMAP.define_key("C-y")
 def paste():
-    current_minibuffer().line_edit.paste()
+    current_minibuffer().input().paste()
 
 
 @KEYMAP.define_key("C-d")
 def delete_char():
-    current_minibuffer().line_edit.del_()
+    current_minibuffer().input().del_()
 
 
 @KEYMAP.define_key("M-d")
 def delete_word():
-    edit = current_minibuffer().line_edit
+    edit = current_minibuffer().input()
     if edit.hasSelectedText():
         edit.del_()
     else:
@@ -387,11 +390,11 @@ def delete_word():
 
 @KEYMAP.define_key("C-a")
 def beginning_of_line():
-    edit = current_minibuffer().line_edit
+    edit = current_minibuffer().input()
     edit.home(edit.mark())
 
 
 @KEYMAP.define_key("C-e")
 def end_of_line():
-    edit = current_minibuffer().line_edit
+    edit = current_minibuffer().input()
     edit.end(edit.mark())
