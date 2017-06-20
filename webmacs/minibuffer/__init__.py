@@ -191,6 +191,7 @@ class MinibufferInput(QLineEdit):
         if not selection.isValid():
             row = 0 if forward else (entries - 1)
         else:
+            row = selection.row()
             if forward:
                 row = row + 1
                 if row >= entries:
