@@ -63,6 +63,9 @@ def define_command(name, binding=None, **args):
 
 class CommandsListPrompt(Prompt):
     label = "M-x: "
+    complete_options = {
+        "match": Prompt.FuzzyMatch,
+    }
 
     def validate(self, name):
         return name

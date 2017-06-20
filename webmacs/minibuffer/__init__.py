@@ -30,6 +30,11 @@ class PromptTableModel(QAbstractTableModel):
 
 class Prompt(QObject):
     label = ""
+    complete_options = {}
+
+    SimpleMatch = 0
+    FuzzyMatch = 1
+
     got_value = Signal(object)
     closed = Signal()
 
@@ -47,6 +52,7 @@ class Prompt(QObject):
         buffer_input.setFocus()
         buffer_input.set_completer_model(self.completer_model())
         buffer_input.returnPressed.connect(self._on_edition_finished)
+        buffer_input.configure_completer(self.complete_options)
 
     def close(self):
         minibuffer = self.minibuffer
@@ -54,6 +60,7 @@ class Prompt(QObject):
         buffer_input = minibuffer.input()
         buffer_input.hide()
         buffer_input.setText("")
+        buffer_input.set_mark(False)
         c_model = buffer_input.completer_model()
         buffer_input.set_completer_model(None)
         if c_model:
@@ -102,8 +109,8 @@ class Popup(QTableView):
 
 
 class MinibufferInput(QLineEdit):
-    FuzzyFilter = 0
-    SimpleFilter = 1
+    FuzzyMatch = Prompt.FuzzyMatch
+    SimpleMatch = Prompt.SimpleMatch
 
     def __init__(self, parent=None):
         QLineEdit.__init__(self, parent)
@@ -117,9 +124,19 @@ class MinibufferInput(QLineEdit):
         self._proxy_model.setFilterKeyColumn(-1)
         self._popup.setModel(self._proxy_model)
         self._popup.activated.connect(self._on_completion_activated)
-        self._filter_type = self.SimpleFilter
         self.keyboard_handler = KeyboardHandler([KEYMAP])
+        self._popup.selectionModel().currentRowChanged.connect(
+            self._on_row_changed)
         self._mark = False
+        self.configure_completer({})
+
+    def configure_completer(self, opts):
+        self._popup._max_visible_items = opts.get("max-visible-items", 10)
+        self._match = opts.get("match", self.SimpleMatch)
+        self._autocomplete_single = opts.get("autocomplete-single", True)
+        self._autocomplete = opts.get("autocomplete", False)
+        if self._autocomplete:
+            self._autocomplete_single = False
 
     def event(self, event):
         if is_keypress(event) and self.keyboard_handler.handle_keypress(event):
@@ -161,13 +178,17 @@ class MinibufferInput(QLineEdit):
     def completer_model(self):
         return self._proxy_model.sourceModel()
 
-    def set_filter_type(self, type):
-        self._filter_type = type
+    def set_match(self, type):
+        self._match = type
         if self._popup.isVisible():
             self._show_completions(self.text)
 
+    def _on_row_changed(self, current, old):
+        if self._autocomplete:
+            self.complete(hide_popup=False)
+
     def _show_completions(self, txt, force=False):
-        if self._filter_type == self.SimpleFilter:
+        if self._match == self.SimpleMatch:
             pattern = "^" + QRegExp.escape(txt)
         else:
             pattern = ".*".join(QRegExp.escape(t) for t in txt.split())
@@ -183,8 +204,9 @@ class MinibufferInput(QLineEdit):
     def show_completions(self):
         self._show_completions(self.text(), True)
 
-    def _on_completion_activated(self, index):
-        self._popup.hide()
+    def _on_completion_activated(self, index, hide_popup=True):
+        if hide_popup:
+            self._popup.hide()
         model = index.model()
         if index.column() != 0:
             index = model.index(index.row(), 0)
@@ -194,13 +216,16 @@ class MinibufferInput(QLineEdit):
     def popup(self):
         return self._popup
 
-    def complete(self):
+    def complete(self, hide_popup=True):
         if not self._popup.isVisible():
             return
 
         index = self._popup.selectionModel().currentIndex()
         if index.isValid():
-            self._on_completion_activated(index)
+            self._on_completion_activated(index, hide_popup=hide_popup)
+        elif self._autocomplete_single and self._proxy_model.rowCount() == 1:
+            self._on_completion_activated(self._proxy_model.index(0, 0),
+                                          hide_popup=hide_popup)
 
     def select_next_completion(self, forward=True):
         model = self._proxy_model

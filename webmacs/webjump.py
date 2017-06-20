@@ -15,6 +15,9 @@ def define_webjump(name, url, doc=""):
 
 class WebJumpPrompt(Prompt):
     label = "url/webjump:"
+    complete_options = {
+        "autocomplete": True,
+    }
 
     def completer_model(self):
         data = []
