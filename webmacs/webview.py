@@ -10,6 +10,9 @@ class WebView(QWebEngineView):
     def setBuffer(self, buffer):
         self.setPage(buffer)
 
+    def buffer(self):
+        return self.page()
+
     def event(self, event):
         # it appears that the key event are dispatched on a child widget that
         # is not accessible through the public api...

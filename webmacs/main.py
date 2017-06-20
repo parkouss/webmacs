@@ -71,7 +71,7 @@ def main():
 
     buffer = WebBuffer(window)
     buffer.load("http://www.google.fr")
-    window.currentWebView().setBuffer(buffer)
+    window.current_web_view().setBuffer(buffer)
 
     # view = window.createViewOnRight()
     # buffer2 = WebBuffer(window)

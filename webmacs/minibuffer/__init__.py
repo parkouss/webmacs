@@ -1,10 +1,31 @@
 from PyQt5.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, \
     QTableView, QHeaderView, QApplication
 from PyQt5.QtCore import QObject, pyqtSignal as Signal, pyqtSlot as Slot, \
-    QPoint, QEvent, QSortFilterProxyModel, QRegExp, Qt
+    QPoint, QEvent, QSortFilterProxyModel, QRegExp, Qt, QAbstractTableModel, \
+    QModelIndex
 
 from ..keyboardhandler import KeyboardHandler, is_keypress
 from .keymap import KEYMAP, current_minibuffer  # noqa
+
+
+class PromptTableModel(QAbstractTableModel):
+    def __init__(self, data, parent=None):
+        QAbstractTableModel.__init__(self, parent)
+        self._data = data
+
+    def rowCount(self, index=QModelIndex()):
+        return len(self._data)
+
+    def columnCount(self, index=QModelIndex()):
+        if self._data:
+            return len(self._data[0])
+        return 0
+
+    def data(self, index, role=Qt.DisplayRole):
+        if role != Qt.DisplayRole:
+            return None
+
+        return self._data[index.row()][index.column()]
 
 
 class Prompt(QObject):

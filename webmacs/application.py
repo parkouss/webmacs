@@ -24,6 +24,8 @@ class Application(QApplication):
         from .global_comands import register_global_commands
         register_global_commands()
 
+        from . import default_webjumps  # noqa
+
     def _setup_websocket(self):
         """
         An internal websocket is used to communicate between web page content

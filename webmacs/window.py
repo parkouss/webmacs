@@ -68,14 +68,14 @@ class Window(QWidget):
         self._minibuffer = Minibuffer(self)
         self._layout.addWidget(self._minibuffer)
 
-        # TODO, define real keymap(s)
-        self.keyboard_handler = KeyboardEventFilterHandler([])
+        from .webbuffer import KEYMAP
+        self.keyboard_handler = KeyboardEventFilterHandler([KEYMAP])
 
         self._webviews = []
 
         # create the main view
         view = self._create_webview()
-        self._currentWebView = view
+        self._current_web_view = view
         self._webviews_layout.addWidget(view)
 
         HANDLER.register_window(self)
@@ -85,14 +85,14 @@ class Window(QWidget):
         self._webviews.append(view)
         return view
 
-    def currentWebView(self):
-        return self._currentWebView
+    def current_web_view(self):
+        return self._current_web_view
 
     def _currentPosition(self):
         for row in range(self._webviews_layout.rowCount()):
             for col in range(self._webviews_layout.columnCount()):
                 item = self._webviews_layout.itemAtPosition(row, col)
-                if item.widget() == self._currentWebView:
+                if item.widget() == self._current_web_view:
                     return (row, col)
 
     def createViewOnRight(self):
