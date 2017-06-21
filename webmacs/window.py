@@ -3,7 +3,6 @@ from PyQt5.QtCore import QEvent, QObject
 
 from .webview import WebView
 from .minibuffer import Minibuffer
-from .keyboardhandler import KeyboardEventFilterHandler
 
 
 class WindowsHandler(QObject):
@@ -67,9 +66,6 @@ class Window(QWidget):
 
         self._minibuffer = Minibuffer(self)
         self._layout.addWidget(self._minibuffer)
-
-        from .webbuffer import KEYMAP
-        self.keyboard_handler = KeyboardEventFilterHandler([KEYMAP])
 
         self._webviews = []
 

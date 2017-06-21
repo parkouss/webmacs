@@ -4,7 +4,7 @@ from PyQt5.QtCore import QObject, pyqtSignal as Signal, pyqtSlot as Slot, \
     QPoint, QEvent, QSortFilterProxyModel, QRegExp, Qt, QAbstractTableModel, \
     QModelIndex
 
-from ..keyboardhandler import KeyboardHandler, is_keypress
+from ..keyboardhandler import LOCAL_KEYMAP_SETTER
 from .keymap import KEYMAP, current_minibuffer  # noqa
 
 
@@ -124,11 +124,11 @@ class MinibufferInput(QLineEdit):
         self._proxy_model.setFilterKeyColumn(-1)
         self._popup.setModel(self._proxy_model)
         self._popup.activated.connect(self._on_completion_activated)
-        self.keyboard_handler = KeyboardHandler([KEYMAP])
         self._popup.selectionModel().currentRowChanged.connect(
             self._on_row_changed)
         self._mark = False
         self.configure_completer({})
+        LOCAL_KEYMAP_SETTER.register_minibuffer_input(self)
 
     def configure_completer(self, opts):
         self._popup._max_visible_items = opts.get("max-visible-items", 10)
@@ -138,10 +138,8 @@ class MinibufferInput(QLineEdit):
         if self._autocomplete:
             self._autocomplete_single = False
 
-    def event(self, event):
-        if is_keypress(event) and self.keyboard_handler.handle_keypress(event):
-            return True
-        return QLineEdit.event(self, event)
+    def keymap(self):
+        return KEYMAP
 
     def eventFilter(self, obj, event):
         etype = event.type()

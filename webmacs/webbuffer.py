@@ -44,6 +44,9 @@ class WebBuffer(QWebEnginePage):
             level = self.JSLEVEL2LOGGING.get(level, logging.ERROR)
             logger.log(level, message, extra={"url": self.url().toString()})
 
+    def keymap(self):
+        return KEYMAP
+
 
 @define_command("go-forward")
 def go_forward():

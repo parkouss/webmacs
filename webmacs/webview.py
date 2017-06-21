@@ -1,11 +1,12 @@
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtCore import QEvent
+from .keyboardhandler import LOCAL_KEYMAP_SETTER
 
 
 class WebView(QWebEngineView):
     def __init__(self, window):
         QWebEngineView.__init__(self)
         self.window = window
+        LOCAL_KEYMAP_SETTER.register_view(self)
 
     def setBuffer(self, buffer):
         self.setPage(buffer)
@@ -13,9 +14,5 @@ class WebView(QWebEngineView):
     def buffer(self):
         return self.page()
 
-    def event(self, event):
-        # it appears that the key event are dispatched on a child widget that
-        # is not accessible through the public api...
-        if (event.type() == QEvent.ChildAdded):
-            event.child().installEventFilter(self.window.keyboard_handler)
-        return QWebEngineView.event(self, event)
+    def keymap(self):
+        return self.buffer().keymap()

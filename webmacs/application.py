@@ -4,7 +4,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript
 from PyQt5.QtWidgets import QApplication
 
 from .websocket import WebSocketClientWrapper
-
+from .keyboardhandler import KEY_EATER
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -23,6 +23,8 @@ class Application(QApplication):
 
         from .global_comands import register_global_commands
         register_global_commands()
+
+        self.installEventFilter(KEY_EATER)
 
         from . import default_webjumps  # noqa
 
