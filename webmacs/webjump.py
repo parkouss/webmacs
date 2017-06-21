@@ -1,5 +1,7 @@
 from collections import namedtuple
 
+from PyQt5.QtCore import QUrl
+
 from .minibuffer import Prompt, PromptTableModel
 from .commands import define_command
 from .webbuffer import current_buffer
@@ -39,7 +41,7 @@ def go_to(value):
 
     if webjump.allow_args:
         args = args[1] if len(args) > 1 else ""
-        url = webjump.url % args
+        url = webjump.url % str(QUrl.toPercentEncoding(args), "utf-8")
     else:
         url = webjump.url
 
