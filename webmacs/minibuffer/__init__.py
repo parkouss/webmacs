@@ -35,31 +35,34 @@ class Prompt(QObject):
     SimpleMatch = 0
     FuzzyMatch = 1
 
-    got_value = Signal(object)
+    finished = Signal()
     closed = Signal()
 
     def completer_model(self):
         return None
 
-    def validate(self, text):
-        return text
-
     def enable(self, minibuffer):
+        self.__index = QModelIndex()
         self.minibuffer = minibuffer
         minibuffer.label.setText(self.label)
         buffer_input = minibuffer.input()
+        buffer_input.setText("")
         buffer_input.show()
         buffer_input.setFocus()
         buffer_input.set_completer_model(self.completer_model())
         buffer_input.returnPressed.connect(self._on_edition_finished)
+        buffer_input.completion_activated.connect(
+            self._on_completion_activated)
         buffer_input.configure_completer(self.complete_options)
 
     def close(self):
         minibuffer = self.minibuffer
         minibuffer.label.setText("")
         buffer_input = minibuffer.input()
+        buffer_input.returnPressed.disconnect(self._on_edition_finished)
+        buffer_input.completion_activated.disconnect(
+            self._on_completion_activated)
         buffer_input.hide()
-        buffer_input.setText("")
         buffer_input.set_mark(False)
         c_model = buffer_input.completer_model()
         buffer_input.set_completer_model(None)
@@ -67,12 +70,19 @@ class Prompt(QObject):
             c_model.deleteLater()
         self.closed.emit()
 
+    def _on_completion_activated(self, index):
+        self.__index = index
+
+    def value(self):
+        return self.minibuffer.input().text()
+
+    def index(self):
+        return self.__index
+
     @Slot()
     def _on_edition_finished(self):
-        txt = self.minibuffer.input().text()
-        value = self.validate(txt)
         self.close()
-        self.got_value.emit(value)
+        self.finished.emit()
 
 
 class Popup(QTableView):
@@ -109,6 +119,8 @@ class Popup(QTableView):
 
 
 class MinibufferInput(QLineEdit):
+    completion_activated = Signal(QModelIndex)
+
     FuzzyMatch = Prompt.FuzzyMatch
     SimpleMatch = Prompt.SimpleMatch
 
@@ -210,6 +222,7 @@ class MinibufferInput(QLineEdit):
             index = model.index(index.row(), 0)
 
         self.setText(model.data(index))
+        self.completion_activated.emit(model.mapToSource(index))
 
     def popup(self):
         return self._popup

@@ -69,7 +69,7 @@ def main():
 
     window = Window()
 
-    buffer = WebBuffer(window)
+    buffer = WebBuffer()
     buffer.load("http://www.google.fr")
     window.current_web_view().setBuffer(buffer)
 

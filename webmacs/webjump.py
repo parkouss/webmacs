@@ -47,8 +47,8 @@ def get_url(value):
 
 
 @define_command("go-to", prompt=WebJumpPrompt)
-def go_to(value):
-    url = get_url(value)
+def go_to(prompt):
+    url = get_url(prompt.value())
     if url:
         current_buffer().load(url)
 
@@ -58,10 +58,10 @@ class WebJumpPromptNewUrl(WebJumpPrompt):
 
 
 @define_command("go-to-new-buffer", prompt=WebJumpPromptNewUrl)
-def go_to_new_buffer(value):
-    url = get_url(value)
+def go_to_new_buffer(prompt):
+    url = get_url(prompt.value())
     if url:
         view = current_window().current_web_view()
-        buffer = WebBuffer(view)
+        buffer = WebBuffer()
         buffer.load(url)
         view.setBuffer(buffer)

@@ -12,9 +12,9 @@ def register_global_commands():
         Application.INSTANCE.quit()
 
     @define_command("M-x", prompt=CommandsListPrompt, visible=False)
-    def commands(name):
+    def commands(prompt):
         try:
-            COMMANDS[name]()
+            COMMANDS[prompt.value()]()
         except KeyError:
             pass
 

@@ -7,13 +7,14 @@ class CommandExecutor(QObject):
     """
     Internal object to execute commands when a prompt is used.
     """
-    def __init__(self, cmd, parent=None):
-        QObject.__init__(self, parent)
+    def __init__(self, cmd, prompt):
+        QObject.__init__(self, prompt)
         self.cmd = cmd
+        self.prompt = prompt
 
-    @Slot(object)
-    def call(self, value):
-        self.cmd(value)
+    @Slot()
+    def call(self):
+        self.cmd(self.prompt)
 
 
 class InteractiveCommand(object):
@@ -41,7 +42,7 @@ class InteractiveCommand(object):
             prompt = self.prompt()
             # executor will be destroyed with its parent, the prompt
             executor = CommandExecutor(self.binding, prompt)
-            prompt.got_value.connect(executor.call)
+            prompt.finished.connect(executor.call)
             current_minibuffer().prompt(prompt)
         else:
             self.binding()

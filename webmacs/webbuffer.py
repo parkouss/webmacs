@@ -35,8 +35,8 @@ class WebBuffer(QWebEnginePage):
         QWebEnginePage.ErrorMessageLevel: logging.ERROR,
     }
 
-    def __init__(self, parent):
-        QWebEnginePage.__init__(self, parent)
+    def __init__(self):
+        QWebEnginePage.__init__(self)
         BUFFERS.append(self)
         self.destroyed.connect(self._on_destroyed)
 
@@ -69,13 +69,16 @@ class BufferListPrompt(Prompt):
     def completer_model(self):
         blist = []
         for buf in BUFFERS:
-            blist.append((buf.url(), buf.title()))
+            blist.append((buf.url().toString(), buf.title()))
         return PromptTableModel(blist)
 
 
 @define_command("switch-buffer", prompt=BufferListPrompt)
-def switch_buffer(value):
-    print(value)
+def switch_buffer(prompt):
+    selected = prompt.index().row()
+    if selected >= 0:
+        view = current_window().current_web_view()
+        view.setBuffer(BUFFERS[selected])
 
 
 @define_command("go-forward")
