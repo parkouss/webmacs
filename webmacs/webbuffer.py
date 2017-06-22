@@ -64,6 +64,7 @@ class BufferListPrompt(Prompt):
     label = "switch buffer:"
     complete_options = {
         "match": Prompt.FuzzyMatch,
+        "complete-empty": True,
     }
 
     def completer_model(self):

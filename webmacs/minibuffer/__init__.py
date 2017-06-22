@@ -54,6 +54,8 @@ class Prompt(QObject):
         buffer_input.completion_activated.connect(
             self._on_completion_activated)
         buffer_input.configure_completer(self.complete_options)
+        if self.complete_options.get("complete-empty"):
+            buffer_input.show_completions()
 
     def close(self):
         minibuffer = self.minibuffer
@@ -149,6 +151,7 @@ class MinibufferInput(QLineEdit):
         self._autocomplete = opts.get("autocomplete", False)
         if self._autocomplete:
             self._autocomplete_single = False
+        self._complete_empty = opts.get("complete-empty", False)
 
     def keymap(self):
         return KEYMAP
@@ -198,6 +201,7 @@ class MinibufferInput(QLineEdit):
             self.complete(hide_popup=False)
 
     def _show_completions(self, txt, force=False):
+        force = force or self._complete_empty
         if self._match == self.SimpleMatch:
             pattern = "^" + QRegExp.escape(txt)
         else:
