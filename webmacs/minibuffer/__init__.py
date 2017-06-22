@@ -107,7 +107,7 @@ class Popup(QTableView):
         h = (24) * min(self._max_visible_items, self.model().rowCount()) + 3
 
         w = widget.width()
-        pos = widget.mapToGlobal(QPoint(0, -(h + 1)))
+        pos = widget.mapToGlobal(QPoint(0, -h))
 
         self.setGeometry(pos.x(), pos.y(), w, h)
 
