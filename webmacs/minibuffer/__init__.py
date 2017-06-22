@@ -71,8 +71,8 @@ class Prompt(QObject):
     def _on_edition_finished(self):
         txt = self.minibuffer.input().text()
         value = self.validate(txt)
-        self.got_value.emit(value)
         self.close()
+        self.got_value.emit(value)
 
 
 class Popup(QTableView):
