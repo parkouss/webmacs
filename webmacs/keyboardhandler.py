@@ -36,16 +36,18 @@ class LocalKeymapSetter(QObject):
         if t == QEvent.WindowActivate:
             if obj in self._views:
                 # enable the current view
-                KEY_EATER.set_local_key_map_provider(obj.keymap)
-        elif t == QEvent.Show:
+                KEY_EATER.set_local_key_map_provider(obj)
+        elif t == QEvent.FocusIn:
             if obj in self._minibuffer_inputs:
                 # when the minibuffer input is shown, enable it
-                KEY_EATER.set_local_key_map_provider(obj.keymap)
-        elif t == QEvent.Hide:
+                KEY_EATER.set_local_key_map_provider(obj)
+        elif t == QEvent.FocusOut:
             if obj in self._minibuffer_inputs:
-                # when the minibuffer input is hidden, enable its view
-                KEY_EATER.set_local_key_map_provider(
-                    obj.parent().parent().current_web_view().keymap)
+                # the focus is lost when the popup is active
+                if not obj.popup().isVisible():
+                    # when the minibuffer input is hidden, enable its view
+                    KEY_EATER.set_local_key_map_provider(
+                        obj.parent().parent().current_web_view())
         return QObject.eventFilter(self, obj, event)
 
 
@@ -62,8 +64,11 @@ class KeyEater(QObject):
         self._commands = COMMANDS
         self._local_key_map_provider = None
 
-    def set_local_key_map_provider(self, func):
-        self._local_key_map_provider = func
+    def set_local_key_map_provider(self, provider):
+        self._local_key_map_provider = provider
+
+    def local_key_map_provider(self):
+        return self._local_key_map_provider
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.KeyPress:
@@ -76,7 +81,7 @@ class KeyEater(QObject):
 
     def active_keymaps(self):
         if self._local_key_map_provider:
-            yield self._local_key_map_provider()
+            yield self._local_key_map_provider.keymap()
         yield global_key_map()
 
     def _handle_keypress(self, keypress):
