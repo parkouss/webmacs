@@ -4,7 +4,8 @@ from PyQt5.QtCore import QUrl
 
 from .minibuffer import Prompt, PromptTableModel
 from .commands import define_command
-from .webbuffer import current_buffer
+from .webbuffer import current_buffer, WebBuffer
+from .window import current_window
 
 WebJump = namedtuple("WebJump", ("url", "doc", "allow_args"))
 WEBJUMPS = {}
@@ -30,8 +31,7 @@ class WebJumpPrompt(Prompt):
         return PromptTableModel(data)
 
 
-@define_command("go-to", prompt=WebJumpPrompt)
-def go_to(value):
+def get_url(value):
     args = value.split(" ", 1)
     command = args[0]
     try:
@@ -41,8 +41,27 @@ def go_to(value):
 
     if webjump.allow_args:
         args = args[1] if len(args) > 1 else ""
-        url = webjump.url % str(QUrl.toPercentEncoding(args), "utf-8")
+        return webjump.url % str(QUrl.toPercentEncoding(args), "utf-8")
     else:
-        url = webjump.url
+        return webjump.url
 
-    current_buffer().load(url)
+
+@define_command("go-to", prompt=WebJumpPrompt)
+def go_to(value):
+    url = get_url(value)
+    if url:
+        current_buffer().load(url)
+
+
+class WebJumpPromptNewUrl(WebJumpPrompt):
+    label = "url/webjump (new buffer):"
+
+
+@define_command("go-to-new-buffer", prompt=WebJumpPromptNewUrl)
+def go_to_new_buffer(value):
+    url = get_url(value)
+    if url:
+        view = current_window().current_web_view()
+        buffer = WebBuffer(view)
+        buffer.load(url)
+        view.setBuffer(buffer)

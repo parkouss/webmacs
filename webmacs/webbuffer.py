@@ -1,17 +1,23 @@
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, pyqtSlot as Slot
 import logging
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 
 from .keymap import Keymap
 from .commands import define_command
 from .window import current_window
+from .minibuffer import Prompt, PromptTableModel
 
 
+BUFFERS = []
 KEYMAP = Keymap("webbuffer")
 
 
 def current_buffer():
     return current_window().current_web_view().buffer()
+
+
+def buffers():
+    return BUFFERS
 
 
 class WebBuffer(QWebEnginePage):
@@ -31,6 +37,12 @@ class WebBuffer(QWebEnginePage):
 
     def __init__(self, parent):
         QWebEnginePage.__init__(self, parent)
+        BUFFERS.append(self)
+        self.destroyed.connect(self._on_destroyed)
+
+    @Slot()
+    def _on_destroyed(self):
+        BUFFERS.remove(self)
 
     def load(self, url):
         if not isinstance(url, QUrl):
@@ -46,6 +58,24 @@ class WebBuffer(QWebEnginePage):
 
     def keymap(self):
         return KEYMAP
+
+
+class BufferListPrompt(Prompt):
+    label = "switch buffer:"
+    complete_options = {
+        "match": Prompt.FuzzyMatch,
+    }
+
+    def completer_model(self):
+        blist = []
+        for buf in BUFFERS:
+            blist.append((buf.url(), buf.title()))
+        return PromptTableModel(blist)
+
+
+@define_command("switch-buffer", prompt=BufferListPrompt)
+def switch_buffer(value):
+    print(value)
 
 
 @define_command("go-forward")

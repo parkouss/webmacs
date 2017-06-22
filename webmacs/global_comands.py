@@ -30,3 +30,5 @@ def register_global_commands():
 
     keymap.define_key("C-x C-c", "quit")
     keymap.define_key("M-x", "M-x")
+    keymap.define_key("C-x C-f", "go-to-new-buffer")
+    keymap.define_key("C-x b", "switch-buffer")
