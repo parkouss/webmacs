@@ -6,6 +6,9 @@ from PyQt5.QtWebChannel import QWebChannelAbstractTransport, QWebChannel
 from PyQt5.QtNetwork import QHostAddress
 from PyQt5.QtCore import QObject, pyqtSlot
 
+from .window import current_window
+from .keyboardhandler import LOCAL_KEYMAP_SETTER
+
 
 def get_free_port():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -22,7 +25,8 @@ class WebContentHandler(QObject):
     """
     @pyqtSlot(bool)
     def onTextFocus(self, enabled):
-        print("text focus: %s" % enabled)
+        win = current_window()
+        LOCAL_KEYMAP_SETTER.web_content_edit_focus_changed(win, enabled)
 
 
 class WebSocketClientWrapper(QObject):

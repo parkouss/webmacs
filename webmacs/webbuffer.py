@@ -60,6 +60,9 @@ class WebBuffer(QWebEnginePage):
     def keymap(self):
         return KEYMAP
 
+    def content_edit_keymap(self):
+        return None
+
 
 class BufferTableModel(QAbstractTableModel):
     def __init__(self):
