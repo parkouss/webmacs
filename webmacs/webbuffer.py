@@ -73,14 +73,24 @@ class BufferTableModel(QAbstractTableModel):
         return 2
 
     def data(self, index, role=Qt.DisplayRole):
+        buff = index.internalPointer()
+        if not buff:
+            return
+
         col = index.column()
         if role == Qt.DisplayRole:
             if col == 0:
-                return self._buffers[index.row()].url().toString()
+                return buff.url().toString()
             else:
-                return self._buffers[index.row()].title()
+                return buff.title()
         elif role == Qt.DecorationRole and col == 0:
-            return self._buffers[index.row()].icon()
+            return buff.icon()
+
+    def index(self, row, col, parent=QModelIndex()):
+        try:
+            return self.createIndex(row, col, self._buffers[row])
+        except IndexError:
+            return QModelIndex()
 
 
 class BufferListPrompt(Prompt):
@@ -99,7 +109,7 @@ def switch_buffer(prompt):
     selected = prompt.index()
     if selected.row() >= 0:
         view = current_window().current_web_view()
-        view.setBuffer(selected.model()._buffers[selected.row()])
+        view.setBuffer(selected.internalPointer())
 
 
 @define_command("go-forward")
