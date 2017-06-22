@@ -1,11 +1,12 @@
-from PyQt5.QtCore import QUrl, pyqtSlot as Slot
+from PyQt5.QtCore import QUrl, pyqtSlot as Slot, QAbstractTableModel, \
+    QModelIndex, Qt
 import logging
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 
 from .keymap import Keymap
 from .commands import define_command
 from .window import current_window
-from .minibuffer import Prompt, PromptTableModel
+from .minibuffer import Prompt
 
 
 BUFFERS = []
@@ -60,6 +61,28 @@ class WebBuffer(QWebEnginePage):
         return KEYMAP
 
 
+class BufferTableModel(QAbstractTableModel):
+    def __init__(self):
+        QAbstractTableModel.__init__(self)
+        self._buffers = BUFFERS[:]
+
+    def rowCount(self, index=QModelIndex()):
+        return len(self._buffers)
+
+    def columnCount(self, index=QModelIndex()):
+        return 2
+
+    def data(self, index, role=Qt.DisplayRole):
+        col = index.column()
+        if role == Qt.DisplayRole:
+            if col == 0:
+                return self._buffers[index.row()].url().toString()
+            else:
+                return self._buffers[index.row()].title()
+        elif role == Qt.DecorationRole and col == 0:
+            return self._buffers[index.row()].icon()
+
+
 class BufferListPrompt(Prompt):
     label = "switch buffer:"
     complete_options = {
@@ -68,18 +91,15 @@ class BufferListPrompt(Prompt):
     }
 
     def completer_model(self):
-        blist = []
-        for buf in BUFFERS:
-            blist.append((buf.url().toString(), buf.title()))
-        return PromptTableModel(blist)
+        return BufferTableModel()
 
 
 @define_command("switch-buffer", prompt=BufferListPrompt)
 def switch_buffer(prompt):
-    selected = prompt.index().row()
-    if selected >= 0:
+    selected = prompt.index()
+    if selected.row() >= 0:
         view = current_window().current_web_view()
-        view.setBuffer(BUFFERS[selected])
+        view.setBuffer(selected.model()._buffers[selected.row()])
 
 
 @define_command("go-forward")
