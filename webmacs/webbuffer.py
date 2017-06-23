@@ -61,7 +61,7 @@ class WebBuffer(QWebEnginePage):
         return KEYMAP
 
     def content_edit_keymap(self):
-        return None
+        return CONTENT_EDIT_KEYMAP
 
     def async_scroll_pos(self, func):
         self.runJavaScript("[window.pageXOffset, window.pageYOffset]", func)
@@ -195,3 +195,5 @@ KEYMAP.define_key("C-v", "scroll-page-down")
 KEYMAP.define_key("M-v", "scroll-page-up")
 KEYMAP.define_key("M->", "scroll-bottom")
 KEYMAP.define_key("M-<", "scroll-top")
+
+from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP
