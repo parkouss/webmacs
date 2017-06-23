@@ -125,6 +125,15 @@ def go_backward():
     current_buffer().triggerAction(WebBuffer.Back)
 
 
+from .isearch import ISearchPrompt  # noqa
+
+
+@define_command("i-search-forward", prompt=ISearchPrompt)
+def i_search_forward(prompt):
+    pass
+
+
 KEYMAP.define_key("g", "go-to")
 KEYMAP.define_key("S-f", "go-forward")
 KEYMAP.define_key("S-b", "go-backward")
+KEYMAP.define_key("C-s", "i-search-forward")

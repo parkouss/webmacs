@@ -31,6 +31,7 @@ class PromptTableModel(QAbstractTableModel):
 class Prompt(QObject):
     label = ""
     complete_options = {}
+    keymap = None
 
     SimpleMatch = 0
     FuzzyMatch = 1
@@ -154,6 +155,9 @@ class MinibufferInput(QLineEdit):
         self._complete_empty = opts.get("complete-empty", False)
 
     def keymap(self):
+        prompt = self.parent()._prompt
+        if prompt and prompt.keymap:
+            return prompt.keymap
         return KEYMAP
 
     def eventFilter(self, obj, event):
