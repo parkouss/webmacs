@@ -69,6 +69,22 @@ class WebBuffer(QWebEnginePage):
     def set_scroll_pos(self, x=0, y=0):
         self.runJavaScript("window.scrollTo(%d, %d);" % (x, y))
 
+    def scroll_by(self, x=0, y=0):
+        self.runJavaScript("window.scrollBy(%d, %d);" % (x, y))
+
+    def scroll_page(self, nb):
+        offset = -40 if nb > 0 else 40
+        self.runJavaScript("""""
+        window.scrollTo(0, window.pageYOffset
+                        + (window.innerHeight * %d) + %d);
+        """ % (nb, offset))
+
+    def scroll_top(self):
+        self.runJavaScript("window.scrollTo(0, 0);")
+
+    def scroll_bottom(self):
+        self.runJavaScript("window.scrollTo(0, document.body.scrollHeight);")
+
 
 class BufferTableModel(QAbstractTableModel):
     def __init__(self):
@@ -139,7 +155,43 @@ def i_search_forward(prompt):
     print("scroll pos: ", prompt.page_scroll_pos)
 
 
+@define_command("scroll-down")
+def scroll_down():
+    current_buffer().scroll_by(y=20)
+
+
+@define_command("scroll-up")
+def scroll_up():
+    current_buffer().scroll_by(y=-20)
+
+
+@define_command("scroll-page-down")
+def scroll_page_down():
+    current_buffer().scroll_page(1)
+
+
+@define_command("scroll-page-up")
+def scroll_page_up():
+    current_buffer().scroll_page(-1)
+
+
+@define_command("scroll-top")
+def scroll_top():
+    current_buffer().scroll_top()
+
+
+@define_command("scroll-bottom")
+def scroll_bottom():
+    current_buffer().scroll_bottom()
+
+
 KEYMAP.define_key("g", "go-to")
 KEYMAP.define_key("S-f", "go-forward")
 KEYMAP.define_key("S-b", "go-backward")
 KEYMAP.define_key("C-s", "i-search-forward")
+KEYMAP.define_key("C-n", "scroll-down")
+KEYMAP.define_key("C-p", "scroll-up")
+KEYMAP.define_key("C-v", "scroll-page-down")
+KEYMAP.define_key("M-v", "scroll-page-up")
+KEYMAP.define_key("M->", "scroll-bottom")
+KEYMAP.define_key("M-<", "scroll-top")
