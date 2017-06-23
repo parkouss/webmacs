@@ -18,12 +18,20 @@ def search_previous():
     buff.findText(current_minibuffer().input().text(), WebBuffer.FindBackward)
 
 
-@KEYMAP.define_key("C-g")
-@KEYMAP.define_key("Esc")
-def cancel():
+@KEYMAP.define_key("Return")
+def validate():
     buff = current_window().current_web_view().buffer()
     buff.findText("")  # to clear the highlight
     current_minibuffer().close_prompt()
+
+
+@KEYMAP.define_key("C-g")
+@KEYMAP.define_key("Esc")
+def cancel():
+    scroll_pos = current_minibuffer()._prompt.page_scroll_pos
+    validate()
+    buff = current_window().current_web_view().buffer()
+    buff.set_scroll_pos(*scroll_pos)
 
 
 class ISearchPrompt(Prompt):
@@ -33,14 +41,16 @@ class ISearchPrompt(Prompt):
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
         self.page = current_window().current_web_view().buffer()
+        self.page_scroll_pos = (0, 0)
+        self.page.async_scroll_pos(
+            lambda p: setattr(self, "page_scroll_pos", p))
         minibuffer.input().textChanged.connect(self.on_text_edited)
 
     def on_text_edited(self, text):
         self.page.findText(text)
+        if not text:
+            self.page.set_scroll_pos(*self.page_scroll_pos)
 
     def close(self):
-        # calling setFocus() on the view is required, else the view is scrolled
-        # to the top automatically. But we don't even get a focus in event;
-        self.minibuffer.parent().current_web_view().setFocus()
         self.minibuffer.input().textChanged.disconnect(self.on_text_edited)
         Prompt.close(self)

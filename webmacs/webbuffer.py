@@ -63,6 +63,12 @@ class WebBuffer(QWebEnginePage):
     def content_edit_keymap(self):
         return None
 
+    def async_scroll_pos(self, func):
+        self.runJavaScript("[window.pageXOffset, window.pageYOffset]", func)
+
+    def set_scroll_pos(self, x=0, y=0):
+        self.runJavaScript("window.scrollTo(%d, %d);" % (x, y))
+
 
 class BufferTableModel(QAbstractTableModel):
     def __init__(self):
@@ -130,7 +136,7 @@ from .isearch import ISearchPrompt  # noqa
 
 @define_command("i-search-forward", prompt=ISearchPrompt)
 def i_search_forward(prompt):
-    pass
+    print("scroll pos: ", prompt.page_scroll_pos)
 
 
 KEYMAP.define_key("g", "go-to")

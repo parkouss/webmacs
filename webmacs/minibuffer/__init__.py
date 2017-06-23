@@ -65,6 +65,9 @@ class Prompt(QObject):
         buffer_input.returnPressed.disconnect(self._on_edition_finished)
         buffer_input.completion_activated.disconnect(
             self._on_completion_activated)
+        # calling setFocus() on the view is required, else the view is scrolled
+        # to the top automatically. But we don't even get a focus in event;
+        minibuffer.parent().current_web_view().setFocus()
         buffer_input.hide()
         buffer_input.set_mark(False)
         c_model = buffer_input.completer_model()
