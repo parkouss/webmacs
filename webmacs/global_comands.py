@@ -28,6 +28,16 @@ def register_global_commands():
         else:
             win.showFullScreen()
 
+    @define_command("toggle-maximized")
+    def toggle_maximised():
+        win = current_window()
+        if not win:
+            return
+        if win.isMaximized():
+            win.showNormal()
+        else:
+            win.showMaximized()
+
     keymap.define_key("C-x C-c", "quit")
     keymap.define_key("M-x", "M-x")
     keymap.define_key("C-x C-f", "go-to-new-buffer")
