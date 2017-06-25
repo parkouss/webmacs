@@ -28,3 +28,15 @@ def follow(prompt):
 def cancel():
     current_buffer().stop_select_browser_objects()
     current_minibuffer().close_prompt()
+
+
+@KEYMAP.define_key("C-n")
+@KEYMAP.define_key("Down")
+def next_completion():
+    current_buffer().select_nex_browser_object()
+
+
+@KEYMAP.define_key("C-p")
+@KEYMAP.define_key("Up")
+def previous_completion():
+    current_buffer().select_nex_browser_object(False)

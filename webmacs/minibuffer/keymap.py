@@ -27,7 +27,7 @@ def next_completion():
 
 
 @KEYMAP.define_key("C-p")
-@KEYMAP.define_key("Top")
+@KEYMAP.define_key("Up")
 def previous_completion():
     current_minibuffer().input().select_next_completion(False)
 

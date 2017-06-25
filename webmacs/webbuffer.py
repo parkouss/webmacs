@@ -96,6 +96,11 @@ class WebBuffer(QWebEnginePage):
             "hints.clearBrowserObjects();",
             QWebEngineScript.ApplicationWorld)
 
+    def select_nex_browser_object(self, forward=True):
+        current_buffer().runJavaScript(
+            "hints.activateNextHint(%s);" % ("false" if forward else "true",),
+            QWebEngineScript.ApplicationWorld)
+
 
 class BufferTableModel(QAbstractTableModel):
     def __init__(self):

@@ -98,20 +98,7 @@ function Hint(obj, manager, left, top) {
     hint.style.left = left;
     hint.style.top = top;
     this.hint = hint;
-    this.active = false;
     this.manager = manager;
-}
-
-Hint.prototype.setActive = function(on) {
-    if (this.active == on) { return; }
-    let bg;
-    if (on) {
-        bg = this.manager.options.background_active;
-    } else {
-        bg = this.manager.options.background;
-    }
-    this.active = on;
-    this.obj.style.background = bg;
 }
 
 Hint.prototype.remove = function() {
@@ -127,6 +114,7 @@ function HintManager() {
         background: "yellow",
         background_active: "#88FF00"
     };
+    this.activeHint = null;
 }
 
 HintManager.prototype.selectBrowserObjects = function(selector, options) {
@@ -145,10 +133,38 @@ HintManager.prototype.selectBrowserObjects = function(selector, options) {
                             (rect.left + scrollX) + "px",
                             (rect.top + scrollY) + "px");
         this.hints.push(hint);
-        hint.setActive(this.hints.length == 1);
         fragment.appendChild(hint.hint);
     }
+    this.setActiveHint((this.hints.length > 0) ? this.hints[0] : null);
     document.documentElement.appendChild(fragment);
+}
+
+HintManager.prototype.setActiveHint = function(hint) {
+    if (this.activeHint) {
+        this.activeHint.obj.style.background = this.options.background;
+    }
+    if (hint) {
+        hint.obj.style.background = this.options.background_active;
+    }
+    this.activeHint = hint;
+}
+
+HintManager.prototype.activateNextHint = function(backward) {
+    if (this.hints.length == 0) {
+        return;
+    }
+    let pos = this.hints.indexOf(this.activeHint);
+    if (pos == -1) {
+        this.setActiveHint(this.hints[backward ? this.hints.length - 1 : 0]);
+        return;
+    }
+    pos = pos + (backward ? -1 : 1);
+    if (pos < 0) {
+        pos = this.hints.length - 1;
+    } else if (pos >= this.hints.length) {
+        pos = 0;
+    }
+    this.setActiveHint(this.hints[pos]);
 }
 
 HintManager.prototype.clearBrowserObjects = function() {
