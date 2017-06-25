@@ -106,6 +106,12 @@ class WebBuffer(QWebEnginePage):
             "hints.filterSelection(%r);" % text,
             QWebEngineScript.ApplicationWorld)
 
+    def focus_active_browser_object(self):
+        current_buffer().runJavaScript(
+            "if (hints.activeHint) {hints.activeHint.obj.focus(); true}"
+            " else {false}",
+            QWebEngineScript.ApplicationWorld)
+
 
 class BufferTableModel(QAbstractTableModel):
     def __init__(self):

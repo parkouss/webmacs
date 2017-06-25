@@ -112,6 +112,13 @@ Hint.prototype.text = function() {
     return null;
 }
 
+Hint.prototype.url = function() {
+    if (this.obj.href) {
+        return this.obj.href;
+    }
+    return null;
+}
+
 Hint.prototype.remove = function() {
     this.obj.style.background = this.objBackground;
     this.hint.parentNode.removeChild(this.hint);
@@ -142,7 +149,8 @@ Hint.prototype.serialize = function() {
     return JSON.stringify({
         nodeName: this.obj.nodeName,
         text: this.text(),
-        id: this.hint.textContent
+        id: this.hint.textContent,
+        url: this.url()
     });
 }
 
@@ -185,7 +193,7 @@ HintManager.prototype.setActiveHint = function(hint) {
     if (prevActive) { prevActive.refresh(); }
     if (hint) {
         hint.refresh();
-        __webmacsHandler__.browserObjectActivated(hint.serialize());
+        __webmacsHandler__._browserObjectActivated(hint.serialize());
     }
 }
 

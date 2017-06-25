@@ -1,7 +1,8 @@
 from .minibuffer import Prompt, KEYMAP as MKEYMAP, current_minibuffer
 from .keymap import Keymap
-from .webbuffer import current_buffer
+from .webbuffer import current_buffer, WebBuffer
 from .commands import define_command
+from .application import Application
 
 
 KEYMAP = Keymap("i-search", MKEYMAP)
@@ -17,6 +18,14 @@ class FollowPrompt(Prompt):
         selector = "a[href], input:not([hidden]), textarea:not([hidden])"
         self.page.start_select_browser_objects(selector)
         minibuffer.input().textChanged.connect(self.on_text_edited)
+        self.browser_object_activated = {}
+        Application.INSTANCE.sock_client.content_handler \
+                                        .browserObjectActivated.connect(
+                                            self.on_browser_object_activated
+                                        )
+
+    def on_browser_object_activated(self, bo):
+        self.browser_object_activated = bo
 
     def on_text_edited(self, text):
         self.page.filter_browser_objects(text)
@@ -24,7 +33,12 @@ class FollowPrompt(Prompt):
 
 @define_command("follow", prompt=FollowPrompt)
 def follow(prompt):
-    pass
+    url = prompt.browser_object_activated.get("url")
+    if url:
+        prompt.page.load(url)
+    else:
+        prompt.page.focus_active_browser_object()
+        current_buffer().stop_select_browser_objects()
 
 
 @KEYMAP.define_key("C-g")
