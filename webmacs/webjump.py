@@ -37,7 +37,7 @@ def get_url(value):
     try:
         webjump = WEBJUMPS[command]
     except KeyError:
-        return
+        return value
 
     if webjump.allow_args:
         args = args[1] if len(args) > 1 else ""
