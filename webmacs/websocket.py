@@ -28,6 +28,10 @@ class WebContentHandler(QObject):
         win = current_window()
         LOCAL_KEYMAP_SETTER.web_content_edit_focus_changed(win, enabled)
 
+    @pyqtSlot(str)
+    def browserObjectActivated(self, obj):
+        print(json.loads(obj))
+
 
 class WebSocketClientWrapper(QObject):
 

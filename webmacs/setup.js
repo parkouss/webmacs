@@ -118,13 +118,32 @@ Hint.prototype.remove = function() {
 }
 
 Hint.prototype.setVisible = function(on) {
-    if (on) {
-        this.hint.style.display = "initial";
-        this.obj.style.background = this.manager.options.background;
+    this.hint.style.display = on ? "initial" : "none";
+    this.refresh();
+}
+
+Hint.prototype.refresh = function() {
+    if (this.isVisible()) {
+        if (this.manager.activeHint == this) {
+            this.obj.style.background = this.manager.options.background_active;
+        } else {
+            this.obj.style.background = this.manager.options.background;
+        }
     } else {
-        this.hint.style.display = "none";
         this.obj.style.background = this.objBackground;
     }
+}
+
+Hint.prototype.isVisible = function() {
+    return this.hint.style.display != "none";
+}
+
+Hint.prototype.serialize = function() {
+    return JSON.stringify({
+        nodeName: this.obj.nodeName,
+        text: this.text(),
+        id: this.hint.textContent
+    });
 }
 
 function HintManager() {
@@ -161,31 +180,42 @@ HintManager.prototype.selectBrowserObjects = function(selector, options) {
 }
 
 HintManager.prototype.setActiveHint = function(hint) {
-    if (this.activeHint) {
-        this.activeHint.obj.style.background = this.options.background;
-    }
-    if (hint) {
-        hint.obj.style.background = this.options.background_active;
-    }
+    var prevActive = this.activeHint;
     this.activeHint = hint;
+    if (prevActive) { prevActive.refresh(); }
+    if (hint) {
+        hint.refresh();
+        __webmacsHandler__.browserObjectActivated(hint.serialize());
+    }
+}
+
+HintManager.prototype.visibleHints = function() {
+    let visibles = [];
+    for (let hint of this.hints) {
+        if (hint.isVisible()) {
+            visibles.push(hint);
+        }
+    }
+    return visibles;
 }
 
 HintManager.prototype.activateNextHint = function(backward) {
-    if (this.hints.length == 0) {
+    let visibles = this.visibleHints();
+    if (visibles.length == 0) {
         return;
     }
-    let pos = this.hints.indexOf(this.activeHint);
+    let pos = visibles.indexOf(this.activeHint);
     if (pos == -1) {
-        this.setActiveHint(this.hints[backward ? this.hints.length - 1 : 0]);
+        this.setActiveHint(visibles[backward ? visibles.length - 1 : 0]);
         return;
     }
     pos = pos + (backward ? -1 : 1);
     if (pos < 0) {
-        pos = this.hints.length - 1;
-    } else if (pos >= this.hints.length) {
+        pos = visibles.length - 1;
+    } else if (pos >= visibles.length) {
         pos = 0;
     }
-    this.setActiveHint(this.hints[pos]);
+    this.setActiveHint(visibles[pos]);
 }
 
 HintManager.prototype.filterSelection = function(text) {
@@ -198,6 +228,8 @@ HintManager.prototype.filterSelection = function(text) {
         }
         return;
     }
+    let activeHintRemoved = false;
+    let firstHint = null;
     var parts = text.split(/\s+/).map(escapeRegExp);
     var re = new RegExp(".*" + parts.join(".*") + ".*", "i");
     for (let hint of this.hints) {
@@ -211,9 +243,18 @@ HintManager.prototype.filterSelection = function(text) {
             i = i+1;
             hint.setVisible(true);
             hint.hint.textContent = i;
+            if (! firstHint) {
+                firstHint = hint;
+            }
         } else {
             hint.setVisible(false);
+            if (hint == this.activeHint) {
+                activeHintRemoved = true;
+            }
         }
+    }
+    if (activeHintRemoved && firstHint) {
+        this.setActiveHint(firstHint);
     }
 }
 
