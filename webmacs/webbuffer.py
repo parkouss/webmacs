@@ -101,6 +101,11 @@ class WebBuffer(QWebEnginePage):
             "hints.activateNextHint(%s);" % ("false" if forward else "true",),
             QWebEngineScript.ApplicationWorld)
 
+    def filter_browser_objects(self, text):
+        current_buffer().runJavaScript(
+            "hints.filterSelection(%r);" % text,
+            QWebEngineScript.ApplicationWorld)
+
 
 class BufferTableModel(QAbstractTableModel):
     def __init__(self):

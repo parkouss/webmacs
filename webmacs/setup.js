@@ -84,6 +84,10 @@ function rectElementInViewport(node) {  // eslint-disable-line complexity
     return boundingRect;
 }
 
+function escapeRegExp(str) {
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
 function Hint(obj, manager, left, top) {
     this.obj = obj;
     this.objBackground = obj.style.background;
@@ -101,9 +105,26 @@ function Hint(obj, manager, left, top) {
     this.manager = manager;
 }
 
+Hint.prototype.text = function() {
+    if (this.obj.textContent) {
+        return this.obj.textContent;
+    }
+    return null;
+}
+
 Hint.prototype.remove = function() {
     this.obj.style.background = this.objBackground;
     this.hint.parentNode.removeChild(this.hint);
+}
+
+Hint.prototype.setVisible = function(on) {
+    if (on) {
+        this.hint.style.display = "initial";
+        this.obj.style.background = this.manager.options.background;
+    } else {
+        this.hint.style.display = "none";
+        this.obj.style.background = this.objBackground;
+    }
 }
 
 function HintManager() {
@@ -165,6 +186,35 @@ HintManager.prototype.activateNextHint = function(backward) {
         pos = 0;
     }
     this.setActiveHint(this.hints[pos]);
+}
+
+HintManager.prototype.filterSelection = function(text) {
+    let i = 0;
+    if (!text) {
+        for (let hint of this.hints) {
+            i = i+1;
+            hint.setVisible(true);
+            hint.hint.textContent = i;
+        }
+        return;
+    }
+    var parts = text.split(/\s+/).map(escapeRegExp);
+    var re = new RegExp(".*" + parts.join(".*") + ".*", "i");
+    for (let hint of this.hints) {
+        let matched = false;
+        text = hint.text();
+        if (text !== null) {
+            matched = (text.match(re) !== null);
+        }
+
+        if (matched) {
+            i = i+1;
+            hint.setVisible(true);
+            hint.hint.textContent = i;
+        } else {
+            hint.setVisible(false);
+        }
+    }
 }
 
 HintManager.prototype.clearBrowserObjects = function() {

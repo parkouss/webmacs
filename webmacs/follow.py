@@ -16,6 +16,10 @@ class FollowPrompt(Prompt):
         self.page = current_buffer()
         selector = "a[href], input:not([hidden]), textarea:not([hidden])"
         self.page.start_select_browser_objects(selector)
+        minibuffer.input().textChanged.connect(self.on_text_edited)
+
+    def on_text_edited(self, text):
+        self.page.filter_browser_objects(text)
 
 
 @define_command("follow", prompt=FollowPrompt)
