@@ -217,6 +217,11 @@ def scroll_bottom():
     current_buffer().scroll_bottom()
 
 
+@define_command("webcontent-copy")
+def webcontent_copy():
+    current_buffer().triggerAction(WebBuffer.Copy)
+
+
 KEYMAP.define_key("g", "go-to")
 KEYMAP.define_key("S-f", "go-forward")
 KEYMAP.define_key("S-b", "go-backward")
@@ -228,6 +233,7 @@ KEYMAP.define_key("M-v", "scroll-page-up")
 KEYMAP.define_key("M->", "scroll-bottom")
 KEYMAP.define_key("M-<", "scroll-top")
 KEYMAP.define_key("f", "follow")
+KEYMAP.define_key("M-w", "webcontent-copy")
 
 
 from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP
