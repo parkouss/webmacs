@@ -207,6 +207,16 @@ HintManager.prototype.visibleHints = function() {
     return visibles;
 }
 
+HintManager.prototype.selectVisibleHint = function(index) {
+    for (let hint of this.visibleHints()) {
+        if (hint.hint.textContent == index) {
+            this.setActiveHint(hint);
+            return;
+        }
+    }
+    this.setActiveHint(null);
+}
+
 HintManager.prototype.activateNextHint = function(backward) {
     let visibles = this.visibleHints();
     if (visibles.length == 0) {

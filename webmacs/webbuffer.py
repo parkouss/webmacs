@@ -112,6 +112,11 @@ class WebBuffer(QWebEnginePage):
             " else {false}",
             QWebEngineScript.ApplicationWorld)
 
+    def select_visible_hint(self, hint_id):
+        current_buffer().runJavaScript(
+            "hints.selectVisibleHint(%r);" % hint_id,
+            QWebEngineScript.ApplicationWorld)
+
 
 class BufferTableModel(QAbstractTableModel):
     def __init__(self):
