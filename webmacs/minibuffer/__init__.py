@@ -214,7 +214,7 @@ class MinibufferInput(QLineEdit):
         else:
             pattern = ".*".join(QRegExp.escape(t) for t in txt.split())
 
-        self._proxy_model.setFilterRegExp(QRegExp(pattern))
+        self._proxy_model.setFilterRegExp(QRegExp(pattern, Qt.CaseInsensitive))
         if self._proxy_model.rowCount() == 0:
             self._popup.hide()
         elif not txt and not force:
