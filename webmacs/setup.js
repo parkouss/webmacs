@@ -154,9 +154,8 @@ HintManager.prototype.selectBrowserObjects = function(selector, options) {
 HintManager.prototype.clearBrowserObjects = function() {
     for (let hint of this.hints) {
         hint.remove();
-        document.documentElement.removeChild(hint.hint);
     }
-    hints = [];
+    this.hints = [];
 }
 
 var hints = new HintManager();

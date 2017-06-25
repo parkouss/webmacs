@@ -27,6 +27,7 @@ class Application(QApplication):
         self.installEventFilter(KEY_EATER)
 
         from . import default_webjumps  # noqa
+        from . import follow  # noqa
 
     def _setup_websocket(self):
         """

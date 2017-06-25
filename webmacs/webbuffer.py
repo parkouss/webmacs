@@ -1,7 +1,8 @@
+import logging
+
 from PyQt5.QtCore import QUrl, pyqtSlot as Slot, QAbstractTableModel, \
     QModelIndex, Qt
-import logging
-from PyQt5.QtWebEngineWidgets import QWebEnginePage
+from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 
 from .keymap import Keymap
 from .commands import define_command
@@ -84,6 +85,16 @@ class WebBuffer(QWebEnginePage):
 
     def scroll_bottom(self):
         self.runJavaScript("window.scrollTo(0, document.body.scrollHeight);")
+
+    def start_select_browser_objects(self, selector):
+        current_buffer().runJavaScript(
+            "hints.selectBrowserObjects(%r);" % selector,
+            QWebEngineScript.ApplicationWorld)
+
+    def stop_select_browser_objects(self):
+        current_buffer().runJavaScript(
+            "hints.clearBrowserObjects();",
+            QWebEngineScript.ApplicationWorld)
 
 
 class BufferTableModel(QAbstractTableModel):
@@ -195,14 +206,7 @@ KEYMAP.define_key("C-v", "scroll-page-down")
 KEYMAP.define_key("M-v", "scroll-page-up")
 KEYMAP.define_key("M->", "scroll-bottom")
 KEYMAP.define_key("M-<", "scroll-top")
+KEYMAP.define_key("f", "follow")
 
-
-@KEYMAP.define_key("f")
-def f():
-    from PyQt5.QtWebEngineWidgets import QWebEngineScript
-    selector = "a[href], input:not([hidden]), textarea:not([hidden])"
-    current_buffer().runJavaScript(
-        "hints.selectBrowserObjects(%r);" % selector,
-        QWebEngineScript.ApplicationWorld)
 
 from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP
