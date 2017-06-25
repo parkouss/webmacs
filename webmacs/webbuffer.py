@@ -108,8 +108,11 @@ class WebBuffer(QWebEnginePage):
 
     def focus_active_browser_object(self):
         current_buffer().runJavaScript(
-            "if (hints.activeHint) {hints.activeHint.obj.focus(); true}"
-            " else {false}",
+            "if (hints.activeHint) {"
+            "   hints.activeHint.obj.focus();"
+            "   hints.activeHint.obj.click();"
+            "   true;"
+            " } else {false}",
             QWebEngineScript.ApplicationWorld)
 
     def select_visible_hint(self, hint_id):

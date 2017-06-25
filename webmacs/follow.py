@@ -17,7 +17,10 @@ class FollowPrompt(Prompt):
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
         self.page = current_buffer()
-        selector = "a[href], input:not([hidden]), textarea:not([hidden])"
+        selector = (
+            "a[href], input:not([hidden]), textarea:not([hidden]),"
+            "*[role=link], *[role=button], *[role=menuitem]"
+        )
         self.page.start_select_browser_objects(selector)
         self.numbers = ""
         minibuffer.input().textChanged.connect(self.on_text_edited)
