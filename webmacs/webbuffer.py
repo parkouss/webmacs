@@ -196,4 +196,13 @@ KEYMAP.define_key("M-v", "scroll-page-up")
 KEYMAP.define_key("M->", "scroll-bottom")
 KEYMAP.define_key("M-<", "scroll-top")
 
+
+@KEYMAP.define_key("f")
+def f():
+    from PyQt5.QtWebEngineWidgets import QWebEngineScript
+    selector = "a[href], input:not([hidden]), textarea:not([hidden])"
+    current_buffer().runJavaScript(
+        "hints.selectBrowserObjects(%r);" % selector,
+        QWebEngineScript.ApplicationWorld)
+
 from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP
