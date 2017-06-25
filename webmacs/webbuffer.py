@@ -226,6 +226,7 @@ def webcontent_copy():
 
 
 KEYMAP.define_key("g", "go-to")
+KEYMAP.define_key("b", "buffer-history")
 KEYMAP.define_key("S-f", "go-forward")
 KEYMAP.define_key("S-b", "go-backward")
 KEYMAP.define_key("C-s", "i-search-forward")

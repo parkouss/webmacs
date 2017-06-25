@@ -28,6 +28,7 @@ class Application(QApplication):
 
         from . import default_webjumps  # noqa
         from . import follow  # noqa
+        from . import buffer_history  # noqa
 
     def _setup_websocket(self):
         """
