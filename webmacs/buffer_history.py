@@ -23,6 +23,8 @@ class IconRetriever(QThread):
         with urllib.request.urlopen(url, timeout=5) as conn:
             img = QImage()
             img.loadFromData(conn.read())
+            if img.height() != 16 and img.width != 16:
+                img = img.scaled(16, 16, Qt.KeepAspectRatio)
             return img
 
     def run(self):
@@ -30,7 +32,7 @@ class IconRetriever(QThread):
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             # Start the load operations and mark each future with its URL
             futures = {executor.submit(self.load_icon, url.toString()): url
-                       for url in self.urls}
+                       for url in self.urls if url.isValid()}
             for future in concurrent.futures.as_completed(futures):
                 url = futures[future]
                 try:
