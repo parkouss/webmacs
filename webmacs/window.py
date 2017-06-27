@@ -84,6 +84,9 @@ class Window(QWidget):
     def current_web_view(self):
         return self._current_web_view
 
+    def webviews(self):
+        return self._webviews
+
     def _currentPosition(self):
         for row in range(self._webviews_layout.rowCount()):
             for col in range(self._webviews_layout.columnCount()):

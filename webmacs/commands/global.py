@@ -58,7 +58,7 @@ def toggle_maximised():
         win.showMaximized()
 
 
-@define_command("split-window-right")
+@define_command("split-view-right")
 def split_window_right():
     win = current_window()
     current_buffer = win.current_web_view().buffer()
@@ -67,3 +67,14 @@ def split_window_right():
     buffer.load(current_buffer.url())
     view.setBuffer(buffer)
     view.set_current()
+
+
+@define_command("other-view")
+def other_view():
+    win = current_window()
+    views = win.webviews()
+    index = views.index(win.current_web_view())
+    index = index + 1
+    if index >= len(views):
+        index = 0
+    views[index].set_current()
