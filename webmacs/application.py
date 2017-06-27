@@ -30,6 +30,7 @@ class Application(QApplication):
         require(".commands.buffer_history")
         require(".commands.global")
         require(".commands.isearch")
+        require(".commands.webbuffer")
 
         require(".default_webjumps")
 

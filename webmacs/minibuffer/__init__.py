@@ -4,7 +4,6 @@ from PyQt5.QtCore import QObject, pyqtSignal as Signal, pyqtSlot as Slot, \
     QPoint, QEvent, QSortFilterProxyModel, QRegExp, Qt, QAbstractTableModel, \
     QModelIndex
 
-from ..keyboardhandler import LOCAL_KEYMAP_SETTER
 from .keymap import KEYMAP, current_minibuffer  # noqa
 
 
@@ -146,6 +145,8 @@ class MinibufferInput(QLineEdit):
             self._on_row_changed)
         self._mark = False
         self.configure_completer({})
+
+        from ..keyboardhandler import LOCAL_KEYMAP_SETTER
         LOCAL_KEYMAP_SETTER.register_minibuffer_input(self)
 
     def configure_completer(self, opts):
