@@ -24,11 +24,14 @@ class Application(QApplication):
 
         self.installEventFilter(KEY_EATER)
 
-        require(".default_webjumps")
+        require(".keymaps.global")
+
         require(".commands.follow")
         require(".commands.buffer_history")
         require(".commands.global")
-        require(".keymaps.global")
+        require(".commands.isearch")
+
+        require(".default_webjumps")
 
     def _setup_websocket(self):
         """

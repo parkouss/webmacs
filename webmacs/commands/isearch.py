@@ -1,7 +1,8 @@
-from .minibuffer import Prompt, KEYMAP as MKEYMAP, current_minibuffer
-from .keymaps import Keymap
-from .window import current_window
-from .webbuffer import WebBuffer
+from ..minibuffer import Prompt, KEYMAP as MKEYMAP, current_minibuffer
+from ..keymaps import Keymap
+from ..window import current_window
+from ..webbuffer import WebBuffer
+from ..commands import define_command
 
 KEYMAP = Keymap("i-search", MKEYMAP)
 
@@ -54,3 +55,8 @@ class ISearchPrompt(Prompt):
     def close(self):
         self.minibuffer.input().textChanged.disconnect(self.on_text_edited)
         Prompt.close(self)
+
+
+@define_command("i-search-forward", prompt=ISearchPrompt)
+def i_search_forward(prompt):
+    print("scroll pos: ", prompt.page_scroll_pos)

@@ -182,14 +182,6 @@ def go_backward():
     current_buffer().triggerAction(WebBuffer.Back)
 
 
-from .isearch import ISearchPrompt  # noqa
-
-
-@define_command("i-search-forward", prompt=ISearchPrompt)
-def i_search_forward(prompt):
-    print("scroll pos: ", prompt.page_scroll_pos)
-
-
 @define_command("scroll-down")
 def scroll_down():
     current_buffer().scroll_by(y=20)
