@@ -7,7 +7,7 @@ from ..commands import define_command
 from ..application import Application
 
 
-KEYMAP = Keymap("i-search", MKEYMAP)
+KEYMAP = Keymap("follow", MKEYMAP)
 
 
 class FollowPrompt(Prompt):
