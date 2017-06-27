@@ -1,6 +1,6 @@
 import re
 
-from ..keymap import Keymap
+from ..keymaps import Keymap
 
 KEYMAP = Keymap("minibuffer")
 

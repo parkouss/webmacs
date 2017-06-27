@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, QStringListModel
+from PyQt5.QtCore import QObject, pyqtSlot as Slot
 
 COMMANDS = {}
 
@@ -61,20 +61,5 @@ def define_command(name, binding=None, **args):
         return wrapper
 
 
-from .minibuffer import Prompt, current_minibuffer  # noqa
+from ..minibuffer import current_minibuffer, Prompt  # noqa
 
-
-class CommandsListPrompt(Prompt):
-    label = "M-x: "
-    complete_options = {
-        "match": Prompt.FuzzyMatch,
-    }
-
-    def validate(self, name):
-        return name
-
-    def completer_model(self):
-        model = QStringListModel(self)
-        model.setStringList(sorted(k for k, v in COMMANDS.items()
-                                   if v.visible))
-        return model

@@ -1,5 +1,5 @@
 from .minibuffer import Prompt, KEYMAP as MKEYMAP, current_minibuffer
-from .keymap import Keymap
+from .keymaps import Keymap
 from .window import current_window
 from .webbuffer import WebBuffer
 

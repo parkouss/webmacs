@@ -1,4 +1,4 @@
-from .keymap import Keymap
+from .keymaps import Keymap
 from .webbuffer import current_buffer
 
 KEYMAP = Keymap("webcontent-edit")

@@ -2,7 +2,7 @@ import logging
 
 from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot
 
-from .keymap import KeyPress, global_key_map
+from .keymaps import KeyPress, global_key_map
 from .commands import COMMANDS
 
 

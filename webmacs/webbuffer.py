@@ -4,7 +4,7 @@ from PyQt5.QtCore import QUrl, pyqtSlot as Slot, QAbstractTableModel, \
     QModelIndex, Qt
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 
-from .keymap import Keymap
+from .keymaps import Keymap
 from .commands import define_command
 from .window import current_window
 from .minibuffer import Prompt

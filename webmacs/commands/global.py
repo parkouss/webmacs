@@ -1,10 +1,25 @@
-from .commands import define_command, CommandsListPrompt, COMMANDS
-from .application import Application
-from .keymap import global_key_map
-from .window import current_window
+from PyQt5.QtCore import QStringListModel
+
+from . import define_command, COMMANDS
+from ..minibuffer import Prompt
+from ..application import Application
+from ..window import current_window
 
 
-KEYMAP = global_key_map()
+class CommandsListPrompt(Prompt):
+    label = "M-x: "
+    complete_options = {
+        "match": Prompt.FuzzyMatch,
+    }
+
+    def validate(self, name):
+        return name
+
+    def completer_model(self):
+        model = QStringListModel(self)
+        model.setStringList(sorted(k for k, v in COMMANDS.items()
+                                   if v.visible))
+        return model
 
 
 @define_command("quit")
@@ -40,6 +55,3 @@ def toggle_maximised():
         win.showNormal()
     else:
         win.showMaximized()
-
-
-
