@@ -99,7 +99,13 @@ class Window(QWidget):
     def create_webview_on_right(self):
         row, col = self._currentPosition()
         view = self._create_webview()
-        self._webviews_layout.addWidget(view, row, col + 1)
+        self._webviews_layout.addWidget(view, row, col + 1, -1, 1)
+        return view
+
+    def create_webview_on_bottom(self):
+        row, col = self._currentPosition()
+        view = self._create_webview()
+        self._webviews_layout.addWidget(view, row + 1, col, 1, -1)
         return view
 
     def delete_webview(self, webview):
@@ -110,6 +116,7 @@ class Window(QWidget):
             return
         self._webviews.remove(webview)
         hooks.webview_closed.call(webview)
+        self._webviews_layout.removeWidget(webview)
         webview.deleteLater()
         return True
 

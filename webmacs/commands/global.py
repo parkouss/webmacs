@@ -1,10 +1,11 @@
 from PyQt5.QtCore import QStringListModel
+import itertools
 
 from . import define_command, COMMANDS
 from ..minibuffer import Prompt
 from ..application import Application
 from ..window import current_window
-from ..webbuffer import WebBuffer
+from ..webbuffer import WebBuffer, BUFFERS
 
 
 class CommandsListPrompt(Prompt):
@@ -58,14 +59,33 @@ def toggle_maximised():
         win.showMaximized()
 
 
+def _get_or_create_buffer(win):
+    current_buffer = win.current_web_view().buffer()
+
+    if len(BUFFERS) >= len(win.webviews()) and current_buffer in BUFFERS:
+        buffers = itertools.cycle(BUFFERS)
+        while True:
+            if next(buffers) == current_buffer:
+                return next(buffers)
+
+    buffer = WebBuffer()
+    buffer.load(current_buffer.url())
+    return buffer
+
+
 @define_command("split-view-right")
 def split_window_right():
     win = current_window()
-    current_buffer = win.current_web_view().buffer()
     view = win.create_webview_on_right()
-    buffer = WebBuffer()
-    buffer.load(current_buffer.url())
-    view.setBuffer(buffer)
+    view.setBuffer(_get_or_create_buffer(win))
+    view.set_current()
+
+
+@define_command("split-view-bottom")
+def split_window_bottom():
+    win = current_window()
+    view = win.create_webview_on_bottom()
+    view.setBuffer(_get_or_create_buffer(win))
     view.set_current()
 
 
@@ -85,3 +105,12 @@ def close_view():
     view = current_window().current_web_view()
     other_view()
     current_window().delete_webview(view)
+
+
+@define_command("maximise-view")
+def maximise_view():
+    win = current_window()
+    view = win.current_web_view()
+    for other in win.webviews():
+        if view != other:
+            win.delete_webview(other)
