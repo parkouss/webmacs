@@ -1,6 +1,7 @@
 import os
 
-from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript
+from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript, \
+    QWebEngineSettings
 from PyQt5.QtWidgets import QApplication
 
 from . import require
@@ -23,6 +24,17 @@ class Application(QApplication):
         self._setup_default_profile(self.sock_client.port)
 
         self.installEventFilter(KEY_EATER)
+
+        settings = QWebEngineSettings.globalSettings()
+        settings.setAttribute(
+            QWebEngineSettings.LinksIncludedInFocusChain, False,
+        )
+        settings.setAttribute(
+            QWebEngineSettings.PluginsEnabled, True,
+        )
+        settings.setAttribute(
+            QWebEngineSettings.FullScreenSupportEnabled, True,
+        )
 
         require(".keymaps.global")
 
