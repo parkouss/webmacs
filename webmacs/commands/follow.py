@@ -1,10 +1,10 @@
 from PyQt5.QtCore import QEvent, Qt
 
-from .minibuffer import Prompt, KEYMAP as MKEYMAP, current_minibuffer
-from .keymaps import Keymap
-from .webbuffer import current_buffer
-from .commands import define_command
-from .application import Application
+from ..minibuffer import Prompt, KEYMAP as MKEYMAP, current_minibuffer
+from ..keymaps import Keymap
+from ..webbuffer import current_buffer
+from ..commands import define_command
+from ..application import Application
 
 
 KEYMAP = Keymap("i-search", MKEYMAP)

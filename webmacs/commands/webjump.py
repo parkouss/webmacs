@@ -2,10 +2,10 @@ from collections import namedtuple
 
 from PyQt5.QtCore import QUrl
 
-from .minibuffer import Prompt, PromptTableModel
-from .commands import define_command
-from .webbuffer import current_buffer, WebBuffer
-from .window import current_window
+from ..minibuffer import Prompt, PromptTableModel
+from ..commands import define_command
+from ..webbuffer import current_buffer, WebBuffer
+from ..window import current_window
 
 WebJump = namedtuple("WebJump", ("url", "doc", "allow_args"))
 WEBJUMPS = {}

@@ -25,8 +25,8 @@ class Application(QApplication):
         self.installEventFilter(KEY_EATER)
 
         require(".default_webjumps")
-        require(".follow")
-        require(".buffer_history")
+        require(".commands.follow")
+        require(".commands.buffer_history")
         require(".commands.global")
         require(".keymaps.global")
 
