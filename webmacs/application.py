@@ -3,6 +3,7 @@ import os
 from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript
 from PyQt5.QtWidgets import QApplication
 
+from . import require
 from .websocket import WebSocketClientWrapper
 from .keyboardhandler import KEY_EATER
 
@@ -21,14 +22,12 @@ class Application(QApplication):
         self._setup_websocket()
         self._setup_default_profile(self.sock_client.port)
 
-        from .global_comands import register_global_commands
-        register_global_commands()
-
         self.installEventFilter(KEY_EATER)
 
-        from . import default_webjumps  # noqa
-        from . import follow  # noqa
-        from . import buffer_history  # noqa
+        require(".global_commands")
+        require(".default_webjumps")
+        require(".follow")
+        require(".buffer_history")
 
     def _setup_websocket(self):
         """
