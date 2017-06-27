@@ -4,6 +4,7 @@ from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot
 
 from .keymaps import KeyPress, global_key_map
 from .commands import COMMANDS
+from . import hooks
 
 
 class LocalKeymapSetter(QObject):
@@ -15,11 +16,9 @@ class LocalKeymapSetter(QObject):
 
     def register_view(self, view):
         view.installEventFilter(self)
-        view.destroyed.connect(self._view_destroyed)
         self._views.append(view)
 
-    @Slot(QObject)
-    def _view_destroyed(self, view):
+    def view_destroyed(self, view):
         self._views.remove(view)
 
     def register_minibuffer_input(self, minibuffer_input):
@@ -59,7 +58,10 @@ class LocalKeymapSetter(QObject):
                 buff = window.current_web_view().buffer()
                 KEY_EATER.set_local_key_map(buff.keymap())
 
+
 LOCAL_KEYMAP_SETTER = LocalKeymapSetter()
+hooks.webview_created.add(LOCAL_KEYMAP_SETTER.register_view)
+hooks.webview_closed.add(LOCAL_KEYMAP_SETTER.view_destroyed)
 
 
 class KeyEater(QObject):

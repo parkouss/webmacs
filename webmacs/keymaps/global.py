@@ -11,3 +11,4 @@ KEYMAP.define_key("C-x o", "other-view")
 KEYMAP.define_key("C-x 3", "split-view-right")
 # handle the case were 3 needs to be hit using shift
 KEYMAP.define_key("C-x S-3", "split-view-right")
+KEYMAP.define_key("C-x k", "close-view")

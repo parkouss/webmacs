@@ -3,6 +3,7 @@ from PyQt5.QtCore import QEvent, QObject
 
 from .webview import WebView
 from .minibuffer import Minibuffer
+from . import hooks
 
 
 class WindowsHandler(QObject):
@@ -79,6 +80,7 @@ class Window(QWidget):
     def _create_webview(self):
         view = WebView(self)
         self._webviews.append(view)
+        hooks.webview_created.call(view)
         return view
 
     def current_web_view(self):
@@ -99,6 +101,17 @@ class Window(QWidget):
         view = self._create_webview()
         self._webviews_layout.addWidget(view, row, col + 1)
         return view
+
+    def delete_webview(self, webview):
+        if len(self._webviews) <= 1:
+            return False
+        index = self._webviews_layout.indexOf(webview)
+        if index == -1:
+            return
+        self._webviews.remove(webview)
+        hooks.webview_closed.call(webview)
+        webview.deleteLater()
+        return True
 
     def minibuffer(self):
         return self._minibuffer

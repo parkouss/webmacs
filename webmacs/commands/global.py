@@ -78,3 +78,10 @@ def other_view():
     if index >= len(views):
         index = 0
     views[index].set_current()
+
+
+@define_command("close-view")
+def close_view():
+    view = current_window().current_web_view()
+    other_view()
+    current_window().delete_webview(view)
