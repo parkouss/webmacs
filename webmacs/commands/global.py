@@ -4,6 +4,7 @@ from . import define_command, COMMANDS
 from ..minibuffer import Prompt
 from ..application import Application
 from ..window import current_window
+from ..webbuffer import WebBuffer
 
 
 class CommandsListPrompt(Prompt):
@@ -55,3 +56,14 @@ def toggle_maximised():
         win.showNormal()
     else:
         win.showMaximized()
+
+
+@define_command("split-window-right")
+def split_window_right():
+    win = current_window()
+    current_buffer = win.current_web_view().buffer()
+    view = win.create_webview_on_right()
+    buffer = WebBuffer()
+    buffer.load(current_buffer.url())
+    view.setBuffer(buffer)
+    view.set_current()

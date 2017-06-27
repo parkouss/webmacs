@@ -91,7 +91,7 @@ class Window(QWidget):
                 if item.widget() == self._current_web_view:
                     return (row, col)
 
-    def createViewOnRight(self):
+    def create_webview_on_right(self):
         row, col = self._currentPosition()
         view = self._create_webview()
         self._webviews_layout.addWidget(view, row, col + 1)

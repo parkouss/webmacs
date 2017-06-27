@@ -56,11 +56,12 @@ class Application(QApplication):
     def _setup_default_profile(self, port):
         default_profile = QWebEngineProfile.defaultProfile()
 
-        def inject_js(src):
+        def inject_js(src, ipoint=QWebEngineScript.DocumentCreation,
+                      iid=QWebEngineScript.ApplicationWorld):
             script = QWebEngineScript()
-            script.setInjectionPoint(QWebEngineScript.DocumentCreation)
+            script.setInjectionPoint(ipoint)
             script.setSourceCode(src)
-            script.setWorldId(QWebEngineScript.ApplicationWorld)
+            script.setWorldId(iid)
             default_profile.scripts().insert(script)
 
         for script in ("qwebchannel.js", "setup.js"):
@@ -70,3 +71,10 @@ class Application(QApplication):
                 src = ("var webmacsBaseUrl = 'ws://localhost:%d';\n%s"
                        % (port, src))
             inject_js(src)
+        # do not let the focus on the web page if it request it. It is
+        # annoying, and it causes trouble when we open new webviews.
+        inject_js(
+            "if (document.activeElement) { document.activeElement.blur(); }",
+            QWebEngineScript.Deferred,
+            QWebEngineScript.MainWorld
+        )

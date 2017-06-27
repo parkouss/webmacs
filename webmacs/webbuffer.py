@@ -8,6 +8,7 @@ from .window import current_window
 
 
 BUFFERS = []
+ID_2_BUFFERS = {}
 KEYMAP = Keymap("webbuffer")
 
 
@@ -17,6 +18,10 @@ def current_buffer():
 
 def buffers():
     return BUFFERS
+
+
+def buffer_for_id(id):
+    return ID_2_BUFFERS.get(id)
 
 
 class WebBuffer(QWebEnginePage):
@@ -37,11 +42,21 @@ class WebBuffer(QWebEnginePage):
     def __init__(self):
         QWebEnginePage.__init__(self)
         BUFFERS.append(self)
+        bid = str(id(self))
+        ID_2_BUFFERS[bid] = self
         self.destroyed.connect(self._on_destroyed)
+
+        # register the buffer id
+        script = QWebEngineScript()
+        script.setInjectionPoint(QWebEngineScript.DocumentCreation)
+        script.setSourceCode("webbuffer_id = %r;" % bid)
+        script.setWorldId(QWebEngineScript.ApplicationWorld)
+        self.scripts().insert(script)
 
     @Slot()
     def _on_destroyed(self):
         BUFFERS.remove(self)
+        del ID_2_BUFFERS[id(self)]
 
     def load(self, url):
         if not isinstance(url, QUrl):

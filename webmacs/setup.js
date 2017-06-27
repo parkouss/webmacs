@@ -1,3 +1,4 @@
+var webbuffer_id = null;
 var socket = new WebSocket(webmacsBaseUrl);
 
 socket.onclose = function() {
@@ -26,6 +27,10 @@ socket.onopen = function() {
         __webmacsHandler__.onTextFocus(false);
       }
     }, true);
+
+      window.onfocus = function() {
+          __webmacsHandler__.onBufferFocus(webbuffer_id);
+      }
   });
 };
 

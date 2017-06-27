@@ -8,6 +8,7 @@ from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 
 from .window import current_window
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
+from .webbuffer import buffer_for_id
 
 
 def get_free_port():
@@ -35,6 +36,15 @@ class WebContentHandler(QObject):
         # It is hard to pass dict objects from javascript, so a string is used
         # and decoded here.
         self.browserObjectActivated.emit(json.loads(obj))
+
+    @Slot(str)
+    def onBufferFocus(self, bid):
+        # Qt do not send focus events for the QWebEngineView, so we have to
+        # trick and use javascript to know which buffer (and its attached view)
+        # gain the focus.
+        buffer = buffer_for_id(bid)
+        if buffer and buffer.view():
+            buffer.view().set_current()
 
 
 class WebSocketClientWrapper(QObject):

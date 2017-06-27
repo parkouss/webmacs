@@ -16,3 +16,7 @@ class WebView(QWebEngineView):
 
     def keymap(self):
         return self.buffer().keymap()
+
+    def set_current(self):
+        self.window._current_web_view = self
+        self.setFocus()
