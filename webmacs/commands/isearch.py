@@ -57,6 +57,6 @@ class ISearchPrompt(Prompt):
         Prompt.close(self)
 
 
-@define_command("i-search-forward", prompt=ISearchPrompt)
+@define_command("i-search", prompt=ISearchPrompt)
 def i_search_forward(prompt):
-    print("scroll pos: ", prompt.page_scroll_pos)
+    pass
