@@ -51,6 +51,8 @@ class WebJumpPrompt(Prompt):
         self._cthread = QThread()
         self._creceiver = CompletionReceiver()
         self._creceiver.moveToThread(self._cthread)
+        self._completion_timer = 0
+        self._active_webjump = None
         self._cthread.finished.connect(self._cthread.deleteLater)
         self.ask_completions.connect(self._creceiver.get_completions)
         self._creceiver.got_completions.connect(self._got_completions)
@@ -62,12 +64,22 @@ class WebJumpPrompt(Prompt):
             if w.allow_args and w.complete_fn:
                 name = name + " "
                 if text.startswith(name):
-                    self.ask_completions.emit(w, name, text[len(name):])
                     model = self._wc_model
+                    self._active_webjump = (w, name)
+                    if self._completion_timer != 0:
+                        self.killTimer(self._completion_timer)
+                    self._completion_timer = self.startTimer(250)
                     break
         if self.minibuffer.input().completer_model() != model:
             self.minibuffer.input().popup().hide()
             self.minibuffer.input().set_completer_model(model)
+
+    def timerEvent(self, _):
+        text = self.minibuffer.input().text()
+        w, name = self._active_webjump
+        self.ask_completions.emit(w, name, text[len(name):])
+        self.killTimer(self._completion_timer)
+        self._completion_timer = 0
 
     @Slot(list)
     def _got_completions(self, data):
