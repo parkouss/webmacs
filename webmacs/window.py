@@ -93,7 +93,7 @@ class Window(QWidget):
         for row in range(self._webviews_layout.rowCount()):
             for col in range(self._webviews_layout.columnCount()):
                 item = self._webviews_layout.itemAtPosition(row, col)
-                if item.widget() == self._current_web_view:
+                if item and item.widget() == self._current_web_view:
                     return (row, col)
 
     def create_webview_on_right(self):
