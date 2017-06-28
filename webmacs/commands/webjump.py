@@ -1,19 +1,30 @@
 from collections import namedtuple
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, QThread, pyqtSlot as Slot, \
+    pyqtSignal as Signal, QStringListModel, QObject
+
 
 from ..minibuffer import Prompt, PromptTableModel
 from ..commands import define_command
 from ..webbuffer import current_buffer, WebBuffer
 from ..window import current_window
 
-WebJump = namedtuple("WebJump", ("url", "doc", "allow_args"))
+WebJump = namedtuple("WebJump", ("url", "doc", "allow_args", "complete_fn"))
 WEBJUMPS = {}
 
 
-def define_webjump(name, url, doc=""):
+def define_webjump(name, url, doc="", complete_fn=None):
     allow_args = "%s" in url
-    WEBJUMPS[name] = WebJump(url, doc, allow_args)
+    WEBJUMPS[name] = WebJump(url, doc, allow_args, complete_fn)
+
+
+class CompletionReceiver(QObject):
+    got_completions = Signal(list)
+
+    @Slot(object, str, str)
+    def get_completions(self, w, name, text):
+        self.got_completions.emit([name + d
+                                   for d in w.complete_fn(text)])
 
 
 class WebJumpPrompt(Prompt):
@@ -22,6 +33,8 @@ class WebJumpPrompt(Prompt):
         "autocomplete": True,
     }
 
+    ask_completions = Signal(object, str, str)
+
     def completer_model(self):
         data = []
         for name, w in WEBJUMPS.items():
@@ -29,6 +42,45 @@ class WebJumpPrompt(Prompt):
                 name = name + " "
             data.append((name, w.doc))
         return PromptTableModel(data)
+
+    def enable(self, minibuffer):
+        Prompt.enable(self, minibuffer)
+        minibuffer.input().textEdited.connect(self._text_edited)
+        self._wc_model = QStringListModel()
+        self._wb_model = minibuffer.input().completer_model()
+        self._cthread = QThread()
+        self._creceiver = CompletionReceiver()
+        self._creceiver.moveToThread(self._cthread)
+        self._cthread.finished.connect(self._cthread.deleteLater)
+        self.ask_completions.connect(self._creceiver.get_completions)
+        self._creceiver.got_completions.connect(self._got_completions)
+        self._cthread.start()
+
+    def _text_edited(self, text):
+        model = self._wb_model
+        for name, w in WEBJUMPS.items():
+            if w.allow_args and w.complete_fn:
+                name = name + " "
+                if text.startswith(name):
+                    self.ask_completions.emit(w, name, text[len(name):])
+                    model = self._wc_model
+                    break
+        if self.minibuffer.input().completer_model() != model:
+            self.minibuffer.input().popup().hide()
+            self.minibuffer.input().set_completer_model(model)
+
+    @Slot(list)
+    def _got_completions(self, data):
+        self._wc_model.setStringList(data)
+        self.minibuffer.input().show_completions()
+
+    def close(self):
+        Prompt.close(self)
+        self._cthread.quit()
+        # not sure if those are required;
+        self._wb_model.deleteLater()
+        self._wc_model.deleteLater()
+        self._cthread.deleteLater()
 
 
 def get_url(value):
