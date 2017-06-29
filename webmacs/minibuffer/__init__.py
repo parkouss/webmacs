@@ -301,7 +301,10 @@ class Minibuffer(QWidget):
     def input(self):
         return self._input
 
-    def prompt(self, prompt):
+    def prompt(self):
+        return self._prompt
+
+    def do_prompt(self, prompt):
         self.close_prompt()
         self._prompt = prompt
         if prompt:

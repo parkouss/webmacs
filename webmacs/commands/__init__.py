@@ -43,7 +43,7 @@ class InteractiveCommand(object):
             # executor will be destroyed with its parent, the prompt
             executor = CommandExecutor(self.binding, prompt)
             prompt.finished.connect(executor.call)
-            current_minibuffer().prompt(prompt)
+            current_minibuffer().do_prompt(prompt)
         else:
             self.binding()
 
