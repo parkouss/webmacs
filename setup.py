@@ -1,6 +1,6 @@
 import os
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension, find_packages
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -42,4 +42,9 @@ setup(
     long_description='''
 Work in progress.
 ''',
+    packages=find_packages(),
+    # should be a dependency, but it fail with strange errors on arch;
+    # install_requires=["PyQt5"],
+    entry_points={"console_scripts": ["webmacs = webmacs.main:main"]},
+    python_requires=">=3.3",
     ext_modules=[adblocker])
