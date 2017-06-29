@@ -141,12 +141,16 @@ KEYMAP.define_key("C-s", "i-search")
 KEYMAP.define_key("C-r", "i-search")
 KEYMAP.define_key("C-n", "scroll-down")
 KEYMAP.define_key("C-p", "scroll-up")
+KEYMAP.define_key("n", "scroll-down")
+KEYMAP.define_key("p", "scroll-up")
 KEYMAP.define_key("C-v", "scroll-page-down")
 KEYMAP.define_key("M-v", "scroll-page-up")
 KEYMAP.define_key("M->", "scroll-bottom")
 KEYMAP.define_key("M-<", "scroll-top")
 KEYMAP.define_key("f", "follow")
 KEYMAP.define_key("M-w", "webcontent-copy")
+KEYMAP.define_key("r", "reload-buffer")
+KEYMAP.define_key("S-r", "reload-buffer-no-cache")
 
 
 from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP

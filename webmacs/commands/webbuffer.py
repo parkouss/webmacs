@@ -100,3 +100,13 @@ def scroll_bottom():
 @define_command("webcontent-copy")
 def webcontent_copy():
     current_buffer().triggerAction(WebBuffer.Copy)
+
+
+@define_command("reload-buffer")
+def reload_buffer():
+    current_buffer().triggerAction(WebBuffer.Reload)
+
+
+@define_command("reload-buffer-no-cache")
+def reload_buffer_no_cache():
+    current_buffer().triggerAction(WebBuffer.ReloadAndBypassCache)
