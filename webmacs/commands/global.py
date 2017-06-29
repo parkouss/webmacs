@@ -114,3 +114,11 @@ def maximise_view():
     for other in win.webviews():
         if view != other:
             win.delete_webview(other)
+
+
+@define_command("toggle-ad-block")
+def toggle_ad_block():
+    from .webbuffer import reload_buffer_no_cache
+
+    Application.INSTANCE.url_interceptor().toggle_use_adblock()
+    reload_buffer_no_cache()

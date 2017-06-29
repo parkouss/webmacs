@@ -22,10 +22,14 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
         for url in EASYLIST:
             generator.register_filter_url(url)
         self._adblock = generator.generate_rules()
+        self._use_adblock = True
+
+    def toggle_use_adblock(self):
+        self._use_adblock = not self._use_adblock
 
     def interceptRequest(self, request):
         url = request.requestUrl().toString()
-        if self._adblock.matches(url, ""):
+        if self._use_adblock and self._adblock.matches(url, ""):
             logging.info("filtered: %s", url)
             request.block(True)
 
@@ -94,6 +98,9 @@ class Application(QApplication):
         (using javascript) and the python code.
         """
         self.sock_client = WebSocketClientWrapper()
+
+    def url_interceptor(self):
+        return self._interceptor
 
     def _setup_default_profile(self, port):
         default_profile = QWebEngineProfile.defaultProfile()
