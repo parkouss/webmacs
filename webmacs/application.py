@@ -25,7 +25,7 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
 
     def interceptRequest(self, request):
         url = request.requestUrl().toString()
-        if self._adblock.should_block(url):
+        if self._adblock.matches(url, ""):
             logging.info("filtered: %s", url)
             request.block(True)
 
