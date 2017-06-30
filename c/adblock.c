@@ -1,12 +1,18 @@
 #include <Python.h>
 #include "structmember.h"
 
+#include <iostream>
+#include <fstream>
+
 #include "ad_block_client.h"
+
+using namespace std;
 
 typedef struct {
   PyObject_HEAD
 
   AdBlockClient * client;
+  char * data;
 } AdBlock;
 
 
@@ -14,6 +20,7 @@ static void
 AdBlock_dealloc(AdBlock* self)
 {
   delete self->client;
+  if (self->data) delete[] self->data;
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -31,6 +38,7 @@ static int
 AdBlock_init(AdBlock *self, PyObject *args, PyObject *kwds)
 {
   self->client = new AdBlockClient;
+  self->data = NULL;
   return 0;
 }
 
@@ -62,12 +70,62 @@ AdBlock_matches(AdBlock* self, PyObject *args)
   }
 }
 
+static PyObject *
+AdBlock_save(AdBlock* self, PyObject *args)
+{
+  const char *path;
+
+  if (!PyArg_ParseTuple(args, "s", &path))
+    return NULL;
+
+  int size;
+  char * buffer = self->client->serialize(&size);
+
+  ofstream outFile(path, ios::out | ios::binary);
+  if (outFile) {
+    outFile.write(buffer, size);
+    outFile.close();
+    Py_RETURN_TRUE;
+  }
+  Py_RETURN_FALSE;
+}
+
+static PyObject *
+AdBlock_load(AdBlock* self, PyObject *args)
+{
+  const char *path;
+
+  if (!PyArg_ParseTuple(args, "s", &path))
+    return NULL;
+
+  ifstream file(path, ios::binary | ios::ate);
+  if (file) {
+    streamsize size = file.tellg();
+    file.seekg(0, ios::beg);
+
+    if (self->data) {delete[] self->data;}
+    self->data = new char[size];
+    if (file.read(self->data, size)) {
+      self->client->deserialize(self->data);
+      Py_RETURN_TRUE;
+    }
+  }
+  Py_RETURN_FALSE;
+}
+
+
 static PyMethodDef AdBlock_methods[] = {
   {"parse", (PyCFunction)AdBlock_parse, METH_VARARGS,
    "Parse adblock data string, like the content of an easylist."
   },
   {"matches", (PyCFunction)AdBlock_matches, METH_VARARGS,
    "matches an url, returns True if it should be filtered."
+  },
+  {"save", (PyCFunction)AdBlock_save, METH_VARARGS,
+   "Save serialized data into a file."
+  },
+  {"load", (PyCFunction)AdBlock_load, METH_VARARGS,
+   "Load serialized data from a file."
   },
   {NULL}  /* Sentinel */
 };

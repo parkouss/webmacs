@@ -1,5 +1,6 @@
 import os
 import time
+import logging
 
 from _adblock import AdBlock
 from concurrent.futures import ThreadPoolExecutor
@@ -34,6 +35,7 @@ class Adblocker(object):
                 f.write(data.decode("utf-8"))
 
     def _fetch_urls(self):
+        modified = False
         to_download = [(url, path) for url, path in self._urls.items()
                        if not os.path.isfile(path)
                        or os.path.getmtime(path) > (time.time() + 3600)]
@@ -41,13 +43,22 @@ class Adblocker(object):
             with ThreadPoolExecutor(max_workers=5) as executor:
                 for url, path in to_download:
                     executor.submit(self._download_file, url, path)
+                    logging.info("downloading adblock rule: %s", url)
+            modified = True
+
+        return modified
 
     def generate_rules(self):
         adblock = AdBlock()
-        self._fetch_urls()
-        rules = []
-        for path in self._urls.values():
-            with open(path) as f:
-                adblock.parse(f.read())
-            print (path)
+        cache = os.path.join(self._cache_path, "cache.dat")
+        modified = self._fetch_urls()
+        if modified or not os.path.isfile(cache):
+            for path in self._urls.values():
+                logging.info("parsing adblock file: %s", path)
+                with open(path) as f:
+                    adblock.parse(f.read())
+            adblock.save(cache)
+        else:
+            logging.info("loading adblock cached data: %s", cache)
+            adblock.load(cache)
         return adblock
