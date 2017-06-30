@@ -151,6 +151,7 @@ KEYMAP.define_key("f", "follow")
 KEYMAP.define_key("M-w", "webcontent-copy")
 KEYMAP.define_key("r", "reload-buffer")
 KEYMAP.define_key("S-r", "reload-buffer-no-cache")
+KEYMAP.define_key("h", "visited-links-history")
 
 
 from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP

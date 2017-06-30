@@ -122,3 +122,22 @@ def toggle_ad_block():
 
     Application.INSTANCE.url_interceptor().toggle_use_adblock()
     reload_buffer_no_cache()
+
+
+class VisitedLinksPrompt(Prompt):
+    label = "Find url from visited links:"
+    complete_options = {
+        "match": Prompt.FuzzyMatch,
+    }
+
+    def completer_model(self):
+        model = QStringListModel(self)
+        model.setStringList(Application.INSTANCE.visitedlinks().visited_urls())
+        return model
+
+
+@define_command("visited-links-history", prompt=VisitedLinksPrompt)
+def visited_links_history(prompt):
+    index = prompt.index()
+    url = index.model().data(index)
+    current_window().current_web_view().buffer().load(url)

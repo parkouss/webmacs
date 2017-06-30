@@ -5,19 +5,24 @@ from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript, \
     QWebEngineSettings
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot
 
 from . import require
 from .websocket import WebSocketClientWrapper
 from .keyboardhandler import KEY_EATER
 from .adblock import EASYLIST, Adblocker
+from .visited_links import VisitedLinks
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class UrlInterceptor(QWebEngineUrlRequestInterceptor):
+    visited_link = Signal(str)
+
     def __init__(self, app):
         QWebEngineUrlRequestInterceptor.__init__(self)
+        self.app = app
         generator = Adblocker(app.adblock_path())
         for url in EASYLIST:
             generator.register_filter_url(url)
@@ -29,7 +34,9 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
 
     def interceptRequest(self, request):
         url = request.requestUrl().toString()
-        if self._use_adblock and self._adblock.matches(url, ""):
+        if request.resourceType() == request.ResourceTypeMainFrame:
+            self.visited_link.emit(url)
+        elif self._use_adblock and self._adblock.matches(url, ""):
             logging.info("filtered: %s", url)
             request.block(True)
 
@@ -48,6 +55,7 @@ class Application(QApplication):
         self._setup_conf_paths()
 
         self._interceptor = UrlInterceptor(self)
+        self._interceptor.visited_link.connect(self._on_visited_link)
         self._setup_default_profile(self.sock_client.port)
 
         self.installEventFilter(KEY_EATER)
@@ -99,6 +107,14 @@ class Application(QApplication):
         """
         self.sock_client = WebSocketClientWrapper()
 
+    def visitedlinks(self):
+        return self._visitedlinks
+
+    @Slot(str)
+    def _on_visited_link(self, url):
+        if self._visitedlinks:
+            self._visitedlinks.visit(url)
+
     def url_interceptor(self):
         return self._interceptor
 
@@ -106,7 +122,10 @@ class Application(QApplication):
         default_profile = QWebEngineProfile.defaultProfile()
         default_profile.setRequestInterceptor(self._interceptor)
         path = self.profiles_path()
-        default_profile.setPersistentStoragePath(os.path.join(path, "default"))
+        profile_path = os.path.join(path, "default")
+        default_profile.setPersistentStoragePath(profile_path)
+        self._visitedlinks = VisitedLinks(os.path.join(profile_path,
+                                                       "visitedlinks.db"))
         default_profile.setCachePath(os.path.join(path, "cache"))
 
         def inject_js(src, ipoint=QWebEngineScript.DocumentCreation,
