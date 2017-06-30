@@ -13,7 +13,7 @@ socket.onopen = function() {
     window.__webmacsHandler__ = channel.objects.contentHandler;
 
     function isTextInput(nodeName) {
-      return nodeName == "INPUT";
+      return nodeName == "INPUT" || nodeName == "TEXTAREA";
     }
 
     document.addEventListener("focus", function(e) {
