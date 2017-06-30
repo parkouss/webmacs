@@ -93,7 +93,6 @@ class WebJumpPrompt(Prompt):
         # not sure if those are required;
         self._wb_model.deleteLater()
         self._wc_model.deleteLater()
-        self._cthread.deleteLater()
 
 
 def get_url(value):
