@@ -34,6 +34,27 @@ socket.onopen = function() {
   });
 };
 
+function clickLike(elem) {
+    elem.focus();
+    var doc = elem.ownerDocument;
+    var view = doc.defaultView;
+
+    var evt = doc.createEvent("MouseEvents");
+    evt.initMouseEvent("mousedown", true, true, view, 1, 0, 0, 0, 0, /*ctrl*/ 0, /*event.altKey*/0,
+                       /*event.shiftKey*/ 0, /*event.metaKey*/ 0, 0, null);
+    elem.dispatchEvent(evt);
+
+    evt = doc.createEvent("MouseEvents");
+    evt.initMouseEvent("click", true, true, view, 1, 0, 0, 0, 0, /*ctrl*/ 0, /*event.altKey*/0,
+                       /*event.shiftKey*/ 0, /*event.metaKey*/ 0, 0, null);
+    elem.dispatchEvent(evt);
+
+    evt = doc.createEvent("MouseEvents");
+    evt.initMouseEvent("mouseup", true, true, view, 1, 0, 0, 0, 0, /*ctrl*/ 0, /*event.altKey*/0,
+                       /*event.shiftKey*/ 0, /*event.metaKey*/ 0, 0, null);
+    elem.dispatchEvent(evt);
+}
+
 function rectElementInViewport(node) {  // eslint-disable-line complexity
     var i;
     var boundingRect = (node.getClientRects()[0] ||

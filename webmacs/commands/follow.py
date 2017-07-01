@@ -61,12 +61,8 @@ class FollowPrompt(Prompt):
 
 @define_command("follow", prompt=FollowPrompt)
 def follow(prompt):
-    url = prompt.browser_object_activated.get("url")
-    if url:
-        prompt.page.load(url)
-    else:
-        prompt.page.focus_active_browser_object()
-        current_buffer().stop_select_browser_objects()
+    prompt.page.focus_active_browser_object()
+    current_buffer().stop_select_browser_objects()
 
 
 @KEYMAP.define_key("C-g")
