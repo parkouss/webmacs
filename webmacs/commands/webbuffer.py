@@ -2,7 +2,7 @@ from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from ..commands import define_command
 from ..minibuffer import Prompt
-from ..webbuffer import BUFFERS, current_buffer, WebBuffer
+from ..webbuffer import BUFFERS, current_buffer, WebBuffer, close_buffer
 from ..window import current_window
 
 
@@ -110,3 +110,19 @@ def reload_buffer():
 @define_command("reload-buffer-no-cache")
 def reload_buffer_no_cache():
     current_buffer().triggerAction(WebBuffer.ReloadAndBypassCache)
+
+
+@define_command("close-buffer")
+def buffer_close():
+    current = current_buffer()
+    available_buffers = [b for b in BUFFERS if b == current or not b.view()]
+
+    if len(available_buffers) < 2:
+        return
+
+    index = available_buffers.index(current) + 1
+    if index >= len(available_buffers):
+        index = 0
+
+    current_window().current_web_view().setBuffer(available_buffers[index])
+    close_buffer(current)

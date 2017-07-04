@@ -155,6 +155,7 @@ KEYMAP.define_key("M-w", "webcontent-copy")
 KEYMAP.define_key("r", "reload-buffer")
 KEYMAP.define_key("S-r", "reload-buffer-no-cache")
 KEYMAP.define_key("h", "visited-links-history")
+KEYMAP.define_key("q", "close-buffer")
 
 
 from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP
