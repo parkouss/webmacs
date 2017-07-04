@@ -32,7 +32,7 @@ class KeyPress(object):
         key = event.key()
         # key is a either a single modifier press or unknown
         if key in (Qt.Key_Control, Qt.Key_Shift, Qt.Key_Alt, Qt.Key_Meta,
-                   Qt.Key_unknown):
+                   Qt.Key_unknown, Qt.Key_CapsLock):
             return None
 
         modifiers = event.modifiers()
