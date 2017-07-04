@@ -5,7 +5,7 @@ from . import define_command, COMMANDS
 from ..minibuffer import Prompt
 from ..application import Application
 from ..window import current_window
-from ..webbuffer import WebBuffer, BUFFERS
+from ..webbuffer import create_buffer, BUFFERS
 
 
 class CommandsListPrompt(Prompt):
@@ -68,9 +68,7 @@ def _get_or_create_buffer(win):
             if next(buffers) == current_buffer:
                 return next(buffers)
 
-    buffer = WebBuffer()
-    buffer.load(current_buffer.url())
-    return buffer
+    return create_buffer(url=current_buffer.url())
 
 
 @define_command("split-view-right")

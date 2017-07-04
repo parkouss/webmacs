@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtCore import QUrl, pyqtSlot as Slot
+from PyQt5.QtCore import QUrl
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 
 from .keymaps import Keymap
@@ -24,12 +24,35 @@ def buffer_for_id(id):
     return ID_2_BUFFERS.get(id)
 
 
+def create_buffer(url=None):
+    wb = WebBuffer()
+    BUFFERS.append(wb)
+    bid = str(id(wb))
+    ID_2_BUFFERS[bid] = wb
+
+    # register the buffer id
+    script = QWebEngineScript()
+    script.setInjectionPoint(QWebEngineScript.DocumentCreation)
+    script.setSourceCode("webbuffer_id = %r;" % bid)
+    script.setWorldId(QWebEngineScript.ApplicationWorld)
+    wb.scripts().insert(script)
+
+    if url:
+        wb.load(url)
+    return wb
+
+
+def close_buffer(wb):
+    BUFFERS.remove(wb)
+    del ID_2_BUFFERS[str(id(wb))]
+
+
 class WebBuffer(QWebEnginePage):
     """
     Represent some web page content.
 
-    Note a parent is required, else a segmentation fault may happen when the
-    application closes.
+    Do not use this constructor directly, instead use the create_buffer
+    function.
     """
 
     LOGGER = logging.getLogger("webcontent")
@@ -38,25 +61,6 @@ class WebBuffer(QWebEnginePage):
         QWebEnginePage.WarningMessageLevel: logging.WARNING,
         QWebEnginePage.ErrorMessageLevel: logging.ERROR,
     }
-
-    def __init__(self):
-        QWebEnginePage.__init__(self)
-        BUFFERS.append(self)
-        bid = str(id(self))
-        ID_2_BUFFERS[bid] = self
-        self.destroyed.connect(self._on_destroyed)
-
-        # register the buffer id
-        script = QWebEngineScript()
-        script.setInjectionPoint(QWebEngineScript.DocumentCreation)
-        script.setSourceCode("webbuffer_id = %r;" % bid)
-        script.setWorldId(QWebEngineScript.ApplicationWorld)
-        self.scripts().insert(script)
-
-    @Slot()
-    def _on_destroyed(self):
-        BUFFERS.remove(self)
-        del ID_2_BUFFERS[id(self)]
 
     def load(self, url):
         if not isinstance(url, QUrl):

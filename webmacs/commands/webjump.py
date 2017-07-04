@@ -6,7 +6,7 @@ from PyQt5.QtCore import QUrl, QThread, pyqtSlot as Slot, \
 
 from ..minibuffer import Prompt, PromptTableModel
 from ..commands import define_command
-from ..webbuffer import current_buffer, WebBuffer
+from ..webbuffer import current_buffer, create_buffer
 from ..window import current_window
 from ..application import Application
 
@@ -126,6 +126,4 @@ def go_to_new_buffer(prompt):
     url = get_url(prompt.value())
     if url:
         view = current_window().current_web_view()
-        buffer = WebBuffer()
-        buffer.load(url)
-        view.setBuffer(buffer)
+        view.setBuffer(create_buffer(url))

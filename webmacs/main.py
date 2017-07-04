@@ -5,7 +5,7 @@ import logging
 
 from PyQt5.QtNetwork import QAbstractSocket
 
-from .webbuffer import WebBuffer
+from .webbuffer import create_buffer
 from .application import Application
 from .window import Window
 
@@ -69,15 +69,8 @@ def main():
 
     window = Window()
 
-    buffer = WebBuffer()
-    buffer.load("http://www.google.fr")
+    buffer = create_buffer("http://www.google.fr")
     window.current_web_view().setBuffer(buffer)
-
-    # view = window.createViewOnRight()
-    # buffer2 = WebBuffer(window)
-    # buffer2.load("http://www.google.fr")
-    # view.setBuffer(buffer2)
-    # view.setFocus()
 
     window.show()
 
