@@ -1,10 +1,10 @@
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QFrame, QVBoxLayout
 
 
-class WebViewContainer(QWidget):
+class WebViewContainer(QFrame):
     def __init__(self, view):
-        QWidget.__init__(self)
+        QFrame.__init__(self)
         self._view = view
         layout = QVBoxLayout()
         layout.addWidget(view)
@@ -13,10 +13,9 @@ class WebViewContainer(QWidget):
         self.setLayout(layout)
 
     def show_focused(self, active):
-        if active:
-            self.layout().setContentsMargins(0, 3, 0, 0)
-        else:
-            self.layout().setContentsMargins(0, 0, 0, 0)
+        self.setProperty("current", active)
+        # force the style to be taken into account
+        self.setStyle(self.style())
 
     def view(self):
         return self._view

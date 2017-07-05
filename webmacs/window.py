@@ -129,12 +129,3 @@ class Window(QWidget):
 
     def minibuffer(self):
         return self._minibuffer
-
-    def paintEvent(self, _):
-        # to allow custom styling from stylesheet
-        from PyQt5.QtWidgets import QStyleOption, QStyle
-        from PyQt5.QtGui import QPainter
-        opt = QStyleOption()
-        opt.initFrom(self)
-        p = QPainter(self)
-        self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
