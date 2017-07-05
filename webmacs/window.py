@@ -96,11 +96,9 @@ class Window(QWidget):
         return self._webviews
 
     def _currentPosition(self):
-        for row in range(self._webviews_layout.rowCount()):
-            for col in range(self._webviews_layout.columnCount()):
-                item = self._webviews_layout.itemAtPosition(row, col)
-                if item and item.widget().view() == self._current_web_view:
-                    return (row, col)
+        index = self._webviews_layout.indexOf(
+            self._current_web_view.container())
+        return self._webviews_layout.getItemPosition(index)[:2]
 
     def create_webview_on_right(self):
         row, col = self._currentPosition()
@@ -119,11 +117,10 @@ class Window(QWidget):
         if len(self._webviews) <= 1:
             return False
         index = self._webviews_layout.indexOf(container)
-        if index == -1:
-            return
+        if index > -1:  # todo there's a bug here, should not have to check
+            self._webviews_layout.removeWidget(container)
         self._webviews.remove(webview)
         hooks.webview_closed.call(webview)
-        self._webviews_layout.removeWidget(container)
         webview.deleteLater()
         return True
 
