@@ -73,9 +73,15 @@ class Window(QWidget):
         # create the main view
         view = self._create_webview()
         self._current_web_view = view
-        self._webviews_layout.addWidget(view)
+        self._webviews_layout.addWidget(view.container())
 
         HANDLER.register_window(self)
+
+    def _change_current_webview(self, webview):
+        self._current_web_view.container().show_focused(False)
+        if len(self._webviews) > 1:
+            webview.container().show_focused(True)
+        self._current_web_view = webview
 
     def _create_webview(self):
         view = WebView(self)
@@ -93,30 +99,31 @@ class Window(QWidget):
         for row in range(self._webviews_layout.rowCount()):
             for col in range(self._webviews_layout.columnCount()):
                 item = self._webviews_layout.itemAtPosition(row, col)
-                if item and item.widget() == self._current_web_view:
+                if item and item.widget().view() == self._current_web_view:
                     return (row, col)
 
     def create_webview_on_right(self):
         row, col = self._currentPosition()
         view = self._create_webview()
-        self._webviews_layout.addWidget(view, row, col + 1, -1, 1)
+        self._webviews_layout.addWidget(view.container(), row, col + 1, -1, 1)
         return view
 
     def create_webview_on_bottom(self):
         row, col = self._currentPosition()
         view = self._create_webview()
-        self._webviews_layout.addWidget(view, row + 1, col, 1, -1)
+        self._webviews_layout.addWidget(view.container(), row + 1, col, 1, -1)
         return view
 
     def delete_webview(self, webview):
+        container = webview.container()
         if len(self._webviews) <= 1:
             return False
-        index = self._webviews_layout.indexOf(webview)
+        index = self._webviews_layout.indexOf(container)
         if index == -1:
             return
         self._webviews.remove(webview)
         hooks.webview_closed.call(webview)
-        self._webviews_layout.removeWidget(webview)
+        self._webviews_layout.removeWidget(container)
         webview.deleteLater()
         return True
 
