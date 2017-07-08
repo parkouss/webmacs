@@ -55,59 +55,30 @@ function clickLike(elem) {
     elem.dispatchEvent(evt);
 }
 
-function rectElementInViewport(node) {  // eslint-disable-line complexity
-    var i;
-    var boundingRect = (node.getClientRects()[0] ||
-                        node.getBoundingClientRect());
+function rectElementInViewport(elem) {  // eslint-disable-line complexity
+    var win = elem.ownerDocument.defaultView;
+    var rect = elem.getBoundingClientRect();
 
-    if (boundingRect.width <= 1 && boundingRect.height <= 1) {
-        var rects = node.getClientRects();
-        for (i = 0; i < rects.length; i++) {
-            if (rects[i].width > rects[0].height &&
-                rects[i].height > rects[0].height) {
-                boundingRect = rects[i];
-            }
-        }
-    }
-    if (boundingRect === undefined) {
+    if (!rect ||
+        rect.top > window.innerHeight ||
+        rect.bottom < 0 ||
+        rect.left > window.innerWidth ||
+        rect.right < 0) {
         return null;
     }
-    var viewHeight = document.documentElement.clientHeight; // innerHeight
-    var viewWidth = document.documentElement.clientWidth;  // innerWidth
-    if (boundingRect.top > viewHeight || boundingRect.left > viewWidth) {
+
+    rect = elem.getClientRects()[0];
+    if (!rect) {
         return null;
     }
-    if (boundingRect.width <= 1 || boundingRect.height <= 1) {
-        var children = node.children;
-        var visibleChildNode = false;
-        for (i = 0; i < children.length; ++i) {
-            boundingRect = (children[i].getClientRects()[0] ||
-                            children[i].getBoundingClientRect());
-            if (boundingRect.width > 1 && boundingRect.height > 1) {
-                visibleChildNode = true;
-                break;
-            }
-        }
-        if (visibleChildNode === false) {
-            return null;
-        }
-    }
-    if (boundingRect.top + boundingRect.height < 10 ||
-        boundingRect.left + boundingRect.width < -10) {
+
+    var style = win.getComputedStyle(elem, null);
+    if (style.getPropertyValue("visibility") !== "visible" ||
+        style.getPropertyValue("display") === "none" ||
+        style.getPropertyValue("opacity") === "0") {
         return null;
     }
-    var computedStyle = window.getComputedStyle(node, null);
-    if (computedStyle.visibility !== "visible" ||
-        computedStyle.display === "none" ||
-        node.hasAttribute("disabled") ||
-        parseInt(computedStyle.width, 10) === 0 ||
-        parseInt(computedStyle.height, 10) === 0) {
-        return null;
-    }
-    if (boundingRect.top < -20) {
-        return null;
-    }
-    return boundingRect;
+    return rect;
 }
 
 function escapeRegExp(str) {
