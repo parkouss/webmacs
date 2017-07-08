@@ -191,14 +191,32 @@ function HintManager() {
     this.activeHint = null;
 }
 
+// took from conkeror
+const XHTML_NS = "http://www.w3.org/1999/xhtml";
+const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
+const XLINK_NS = "http://www.w3.org/1999/xlink";
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function xpath_lookup_namespace (prefix) {
+    return {
+        xhtml: XHTML_NS,
+        m: MATHML_NS,
+        xul: XUL_NS,
+        svg: SVG_NS
+    }[prefix] || null;
+}
+
 HintManager.prototype.selectBrowserObjects = function(selector, options) {
     Object.assign(this.options, options || {});
-    let objs = document.body.querySelectorAll(selector);
+    let xres = document.evaluate (selector, document, xpath_lookup_namespace,
+                                  XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     let scrollX = window.scrollX;
     let scrollY = window.scrollY;
     let fragment = document.createDocumentFragment();
 
-    for (let obj of objs) {
+    for (var j = 0; j < xres.snapshotLength; j++) {
+        let obj = xres.snapshotItem(j);
         let rect = rectElementInViewport(obj);
         if (!rect) {
             continue;

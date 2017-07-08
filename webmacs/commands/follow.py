@@ -17,9 +17,19 @@ class FollowPrompt(Prompt):
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
         self.page = current_buffer()
+        # took from conkeror
         selector = (
-            "a[href], input:not([hidden]), textarea:not([hidden]),"
-            "*[role=link], *[role=button], *[role=menuitem]"
+            "//*[@onclick or @onmouseover or @onmousedown or @onmouseup or "
+            "@oncommand or @role='link' or @role='button' or @role='menuitem']"
+            " | //input[not(@type='hidden')] | //a[@href] | //area"
+            " | //iframe | //textarea | //button | //select"
+            " | //*[@contenteditable = 'true']"
+            " | //xhtml:*[@onclick or @onmouseover or @onmousedown or"
+            " @onmouseup or @oncommand or @role='link' or @role='button' or"
+            " @role='menuitem'] | //xhtml:input[not(@type='hidden')]"
+            " | //xhtml:a[@href] | //xhtml:area | //xhtml:iframe"
+            " | //xhtml:textarea | //xhtml:button | //xhtml:select"
+            " | //xhtml:*[@contenteditable = 'true'] | //svg:a"
         )
         self.page.start_select_browser_objects(selector)
         self.numbers = ""
