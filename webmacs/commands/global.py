@@ -137,5 +137,6 @@ class VisitedLinksPrompt(Prompt):
 @define_command("visited-links-history", prompt=VisitedLinksPrompt)
 def visited_links_history(prompt):
     index = prompt.index()
-    url = index.model().data(index)
-    current_window().current_web_view().buffer().load(url)
+    if index.isValid():
+        url = index.model().data(index)
+        current_window().current_web_view().buffer().load(url)
