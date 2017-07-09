@@ -25,7 +25,7 @@ class WebView(QWebEngineView):
     """Do not instantiate that class directly"""
     def __init__(self, window):
         QWebEngineView.__init__(self)
-        self.window = window
+        self.window = window  # todo fix this accessor
         self._container = WebViewContainer(self)
 
     def container(self):

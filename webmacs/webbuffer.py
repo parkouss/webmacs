@@ -1,10 +1,11 @@
 import logging
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, pyqtSlot as Slot
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 
 from .keymaps import Keymap
 from .window import current_window
+from .fullscreen_window import FullScreenWindow
 
 
 BUFFERS = []
@@ -36,6 +37,8 @@ def create_buffer(url=None):
     script.setSourceCode("webbuffer_id = %r;" % bid)
     script.setWorldId(QWebEngineScript.ApplicationWorld)
     wb.scripts().insert(script)
+
+    wb.fullScreenRequested.connect(wb._on_full_screen_requested)
 
     if url:
         wb.load(url)
@@ -134,6 +137,26 @@ class WebBuffer(QWebEnginePage):
         current_buffer().runJavaScript(
             "hints.selectVisibleHint(%r);" % hint_id,
             QWebEngineScript.ApplicationWorld)
+
+    @Slot("QWebEngineFullScreenRequest")
+    def _on_full_screen_requested(self, request):
+        view = self.view()
+        if not view:
+            return
+        fsw = view.window.fullscreen_window
+
+        if request.toggleOn():
+            if fsw:
+                return
+            request.accept()
+            view.window.fullscreen_window = FullScreenWindow(view.window)
+            view.window.fullscreen_window.enable(view)
+        else:
+            if not fsw:
+                return
+            request.accept()
+            fsw.disable()
+            view.window.fullscreen_window = None
 
 
 KEYMAP.define_key("g", "go-to")

@@ -74,6 +74,7 @@ class Window(QWidget):
         view = self._create_webview()
         self._current_web_view = view
         self._webviews_layout.addWidget(view.container())
+        self.fullscreen_window = None
 
         HANDLER.register_window(self)
 
