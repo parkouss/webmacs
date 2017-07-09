@@ -28,6 +28,7 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
             generator.register_filter_url(url)
         self._adblock = generator.generate_rules()
         self._use_adblock = True
+        self._current_host = ""
 
     def toggle_use_adblock(self):
         self._use_adblock = not self._use_adblock
@@ -35,8 +36,13 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
     def interceptRequest(self, request):
         url = request.requestUrl().toString()
         if request.resourceType() == request.ResourceTypeMainFrame:
+            host = request.requestUrl().host()
+            if host.startswith("www."):
+                host = host[4:]
+            self._current_host = host
             self.visited_link.emit(url)
-        elif self._use_adblock and self._adblock.matches(url, ""):
+        elif self._use_adblock and self._adblock.matches(url,
+                                                         self._current_host):
             logging.info("filtered: %s", url)
             request.block(True)
 
