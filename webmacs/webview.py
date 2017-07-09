@@ -1,5 +1,8 @@
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PyQt5.QtWidgets import QFrame, QVBoxLayout
+
+from .keymaps import Keymap
+from .keyboardhandler import local_keymap, set_local_keymap
 
 
 class WebViewContainer(QFrame):
@@ -23,10 +26,13 @@ class WebViewContainer(QFrame):
 
 class WebView(QWebEngineView):
     """Do not instantiate that class directly"""
-    def __init__(self, window):
+    def __init__(self, window, with_container=True):
         QWebEngineView.__init__(self)
         self.window = window  # todo fix this accessor
-        self._container = WebViewContainer(self)
+        if with_container:
+            self._container = WebViewContainer(self)
+        else:
+            self._container = None
 
     def container(self):
         return self._container
@@ -43,3 +49,42 @@ class WebView(QWebEngineView):
     def set_current(self):
         self.window._change_current_webview(self)
         self.setFocus()
+
+
+FULLSCREEN_KEYMAP = Keymap("fullscreen")
+
+
+@FULLSCREEN_KEYMAP.define_key("C-g")
+@FULLSCREEN_KEYMAP.define_key("Esc")
+def exit_full_screen():
+    from .window import current_window
+    fw = current_window().fullscreen_window
+    if fw:
+        fw.triggerPageAction(QWebEnginePage.ExitFullScreen)
+
+
+class FullScreenWindow(WebView):
+    def __init__(self, window):
+        WebView.__init__(self, window, with_container=False)
+        self._other_view = None
+        self._other_keymap = None
+
+    def enable(self, webview):
+        self._other_view = webview
+        self.setPage(webview.page())
+        self._other_keymap = local_keymap()
+        set_local_keymap(self.keymap())
+        self.showFullScreen()
+
+    def disable(self):
+        self._other_view.setPage(self.page())
+        self.close()
+        self.deleteLater()
+        set_local_keymap(self._other_keymap)
+        self._other_keymap = None
+
+    def keymap(self):
+        return FULLSCREEN_KEYMAP
+
+    def set_current(self):
+        pass

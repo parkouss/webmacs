@@ -79,6 +79,9 @@ class KeyEater(QObject):
     def set_local_key_map(self, keymap):
         self._local_key_map = keymap
 
+    def local_key_map(self):
+        return self._local_key_map
+
     def eventFilter(self, obj, event):
         if event.type() == QEvent.KeyPress:
             key = KeyPress.from_qevent(event)
@@ -144,3 +147,11 @@ def send_key_event(keypress):
                 obj, keypress.to_qevent(QEvent.KeyPress))
             Application.INSTANCE.postEvent(
                 obj, keypress.to_qevent(QEvent.KeyRelease))
+
+
+def local_keymap():
+    return KEY_EATER.local_key_map()
+
+
+def set_local_keymap(keymap):
+    KEY_EATER.set_local_key_map(keymap)

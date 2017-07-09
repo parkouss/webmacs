@@ -5,7 +5,7 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 
 from .keymaps import Keymap
 from .window import current_window
-from .fullscreen_window import FullScreenWindow
+from .webview import FullScreenWindow
 
 
 BUFFERS = []
