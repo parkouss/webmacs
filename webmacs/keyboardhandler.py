@@ -1,4 +1,5 @@
 import logging
+import weakref
 
 from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot
 
@@ -73,6 +74,7 @@ class KeyEater(QObject):
         self._keypresses = []
         self._commands = COMMANDS
         self._local_key_map = None
+        self.current_obj = None
 
     def set_local_key_map(self, keymap):
         self._local_key_map = keymap
@@ -82,6 +84,7 @@ class KeyEater(QObject):
             key = KeyPress.from_qevent(event)
             if key is None:
                 return False
+            self.current_obj = weakref.ref(obj)
             if self._handle_keypress(key):
                 return True
         return QObject.eventFilter(self, obj, event)
@@ -129,3 +132,15 @@ class KeyEater(QObject):
 
 
 KEY_EATER = KeyEater()
+
+
+def send_key_event(keypress):
+    obj = KEY_EATER.current_obj
+    if obj:
+        obj = obj()
+        if obj:
+            from .application import Application
+            Application.INSTANCE.postEvent(
+                obj, keypress.to_qevent(QEvent.KeyPress))
+            Application.INSTANCE.postEvent(
+                obj, keypress.to_qevent(QEvent.KeyRelease))

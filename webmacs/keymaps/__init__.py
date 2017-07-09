@@ -2,7 +2,7 @@ import re
 
 from collections import namedtuple
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QKeyEvent
 
 TO_QT = {
     "C": "Ctrl",
@@ -46,6 +46,24 @@ class KeyPress(object):
             key += Qt.META
 
         return cls(key)
+
+    def to_qevent(self, type):
+        modifiers = Qt.NoModifier
+        key = self.key
+        if key & Qt.SHIFT:
+            modifiers |= Qt.ShiftModifier
+            key &= ~Qt.SHIFT
+        if key & Qt.CTRL:
+            modifiers |= Qt.ControlModifier
+            key &= ~Qt.CTRL
+        if key & Qt.ALT:
+            modifiers |= Qt.AltModifier
+            key &= ~Qt.ALT
+        if key & Qt.META:
+            modifiers |= Qt.MetaModifier
+            key &= ~Qt.META
+
+        return QKeyEvent(type, key, modifiers)
 
     @classmethod
     def from_str(cls, string):
