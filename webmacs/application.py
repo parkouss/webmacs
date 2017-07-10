@@ -142,7 +142,7 @@ class Application(QApplication):
             script.setWorldId(iid)
             default_profile.scripts().insert(script)
 
-        for script in ("qwebchannel.js", "setup.js"):
+        for script in ("qwebchannel.js", "textedit.js", "setup.js"):
             with open(os.path.join(THIS_DIR, script)) as f:
                 src = f.read()
             if script == "setup.js":
