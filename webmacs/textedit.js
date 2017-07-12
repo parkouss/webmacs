@@ -50,3 +50,48 @@ function forward_char(e) {
 function backward_char(e) {
     _move_char(e, -1);
 }
+
+var LETTER_RE = /[A-Za-z0-9]/;
+
+String.prototype.nextWordPosition = function(startpos) {
+    var max = this.length;
+    var foundletter = false;
+    for (var i=startpos + 1; i < max; i++) {
+        var char = this.charAt(i);
+        if (char.search(LETTER_RE) != -1) {
+            foundletter = true;
+        }
+        else if (foundletter) {
+            return i;
+        }
+    }
+    return max;
+}
+
+String.prototype.prevWordPosition = function(startpos) {
+    var foundletter = false;
+    for (var i=startpos - 1; i>=0; i--) {
+        var char = this.charAt(i);
+        if (char.search(LETTER_RE) != -1) {
+            foundletter = true;
+        }
+        else if (foundletter) {
+            return i+1;
+        }
+    }
+    return 0;
+}
+
+function forward_word(e) {
+    var pos = e.selectionDirection == "forward" ? e.selectionEnd :
+        e.selectionStart;
+    var next_word_pos = e.value.nextWordPosition(pos);
+    _move_char(e, next_word_pos - pos);
+}
+
+function backward_word(e) {
+    var pos = e.selectionDirection == "forward" ? e.selectionEnd :
+        e.selectionStart;
+    var prev_word_pos = e.value.prevWordPosition(pos);
+    _move_char(e, prev_word_pos - pos);
+}

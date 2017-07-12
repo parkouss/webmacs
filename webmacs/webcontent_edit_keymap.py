@@ -41,9 +41,26 @@ def forward_char():
         QWebEngineScript.ApplicationWorld
     )
 
+
 @KEYMAP.define_key("C-b")
-def forward_char():
+def backward_char():
     current_buffer().runJavaScript(
         "backward_char(document.activeElement);",
+        QWebEngineScript.ApplicationWorld
+    )
+
+
+@KEYMAP.define_key("M-f")
+def forward_word():
+    current_buffer().runJavaScript(
+        "forward_word(document.activeElement);",
+        QWebEngineScript.ApplicationWorld
+    )
+
+
+@KEYMAP.define_key("M-b")
+def backward_word():
+    current_buffer().runJavaScript(
+        "backward_word(document.activeElement);",
         QWebEngineScript.ApplicationWorld
     )
