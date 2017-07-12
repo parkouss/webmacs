@@ -102,6 +102,11 @@ def webcontent_copy():
     current_buffer().triggerAction(WebBuffer.Copy)
 
 
+@define_command("webcontent-paste")
+def webcontent_paste():
+    current_buffer().triggerAction(WebBuffer.Paste)
+
+
 @define_command("reload-buffer")
 def reload_buffer():
     current_buffer().triggerAction(WebBuffer.Reload)

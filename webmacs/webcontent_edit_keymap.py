@@ -64,3 +64,7 @@ def backward_word():
         "backward_word(document.activeElement);",
         QWebEngineScript.ApplicationWorld
     )
+
+
+KEYMAP.define_key("M-w", "webcontent-copy")
+KEYMAP.define_key("C-y", "webcontent-paste")
