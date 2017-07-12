@@ -91,5 +91,13 @@ def move_end_of_line():
     )
 
 
+@KEYMAP.define_key("C-d")
+def delete_char():
+    current_buffer().runJavaScript(
+        "delete_char(document.activeElement);",
+        QWebEngineScript.ApplicationWorld
+    )
+
+
 KEYMAP.define_key("M-w", "webcontent-copy")
 KEYMAP.define_key("C-y", "webcontent-paste")

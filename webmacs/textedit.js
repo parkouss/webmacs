@@ -117,3 +117,19 @@ function move_beginning_of_line(e) {
     if (eolpos == -1) eolpos = 0;
     _move_char(e, eolpos - pos);
 }
+
+function delete_char(e) {
+    var start = e.selectionStart, end = e.selectionEnd, pos;
+    if (e.selectionDirection == "forward") {
+        pos = end - (end - start);
+    } else {
+        pos = start;
+    }
+    if (end == start) {
+        end = end + 1;
+    }
+    if (e in text_marks) { text_marks[e] = false; }
+    var txt = e.value.slice(0, start) + e.value.slice(end);
+    e.value = txt;
+    e.setSelectionRange(pos, pos);
+}
