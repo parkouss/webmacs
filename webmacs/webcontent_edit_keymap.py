@@ -115,4 +115,5 @@ def delete_word_backward():
 
 
 KEYMAP.define_key("M-w", "webcontent-copy")
+KEYMAP.define_key("C-w", "webcontent-cut")
 KEYMAP.define_key("C-y", "webcontent-paste")
