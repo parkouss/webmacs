@@ -9,9 +9,18 @@ KEYMAP = Keymap("webcontent-edit")
 
 @KEYMAP.define_key("C-g")
 def cancel():
+    # if a mark is active, clear that but keep the focus. If there is no mark
+    # active, then just unfocus the editable js object.
     current_buffer().runJavaScript("""
-    if (document.activeElement) { document.activeElement.blur(); }
-    """)
+    var e = document.activeElement;
+    if (has_any_mark(e)) {
+        // be sure that we have a mark, then unset it.
+        text_marks[e] = true;
+        set_or_unset_mark(e);
+    } else {
+        e.blur();
+    }
+    """, QWebEngineScript.ApplicationWorld)
 
 
 @KEYMAP.define_key("C-n")

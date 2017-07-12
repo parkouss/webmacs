@@ -13,6 +13,10 @@ function has_mark(e) {
     return text_marks[e];
 }
 
+function has_any_mark(e) {
+    return has_mark(e) || (e.selectionEnd < e.selectionStart);
+}
+
 function _move_char(e, way) {
     let start = e.selectionStart;
     let end = e.selectionEnd;
