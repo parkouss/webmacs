@@ -99,5 +99,13 @@ def delete_char():
     )
 
 
+@KEYMAP.define_key("M-d")
+def delete_word():
+    current_buffer().runJavaScript(
+        "delete_word(document.activeElement);",
+        QWebEngineScript.ApplicationWorld
+    )
+
+
 KEYMAP.define_key("M-w", "webcontent-copy")
 KEYMAP.define_key("C-y", "webcontent-paste")

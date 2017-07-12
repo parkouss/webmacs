@@ -2,10 +2,12 @@ var text_marks = {};
 
 function set_or_unset_mark(e) {
     let enabled = !has_mark(e);
-    text_marks[e] = enabled;
     if (!enabled) {
+        delete text_marks[e];
         var pos = e.selectionDirection == "forward" ? e.selectionEnd : e.selectionStart;
         e.setSelectionRange(pos, pos);
+    } else {
+        text_marks[e] = true;
     }
 }
 
@@ -128,8 +130,18 @@ function delete_char(e) {
     if (end == start) {
         end = end + 1;
     }
-    if (e in text_marks) { text_marks[e] = false; }
+    delete text_marks[e];
     var txt = e.value.slice(0, start) + e.value.slice(end);
+    e.value = txt;
+    e.setSelectionRange(pos, pos);
+}
+
+function delete_word(e) {
+    var pos = e.selectionDirection == "forward" ? e.selectionEnd :
+        e.selectionStart;
+    delete text_marks[e];
+    var txt = e.value.slice(0, pos) +
+        e.value.slice(e.value.nextWordPosition(pos));
     e.value = txt;
     e.setSelectionRange(pos, pos);
 }
