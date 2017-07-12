@@ -75,5 +75,21 @@ def backward_word():
     )
 
 
+@KEYMAP.define_key("C-a")
+def move_beginning_of_line():
+    current_buffer().runJavaScript(
+        "move_beginning_of_line(document.activeElement);",
+        QWebEngineScript.ApplicationWorld
+    )
+
+
+@KEYMAP.define_key("C-e")
+def move_end_of_line():
+    current_buffer().runJavaScript(
+        "move_end_of_line(document.activeElement);",
+        QWebEngineScript.ApplicationWorld
+    )
+
+
 KEYMAP.define_key("M-w", "webcontent-copy")
 KEYMAP.define_key("C-y", "webcontent-paste")

@@ -99,3 +99,21 @@ function backward_word(e) {
     var prev_word_pos = e.value.prevWordPosition(pos);
     _move_char(e, prev_word_pos - pos);
 }
+
+function move_end_of_line(e) {
+    var pos = e.selectionDirection == "forward" ? e.selectionEnd :
+        e.selectionStart;
+
+    var eolpos = e.value.indexOf("\n", pos);
+    if (eolpos == -1) eolpos = e.value.length;
+    _move_char(e, eolpos - pos);
+}
+
+function move_beginning_of_line(e) {
+    var pos = e.selectionDirection == "forward" ? e.selectionEnd :
+        e.selectionStart;
+
+    var eolpos = e.value.lastIndexOf("\n", pos);
+    if (eolpos == -1) eolpos = 0;
+    _move_char(e, eolpos - pos);
+}
