@@ -145,3 +145,13 @@ function delete_word(e) {
     e.value = txt;
     e.setSelectionRange(pos, pos);
 }
+
+function delete_word_backward(e) {
+    var pos = e.selectionDirection == "forward" ? e.selectionEnd :
+        e.selectionStart;
+    delete text_marks[e];
+    var delpos = e.value.prevWordPosition(pos);
+    var txt = e.value.slice(0, delpos) + e.value.slice(pos);
+    e.value = txt;
+    e.setSelectionRange(delpos, delpos);
+}

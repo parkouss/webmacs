@@ -106,6 +106,13 @@ def delete_word():
         QWebEngineScript.ApplicationWorld
     )
 
+@KEYMAP.define_key("M-Backspace")
+def delete_word_backward():
+    current_buffer().runJavaScript(
+        "delete_word_backward(document.activeElement);",
+        QWebEngineScript.ApplicationWorld
+    )
+
 
 KEYMAP.define_key("M-w", "webcontent-copy")
 KEYMAP.define_key("C-y", "webcontent-paste")
