@@ -95,6 +95,15 @@ class WebJumpPrompt(Prompt):
         self._wc_model.deleteLater()
 
 
+class WebJumpPromptCurrentUrl(WebJumpPrompt):
+    def enable(self, minibuffer):
+        WebJumpPrompt.enable(self, minibuffer)
+        url = current_buffer().url().toString()
+        input = minibuffer.input()
+        input.setText(url)
+        input.setSelection(0, len(url))
+
+
 def get_url(value):
     args = value.split(" ", 1)
     command = args[0]
@@ -112,6 +121,13 @@ def get_url(value):
 
 @define_command("go-to", prompt=WebJumpPrompt)
 def go_to(prompt):
+    url = get_url(prompt.value())
+    if url:
+        current_buffer().load(url)
+
+
+@define_command("go-to-selected-url", prompt=WebJumpPromptCurrentUrl)
+def go_to_selected_url(prompt):
     url = get_url(prompt.value())
     if url:
         current_buffer().load(url)
