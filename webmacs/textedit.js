@@ -155,3 +155,17 @@ function delete_word_backward(e) {
     e.value = txt;
     e.setSelectionRange(delpos, delpos);
 }
+
+function copy_text(e, delselection) {
+    var start = e.selectionStart, end = e.selectionEnd, pos;
+    pos = e.selectionDirection == "forward" ? end : start;
+    delete text_marks[e];
+    if (start == end) { return; }
+    var txt = e.value;
+    __webmacsHandler__.copyToClipboard(txt.slice(start, end));
+    if (delselection) {
+        txt = txt.slice(0, start) + txt.slice(end);
+        e.value = txt;
+    }
+    e.setSelectionRange(pos, pos);
+}

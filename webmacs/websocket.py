@@ -46,6 +46,12 @@ class WebContentHandler(QObject):
         if buffer and buffer.view():
             buffer.view().set_current()
 
+    @Slot(str)
+    def copyToClipboard(self, text):
+        from .application import Application
+
+        Application.INSTANCE.clipboard().setText(text)
+
 
 class WebSocketClientWrapper(QObject):
 
