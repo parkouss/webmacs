@@ -115,8 +115,9 @@ function move_beginning_of_line(e) {
     var pos = e.selectionDirection == "forward" ? e.selectionEnd :
         e.selectionStart;
 
-    var eolpos = e.value.lastIndexOf("\n", pos);
+    var eolpos = e.value.lastIndexOf("\n", pos-1);
     if (eolpos == -1) eolpos = 0;
+    else eolpos +=1;
     _move_char(e, eolpos - pos);
 }
 
