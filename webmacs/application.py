@@ -76,6 +76,9 @@ class Application(QApplication):
         settings.setAttribute(
             QWebEngineSettings.FullScreenSupportEnabled, True,
         )
+        settings.setAttribute(
+            QWebEngineSettings.JavascriptCanOpenWindows, True,
+        )
 
         require(".keymaps.global")
 

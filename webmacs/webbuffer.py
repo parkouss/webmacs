@@ -158,6 +158,11 @@ class WebBuffer(QWebEnginePage):
             fsw.disable()
             view.window.fullscreen_window = None
 
+    def createWindow(self, type):
+        buffer = create_buffer()
+        self.view().setBuffer(buffer)
+        return buffer
+
 
 KEYMAP.define_key("g", "go-to")
 KEYMAP.define_key("S-g", "go-to-selected-url")
