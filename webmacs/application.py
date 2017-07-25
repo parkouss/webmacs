@@ -133,6 +133,8 @@ class Application(QApplication):
         path = self.profiles_path()
         profile_path = os.path.join(path, "default")
         default_profile.setPersistentStoragePath(profile_path)
+        default_profile.setPersistentCookiesPolicy(
+            QWebEngineProfile.ForcePersistentCookies)
         self._visitedlinks = VisitedLinks(os.path.join(profile_path,
                                                        "visitedlinks.db"))
         default_profile.setCachePath(os.path.join(path, "cache"))
