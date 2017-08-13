@@ -3,6 +3,7 @@ from PyQt5.QtCore import QEvent, QObject
 
 from .webview import WebView
 from .minibuffer import Minibuffer
+from .egrid import EGridLayout
 from . import hooks
 
 
@@ -59,21 +60,18 @@ class Window(QWidget):
         remove_layout_spaces(self._layout)
         self.setLayout(self._layout)
 
+        self._webviews = []
+        view = self._create_webview()
         self._central_widget = QWidget()
         self._layout.addWidget(self._central_widget)
-        self._webviews_layout = QGridLayout()
+        self._webviews_layout = EGridLayout(view.container())
         remove_layout_spaces(self._webviews_layout)
         self._central_widget.setLayout(self._webviews_layout)
 
         self._minibuffer = Minibuffer(self)
         self._layout.addWidget(self._minibuffer)
 
-        self._webviews = []
-
-        # create the main view
-        view = self._create_webview()
         self._current_web_view = view
-        self._webviews_layout.addWidget(view.container())
         self.fullscreen_window = None
 
         HANDLER.register_window(self)
@@ -96,30 +94,27 @@ class Window(QWidget):
     def webviews(self):
         return self._webviews
 
-    def _currentPosition(self):
-        index = self._webviews_layout.indexOf(
-            self._current_web_view.container())
-        return self._webviews_layout.getItemPosition(index)[:2]
-
     def create_webview_on_right(self):
-        row, col = self._currentPosition()
         view = self._create_webview()
-        self._webviews_layout.addWidget(view.container(), row, col + 1, -1, 1)
+        self._webviews_layout.insert_widget_right(
+            self._current_web_view.container(),
+            view.container()
+            )
         return view
 
     def create_webview_on_bottom(self):
-        row, col = self._currentPosition()
         view = self._create_webview()
-        self._webviews_layout.addWidget(view.container(), row + 1, col, 1, -1)
+        self._webviews_layout.insert_widget_bottom(
+            self._current_web_view.container(),
+            view.container()
+            )
         return view
 
     def delete_webview(self, webview):
         container = webview.container()
         if len(self._webviews) <= 1:
             return False
-        index = self._webviews_layout.indexOf(container)
-        if index > -1:  # todo there's a bug here, should not have to check
-            self._webviews_layout.removeWidget(container)
+        self._webviews_layout.removeWidget(container)
         self._webviews.remove(webview)
         hooks.webview_closed.call(webview)
         webview.deleteLater()
