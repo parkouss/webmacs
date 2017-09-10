@@ -2,70 +2,133 @@ from PyQt5.QtWidgets import QLayout
 from PyQt5.QtCore import QRect, QSize
 
 
+class LayoutEntry(object):
+    VERTICAL = 1
+    HORIZONTAL = 2
+
+    def __init__(self, parent=None, item=None):
+        self.parent = parent
+        self.item = item
+        self.split = None
+        self.children = []
+
+    def do_split(self, item, direction):
+        assert self.item
+        if self.parent and self.parent.split == direction:
+            index = self.parent.children.index(self)
+            self.parent.children.insert(
+                index+1,
+                LayoutEntry(parent=self.parent, item=item))
+        else:
+            self.split = direction
+            self.children.append(LayoutEntry(parent=self, item=self.item))
+            self.children.append(LayoutEntry(parent=self, item=item))
+            self.item = None
+
+    def pop(self):
+        assert self.parent
+        parent = self.parent
+        parent.children.remove(self)
+        if len(parent.children) == 1:
+            other = parent.children.pop(0)
+            parent.item = other.item
+            parent.split = None
+
+    def set_geometry(self, rect):
+        if self.item:
+            self.item.setGeometry(rect)
+
+        elif self.split == self.VERTICAL:
+            x = rect.x()
+            width = rect.width() / len(self.children)
+            for child in self.children:
+                cr = QRect(x, rect.y(), width, rect.height())
+                child.set_geometry(cr)
+                x += width
+
+        elif self.split == self.HORIZONTAL:
+            y = rect.y()
+            height = rect.height() / len(self.children)
+            for child in self.children:
+                cr = QRect(rect.x(), y, rect.width(), height)
+                child.set_geometry(cr)
+                y += height
+
+    def __iter__(self):
+        entries = [self]
+        while entries:
+            entry = entries.pop(0)
+            yield entry
+            entries.extend(entry.children)
+
+    def entry_for_item(self, item):
+        for entry in self:
+            if entry.item == item:
+                return entry
+        return None
+
+
 class EGridLayout(QLayout):
     def __init__(self, main_widget, parent=None):
         QLayout.__init__(self, parent)
-        self._items = []
-        self.add_widget(main_widget, 0, 0)
+        self._item_added = None
+        self._root = LayoutEntry()
+        self.add_widget(main_widget, self._root)
 
-    def add_widget(self, widget, row, col):
+    def add_widget(self, widget, parent_entry, direction=None):
         self.addWidget(widget)
-        item = self._items[-1]
-        item._row = row
-        item._col = col
+        item = self._item_added
+        self._item_added = None
+        if direction is not None:
+            parent_entry.do_split(item, direction)
+        else:
+            parent_entry.item = item
+
+    def entries(self):
+        return [e for e in self._root if e.item]
+
+    def items(self):
+        return [e.item for e in self._root if e.item]
 
     def addItem(self, item):
-        self._items.append(item)
+        self._item_added = item
 
     def count(self):
-        return len(self._items)
+        return len(self.items())
 
     def itemAt(self, index):
         try:
-            return self._items[index]
+            return self.items()[index]
         except IndexError:
             return None
 
     def takeAt(self, index):
-        return self._items.pop(index)
+        return self.entries()[index].pop()
 
     def sizeHint(self):
         size = QSize(0, 0)
-        for item in self._items:
+        for item in self.items():
             size = size.expandedTo(item.sizeHint())
 
         return size + self.count() * QSize(self.spacing(), self.spacing())
 
     def setGeometry(self, rect):
-        QLayout.setGeometry(self, rect)
-        col_offset = {}
-        row_offset = {}
-        for item in self._items:
-            nb_in_row = len([i for i in self._items if i._row == item._row])
-            nb_in_col = len([i for i in self._items if i._col == item._col])
-            x_step = rect.width() / nb_in_row
-            y_step = rect.height() / nb_in_col
-            try:
-                start_x = row_offset[item._row]
-            except KeyError:
-                start_x = rect.x()
-            try:
-                start_y = col_offset[item._col]
-            except KeyError:
-                start_y = rect.y()
-            ir = QRect(start_x, start_y, x_step, y_step)
-            item.setGeometry(ir)
-            row_offset[item._row] = start_x + x_step
-            col_offset[item._col] = start_y + y_step
+        self._root.set_geometry(rect)
 
     def insert_widget_right(self, reference, widget):
         refindex = self.indexOf(reference)
         refitem = self.itemAt(refindex)
-        self.add_widget(widget, refitem._row, refitem._col + 1)
-        self.invalidate()
+        for entry in self._root:
+            if entry.item == refitem:
+                self.add_widget(widget, entry, entry.VERTICAL)
+                self.invalidate()
+                break
 
     def insert_widget_bottom(self, reference, widget):
         refindex = self.indexOf(reference)
         refitem = self.itemAt(refindex)
-        self.add_widget(widget, refitem._row + 1, refitem._col)
-        self.invalidate()
+        for entry in self._root:
+            if entry.item == refitem:
+                self.add_widget(widget, entry, entry.HORIZONTAL)
+                self.invalidate()
+                break
