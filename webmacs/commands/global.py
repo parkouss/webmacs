@@ -90,28 +90,19 @@ def split_window_bottom():
 @define_command("other-view")
 def other_view():
     win = current_window()
-    views = win.webviews()
-    index = views.index(win.current_web_view())
-    index = index + 1
-    if index >= len(views):
-        index = 0
-    views[index].set_current()
+    win.other_view()
 
 
 @define_command("close-view")
 def close_view():
-    view = current_window().current_web_view()
-    other_view()
-    current_window().delete_webview(view)
+    window = current_window()
+    window.close_view(window.current_web_view())
 
 
 @define_command("maximise-view")
 def maximise_view():
     win = current_window()
-    view = win.current_web_view()
-    for other in win.webviews():
-        if view != other:
-            win.delete_webview(other)
+    win.close_other_views()
 
 
 @define_command("toggle-ad-block")

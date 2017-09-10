@@ -46,8 +46,23 @@ def create_buffer(url=None):
 
 
 def close_buffer(wb):
+    if len(BUFFERS) < 2:
+        return  # can't close if there is only one buffer left
+
+    if wb.view():
+        # buffer is currently visible, search for a buffer that is not visible
+        # yet to put it in the view
+        invisibles = [b for b in BUFFERS if not b.view()]
+        if not invisibles:
+            # all buffers have views, so close the view of our buffer first
+            current_window().close_view(wb.view())
+        else:
+            # associate the first buffer that does not have any view yet
+            wb.view().setBuffer(invisibles[0])
+
     BUFFERS.remove(wb)
     del ID_2_BUFFERS[str(id(wb))]
+    return True
 
 
 class WebBuffer(QWebEnginePage):

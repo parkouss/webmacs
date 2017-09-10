@@ -110,7 +110,7 @@ class Window(QWidget):
             )
         return view
 
-    def delete_webview(self, webview):
+    def _delete_webview(self, webview):
         container = webview.container()
         if len(self._webviews) <= 1:
             return False
@@ -122,3 +122,30 @@ class Window(QWidget):
 
     def minibuffer(self):
         return self._minibuffer
+
+    def other_view(self):
+        """switch to the next view"""
+        views = self.webviews()
+        index = views.index(self.current_web_view())
+        index = index + 1
+        if index >= len(views):
+            index = 0
+        views[index].set_current()
+
+    def close_view(self, view):
+        """close the given view"""
+        views = self.webviews()
+        if len(views) == 1:
+            return  # can't delete a single view
+
+        if view == self.current_web_view():
+            self.other_view()
+
+        self._delete_webview(view)
+
+    def close_other_views(self):
+        """close all views but the current one"""
+        view = self.current_web_view()
+        for other in self.webviews():
+            if view != other:
+                self._delete_webview(other)

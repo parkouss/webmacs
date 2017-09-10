@@ -1,9 +1,10 @@
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from ..commands import define_command
-from ..minibuffer import Prompt
+from ..minibuffer import Prompt, KEYMAP, current_minibuffer
 from ..webbuffer import BUFFERS, current_buffer, WebBuffer, close_buffer
 from ..window import current_window
+from ..keymaps import Keymap
 
 
 class BufferTableModel(QAbstractTableModel):
@@ -37,6 +38,32 @@ class BufferTableModel(QAbstractTableModel):
         except IndexError:
             return QModelIndex()
 
+    def close_buffer_at(self, index):
+        try:
+            if not close_buffer(self._buffers[index.row()]):
+                return
+        except ValueError:
+            return
+
+        self.beginRemoveRows(QModelIndex(), index.row(), index.row())
+        self._buffers.pop(index.row())
+        self.endRemoveRows()
+
+
+BUFFERLIST_KEYMAP = Keymap("buffer-list", parent=KEYMAP)
+
+
+@BUFFERLIST_KEYMAP.define_key("C-k")
+def close_buffer_in_prompt_selection():
+    pinput = current_minibuffer().input()
+
+    selection = pinput.popup().selectionModel().currentIndex()
+    if not selection.isValid():
+        return
+
+    selection = selection.model().mapToSource(selection)
+    pinput.completer_model().close_buffer_at(selection)
+
 
 class BufferListPrompt(Prompt):
     label = "switch buffer:"
@@ -44,6 +71,7 @@ class BufferListPrompt(Prompt):
         "match": Prompt.FuzzyMatch,
         "complete-empty": True,
     }
+    keymap = BUFFERLIST_KEYMAP
 
     def completer_model(self):
         return BufferTableModel()
@@ -125,14 +153,4 @@ def reload_buffer_no_cache():
 @define_command("close-buffer")
 def buffer_close():
     current = current_buffer()
-    available_buffers = [b for b in BUFFERS if b == current or not b.view()]
-
-    if len(available_buffers) < 2:
-        return
-
-    index = available_buffers.index(current) + 1
-    if index >= len(available_buffers):
-        index = 0
-
-    current_window().current_web_view().setBuffer(available_buffers[index])
     close_buffer(current)
