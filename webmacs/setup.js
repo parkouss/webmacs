@@ -16,13 +16,13 @@ socket.onopen = function() {
       return nodeName == "INPUT" || nodeName == "TEXTAREA";
     }
 
-    document.addEventListener("focus", function(e) {
+    document.addEventListener("focusin", function(e) {
       if (isTextInput(e.target.nodeName)) {
         __webmacsHandler__.onTextFocus(true);
       }
     }, true);
 
-    document.addEventListener("blur", function(e) {
+    document.addEventListener("focusout", function(e) {
       if (isTextInput(e.target.nodeName)) {
         __webmacsHandler__.onTextFocus(false);
       }
