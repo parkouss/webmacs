@@ -35,10 +35,9 @@ class FollowPrompt(Prompt):
         self.numbers = ""
         minibuffer.input().textChanged.connect(self.on_text_edited)
         self.browser_object_activated = {}
-        Application.INSTANCE.sock_client.content_handler \
-                                        .browserObjectActivated.connect(
-                                            self.on_browser_object_activated
-                                        )
+        self.page.content_handler.browserObjectActivated.connect(
+            self.on_browser_object_activated
+        )
         minibuffer.input().installEventFilter(self)
 
     def on_browser_object_activated(self, bo):

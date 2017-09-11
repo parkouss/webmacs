@@ -5,10 +5,10 @@ from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript, \
     QWebEngineSettings
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot
+from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot, QFile, \
+    QTextStream
 
 from . import require
-from .websocket import WebSocketClientWrapper
 from .keyboardhandler import KEY_EATER
 from .adblock import EASYLIST, Adblocker
 from .visited_links import VisitedLinks
@@ -54,13 +54,12 @@ class Application(QApplication):
 
         with open(os.path.join(THIS_DIR, "app_style.css")) as f:
             self.setStyleSheet(f.read())
-        self._setup_websocket()
 
         self._setup_conf_paths()
 
         self._interceptor = UrlInterceptor(self)
         self._interceptor.visited_link.connect(self._on_visited_link)
-        self._setup_default_profile(self.sock_client.port)
+        self._setup_default_profile()
 
         self.installEventFilter(KEY_EATER)
 
@@ -107,13 +106,6 @@ class Application(QApplication):
     def adblock_path(self):
         return os.path.join(self.conf_path(), "adblock")
 
-    def _setup_websocket(self):
-        """
-        An internal websocket is used to communicate between web page content
-        (using javascript) and the python code.
-        """
-        self.sock_client = WebSocketClientWrapper()
-
     def visitedlinks(self):
         return self._visitedlinks
 
@@ -125,7 +117,7 @@ class Application(QApplication):
     def url_interceptor(self):
         return self._interceptor
 
-    def _setup_default_profile(self, port):
+    def _setup_default_profile(self):
         default_profile = QWebEngineProfile.defaultProfile()
         default_profile.setRequestInterceptor(self._interceptor)
         path = self.profiles_path()
@@ -145,10 +137,9 @@ class Application(QApplication):
             script.setWorldId(iid)
             default_profile.scripts().insert(script)
 
-        for script in ("qwebchannel.js", "textedit.js", "setup.js"):
-            with open(os.path.join(THIS_DIR, script)) as f:
-                src = f.read()
-            if script == "setup.js":
-                src = ("var webmacsBaseUrl = 'ws://localhost:%d';\n%s"
-                       % (port, src))
-            inject_js(src)
+        for script in (":/qtwebchannel/qwebchannel.js",
+                       os.path.join(THIS_DIR, "textedit.js"),
+                       os.path.join(THIS_DIR, "setup.js"),):
+            f = QFile(script)
+            assert f.open(QFile.ReadOnly | QFile.Text)
+            inject_js(QTextStream(f).readAll())

@@ -2,14 +2,15 @@ import logging
 
 from PyQt5.QtCore import QUrl, pyqtSlot as Slot
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
+from PyQt5.QtWebChannel import QWebChannel
 
 from .keymaps import Keymap
 from .window import current_window
 from .webview import FullScreenWindow
+from .content_handler import WebContentHandler
 
 
 BUFFERS = []
-ID_2_BUFFERS = {}
 KEYMAP = Keymap("webbuffer")
 
 
@@ -21,28 +22,8 @@ def buffers():
     return BUFFERS
 
 
-def buffer_for_id(id):
-    return ID_2_BUFFERS.get(id)
-
-
 def create_buffer(url=None):
-    wb = WebBuffer()
-    BUFFERS.append(wb)
-    bid = str(id(wb))
-    ID_2_BUFFERS[bid] = wb
-
-    # register the buffer id
-    script = QWebEngineScript()
-    script.setInjectionPoint(QWebEngineScript.DocumentCreation)
-    script.setSourceCode("webbuffer_id = %r;" % bid)
-    script.setWorldId(QWebEngineScript.ApplicationWorld)
-    wb.scripts().insert(script)
-
-    wb.fullScreenRequested.connect(wb._on_full_screen_requested)
-
-    if url:
-        wb.load(url)
-    return wb
+    return WebBuffer(url)
 
 
 def close_buffer(wb):
@@ -61,16 +42,12 @@ def close_buffer(wb):
             wb.view().setBuffer(invisibles[0])
 
     BUFFERS.remove(wb)
-    del ID_2_BUFFERS[str(id(wb))]
     return True
 
 
 class WebBuffer(QWebEnginePage):
     """
     Represent some web page content.
-
-    Do not use this constructor directly, instead use the create_buffer
-    function.
     """
 
     LOGGER = logging.getLogger("webcontent")
@@ -80,10 +57,29 @@ class WebBuffer(QWebEnginePage):
         QWebEnginePage.ErrorMessageLevel: logging.ERROR,
     }
 
+    def __init__(self, url=None):
+        QWebEnginePage.__init__(self)
+        BUFFERS.append(self)
+
+        self.fullScreenRequested.connect(self._on_full_screen_requested)
+        self._content_handler = WebContentHandler(self)
+        channel = QWebChannel(self)
+        channel.registerObject("contentHandler", self._content_handler)
+
+        self.setWebChannel(channel,
+                           QWebEngineScript.ApplicationWorld)
+
+        if url:
+            self.load(url)
+
     def load(self, url):
         if not isinstance(url, QUrl):
             url = QUrl(url)
         return QWebEnginePage.load(self, url)
+
+    @property
+    def content_handler(self):
+        return self._content_handler
 
     def javaScriptConsoleMessage(self, level, message, lineno, source):
         logger = self.LOGGER

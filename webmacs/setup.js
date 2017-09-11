@@ -1,41 +1,39 @@
-var webbuffer_id = null;
-var socket = new WebSocket(webmacsBaseUrl);
-
-socket.onclose = function() {
-  console.log("web channel closed");
-};
-socket.onerror = function(error) {
-  console.error("web channel error: " + error);
-};
-socket.onopen = function() {
-  console.log("WebSocket connected, setting up QWebChannel.");
-  new QWebChannel(socket, function(channel) {
+function registerExternal(channel) {
+    console.log("registering...");
     window.__webmacsHandler__ = channel.objects.contentHandler;
 
     function isTextInput(nodeName) {
-      return nodeName == "INPUT" || nodeName == "TEXTAREA";
+        return nodeName == "INPUT" || nodeName == "TEXTAREA";
     }
 
     document.addEventListener("focusin", function(e) {
-      if (isTextInput(e.target.nodeName)) {
-        __webmacsHandler__.onTextFocus(true);
-      }
+        if (isTextInput(e.target.nodeName)) {
+            __webmacsHandler__.onTextFocus(true);
+        }
     }, true);
 
     document.addEventListener("focusout", function(e) {
-      if (isTextInput(e.target.nodeName)) {
-        __webmacsHandler__.onTextFocus(false);
-      }
+        if (isTextInput(e.target.nodeName)) {
+            __webmacsHandler__.onTextFocus(false);
+        }
     }, true);
 
-      window.onfocus = function() {
-          __webmacsHandler__.onBufferFocus(webbuffer_id);
-      };
+    window.onfocus = function() {
+        __webmacsHandler__.onBufferFocus();
+    };
 
-      // force the focus on the current web content
-      __webmacsHandler__.onTextFocus(false);
-  });
-};
+    // force the focus on the current web content
+    __webmacsHandler__.onTextFocus(false);
+}
+
+function registerWebChannel() {
+    try {
+        new QWebChannel(qt.webChannelTransport, registerExternal);
+    } catch (e) {
+        setTimeout(registerWebChannel, 50);
+    }
+}
+registerWebChannel();
 
 
 function clickLike(elem) {
