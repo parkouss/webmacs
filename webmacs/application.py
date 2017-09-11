@@ -152,10 +152,3 @@ class Application(QApplication):
                 src = ("var webmacsBaseUrl = 'ws://localhost:%d';\n%s"
                        % (port, src))
             inject_js(src)
-        # do not let the focus on the web page if it request it. It is
-        # annoying, and it causes trouble when we open new webviews.
-        inject_js(
-            "if (document.activeElement) { document.activeElement.blur(); }",
-            QWebEngineScript.Deferred,
-            QWebEngineScript.MainWorld
-        )

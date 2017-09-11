@@ -30,9 +30,13 @@ socket.onopen = function() {
 
       window.onfocus = function() {
           __webmacsHandler__.onBufferFocus(webbuffer_id);
-      }
+      };
+
+      // force the focus on the current web content
+      __webmacsHandler__.onTextFocus(false);
   });
 };
+
 
 function clickLike(elem) {
     elem.focus();
