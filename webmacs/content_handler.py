@@ -37,3 +37,7 @@ class WebContentHandler(QObject):
         from .application import Application
 
         Application.INSTANCE.clipboard().setText(text)
+
+    @Slot(str, str, str, str)
+    def autoFillFormSubmitted(self, url, username, password, data):
+        print(url, username, password, data)

@@ -139,6 +139,7 @@ class Application(QApplication):
 
         for script in (":/qtwebchannel/qwebchannel.js",
                        os.path.join(THIS_DIR, "textedit.js"),
+                       os.path.join(THIS_DIR, "autofill.js"),
                        os.path.join(THIS_DIR, "setup.js"),):
             f = QFile(script)
             assert f.open(QFile.ReadOnly | QFile.Text)
