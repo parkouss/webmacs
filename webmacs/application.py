@@ -138,9 +138,9 @@ class Application(QApplication):
             default_profile.scripts().insert(script)
 
         for script in (":/qtwebchannel/qwebchannel.js",
-                       os.path.join(THIS_DIR, "textedit.js"),
-                       os.path.join(THIS_DIR, "autofill.js"),
-                       os.path.join(THIS_DIR, "setup.js"),):
+                       os.path.join(THIS_DIR, "scripts", "textedit.js"),
+                       os.path.join(THIS_DIR, "scripts", "autofill.js"),
+                       os.path.join(THIS_DIR, "scripts", "setup.js"),):
             f = QFile(script)
             assert f.open(QFile.ReadOnly | QFile.Text)
             inject_js(QTextStream(f).readAll())
