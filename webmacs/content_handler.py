@@ -1,16 +1,19 @@
 import json
 
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
+from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
+    QUrl
 
 from .window import current_window
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .minibuffer import current_minibuffer
 from .minibuffer.prompt import YesNoPrompt
+from .autofill import FormData
 
 
 class SavePasswordPrompt(YesNoPrompt):
-    def __init__(self, parent):
+    def __init__(self, parent, formdata):
         YesNoPrompt.__init__(self, "Save password ?", parent)
+        self.formdata = formdata
         self.closed.connect(self.__on_closed)
 
     def __on_closed(self):
@@ -53,5 +56,7 @@ class WebContentHandler(QObject):
     @Slot(str, str, str, str)
     def autoFillFormSubmitted(self, url, username, password, data):
         print(url, username, password, data)
-        prompt = SavePasswordPrompt(self.buffer)
+        formdata = FormData(url=QUrl(url), username=username,
+                            password=password, data=data)
+        prompt = SavePasswordPrompt(self.buffer, formdata)
         current_minibuffer().do_prompt(prompt)
