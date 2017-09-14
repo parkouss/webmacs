@@ -4,7 +4,7 @@ from PyQt5.QtCore import pyqtSignal as Signal, \
     QPoint, QEvent, QSortFilterProxyModel, QRegExp, Qt, QModelIndex
 
 from .keymap import KEYMAP, current_minibuffer  # noqa
-from .prompt import PromptTableModel, Prompt  # noqa
+from .prompt import PromptTableModel, Prompt, YesNoPrompt  # noqa
 
 
 class Popup(QTableView):

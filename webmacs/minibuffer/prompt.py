@@ -1,5 +1,7 @@
 from PyQt5.QtCore import QObject, QAbstractTableModel, QModelIndex, Qt, \
-    pyqtSlot as Slot, pyqtSignal as Signal
+    pyqtSlot as Slot, pyqtSignal as Signal, QRegExp
+
+from PyQt5.QtGui import QRegExpValidator
 
 
 class PromptTableModel(QAbstractTableModel):
@@ -83,3 +85,21 @@ class Prompt(QObject):
     def _on_edition_finished(self):
         self.close()
         self.finished.emit()
+
+
+class YesNoPrompt(Prompt):
+    def __init__(self, label, parent=None):
+        Prompt.__init__(self, parent)
+        self.label = label + "[y/n]"
+
+    def enable(self, minibuffer):
+        Prompt.enable(self, minibuffer)
+        buffer_input = minibuffer.input()
+
+        validator = QRegExpValidator(QRegExp("[yYnN]"))
+        buffer_input.setValidator(validator)
+        buffer_input.textEdited.connect(self._on_text_edited)
+
+    def _on_text_edited(self, text):
+        print("edited, " + text)
+        self.close()
