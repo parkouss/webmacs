@@ -76,12 +76,16 @@ class KeyEater(QObject):
         self._commands = commands
         self._local_key_map = None
         self.current_obj = None
+        self._use_global_keymap = True
 
     def set_local_key_map(self, keymap):
         self._local_key_map = keymap
 
     def local_key_map(self):
         return self._local_key_map
+
+    def set_global_keymap_enabled(self, enable):
+        self._use_global_keymap = enable
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.KeyPress:
@@ -96,7 +100,8 @@ class KeyEater(QObject):
     def active_keymaps(self):
         if self._local_key_map:
             yield self._local_key_map
-        yield global_key_map()
+        if self._use_global_keymap:
+            yield global_key_map()
 
     def _handle_keypress(self, keypress):
         incomplete_keychord = False
@@ -153,3 +158,7 @@ def local_keymap():
 
 def set_local_keymap(keymap):
     KeyEater.INSTANCE.set_local_key_map(keymap)
+
+
+def set_global_keymap_enabled(enable):
+    KeyEater.INSTANCE.set_global_keymap_enabled(enable)

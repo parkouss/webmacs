@@ -3,6 +3,9 @@ from PyQt5.QtCore import QObject, QAbstractTableModel, QModelIndex, Qt, \
 
 from PyQt5.QtGui import QRegExpValidator
 
+from ..keyboardhandler import set_global_keymap_enabled
+from ..keymaps import Keymap
+
 
 class PromptTableModel(QAbstractTableModel):
     def __init__(self, data, parent=None):
@@ -88,11 +91,15 @@ class Prompt(QObject):
 
 
 class YesNoPrompt(Prompt):
+    keymap = Keymap("yes-no")  # an empty keymap
+
     def __init__(self, label, parent=None):
         Prompt.__init__(self, parent)
         self.label = label + "[y/n]"
+        self.yes = None
 
     def enable(self, minibuffer):
+        set_global_keymap_enabled(False)  # disable any global keychord
         Prompt.enable(self, minibuffer)
         buffer_input = minibuffer.input()
 
@@ -101,5 +108,6 @@ class YesNoPrompt(Prompt):
         buffer_input.textEdited.connect(self._on_text_edited)
 
     def _on_text_edited(self, text):
-        print("edited, " + text)
+        self.yes = text in ('y', 'Y')
         self.close()
+        set_global_keymap_enabled(True)
