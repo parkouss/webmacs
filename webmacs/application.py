@@ -9,9 +9,10 @@ from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot, QFile, \
     QTextStream
 
 from . import require
-from .keyboardhandler import KEY_EATER
+from .keyboardhandler import KeyEater
 from .adblock import EASYLIST, Adblocker
 from .visited_links import VisitedLinks
+from .commands import COMMANDS
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -61,7 +62,7 @@ class Application(QApplication):
         self._interceptor.visited_link.connect(self._on_visited_link)
         self._setup_default_profile()
 
-        self.installEventFilter(KEY_EATER)
+        self.installEventFilter(KeyEater(COMMANDS))
 
         settings = QWebEngineSettings.globalSettings()
         settings.setAttribute(

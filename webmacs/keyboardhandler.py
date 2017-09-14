@@ -4,7 +4,6 @@ import weakref
 from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot
 
 from .keymaps import KeyPress, global_key_map
-from .commands import COMMANDS
 from . import hooks
 
 
@@ -36,28 +35,28 @@ class LocalKeymapSetter(QObject):
         if t == QEvent.WindowActivate:
             if obj in self._views:
                 # enable the current view
-                KEY_EATER.set_local_key_map(obj.keymap())
+                set_local_keymap(obj.keymap())
         elif t == QEvent.FocusIn:
             if obj in self._minibuffer_inputs:
                 # when the minibuffer input is shown, enable it
-                KEY_EATER.set_local_key_map(obj.keymap())
+                set_local_keymap(obj.keymap())
         elif t == QEvent.FocusOut:
             if obj in self._minibuffer_inputs:
                 # the focus is lost when the popup is active
                 if not obj.popup().isVisible():
                     # when the minibuffer input is hidden, enable its view
-                    KEY_EATER.set_local_key_map(
+                    set_local_keymap(
                         obj.parent().parent().current_web_view().keymap())
         return QObject.eventFilter(self, obj, event)
 
     def web_content_edit_focus_changed(self, window, enabled):
         if enabled:
             buff = window.current_web_view().buffer()
-            KEY_EATER.set_local_key_map(buff.content_edit_keymap())
+            set_local_keymap(buff.content_edit_keymap())
         else:
             if not window.minibuffer().input().hasFocus():
                 buff = window.current_web_view().buffer()
-                KEY_EATER.set_local_key_map(buff.keymap())
+                set_local_keymap(buff.keymap())
 
 
 LOCAL_KEYMAP_SETTER = LocalKeymapSetter()
@@ -66,13 +65,15 @@ hooks.webview_closed.add(LOCAL_KEYMAP_SETTER.view_destroyed)
 
 
 class KeyEater(QObject):
+    INSTANCE = None
     """
     Handle Qt keypresses events.
     """
-    def __init__(self):
+    def __init__(self, commands):
         QObject.__init__(self)
+        KeyEater.INSTANCE = self
         self._keypresses = []
-        self._commands = COMMANDS
+        self._commands = commands
         self._local_key_map = None
         self.current_obj = None
 
@@ -134,11 +135,8 @@ class KeyEater(QObject):
         command()
 
 
-KEY_EATER = KeyEater()
-
-
 def send_key_event(keypress):
-    obj = KEY_EATER.current_obj
+    obj = KeyEater.INSTANCE.current_obj
     if obj:
         obj = obj()
         if obj:
@@ -150,8 +148,8 @@ def send_key_event(keypress):
 
 
 def local_keymap():
-    return KEY_EATER.local_key_map()
+    return KeyEater.INSTANCE.local_key_map()
 
 
 def set_local_keymap(keymap):
-    KEY_EATER.set_local_key_map(keymap)
+    KeyEater.INSTANCE.set_local_key_map(keymap)
