@@ -46,10 +46,7 @@ def cancel():
     input = minibuffer.input()
     if input.popup().isVisible():
         input.popup().hide()
-    elif input.selectedText():
-        input.deselect()
-    else:
-        minibuffer.close_prompt()
+    minibuffer.close_prompt()
 
 
 @KEYMAP.define_key("M-Backspace")
