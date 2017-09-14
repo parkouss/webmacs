@@ -4,7 +4,7 @@ from PyQt5.QtCore import QUrl, QThread, pyqtSlot as Slot, \
     pyqtSignal as Signal, QStringListModel, QObject
 
 
-from ..minibuffer import Prompt, PromptTableModel
+from ..minibuffer.prompt import Prompt, PromptTableModel
 from ..commands import define_command
 from ..webbuffer import current_buffer, create_buffer
 from ..window import current_window

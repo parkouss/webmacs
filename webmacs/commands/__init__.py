@@ -1,4 +1,5 @@
 from PyQt5.QtCore import QObject, pyqtSlot as Slot
+from ..minibuffer import current_minibuffer, Prompt
 
 COMMANDS = {}
 
@@ -59,7 +60,3 @@ def define_command(name, binding=None, **args):
             command.binding = func
             return func
         return wrapper
-
-
-from ..minibuffer import current_minibuffer, Prompt  # noqa
-
