@@ -107,7 +107,7 @@ class KeyEater(QObject):
         incomplete_keychord = False
         command_called = False
         self._keypresses.append(keypress)
-        logging.info("keychord: %s" % self._keypresses)
+        logging.debug("keychord: %s" % self._keypresses)
 
         for keymap in self.active_keymaps():
             result = keymap.lookup(self._keypresses)
@@ -119,10 +119,8 @@ class KeyEater(QObject):
             else:
                 try:
                     self._call_command(result.command)
-                except Exception as exc:
-                    print("Error calling command: %s" % exc)
-                    import traceback
-                    traceback.print_exc()
+                except Exception:
+                    logging.exception("Error calling command:")
                 command_called = True
 
         if command_called or not incomplete_keychord:

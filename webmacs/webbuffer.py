@@ -8,6 +8,7 @@ from .keymaps import Keymap
 from .window import current_window
 from .webview import FullScreenWindow
 from .content_handler import WebContentHandler
+from .application import Application
 
 
 BUFFERS = []
@@ -68,6 +69,8 @@ class WebBuffer(QWebEnginePage):
 
         self.setWebChannel(channel,
                            QWebEngineScript.ApplicationWorld)
+
+        self.loadFinished.connect(self.finished)
 
         if url:
             self.load(url)
@@ -173,6 +176,9 @@ class WebBuffer(QWebEnginePage):
         buffer = create_buffer()
         self.view().setBuffer(buffer)
         return buffer
+
+    def finished(self):
+        Application.INSTANCE.autofill().complete_buffer(self, self.url())
 
 
 KEYMAP.define_key("g", "go-to")
