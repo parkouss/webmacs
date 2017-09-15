@@ -13,6 +13,8 @@ from .keyboardhandler import KeyEater
 from .adblock import EASYLIST, Adblocker
 from .visited_links import VisitedLinks
 from .commands import COMMANDS
+from .autofill import Autofill
+from .autofill.db import PasswordDb
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -110,6 +112,9 @@ class Application(QApplication):
     def visitedlinks(self):
         return self._visitedlinks
 
+    def autofill(self):
+        return self._autofill
+
     @Slot(str)
     def _on_visited_link(self, url):
         if self._visitedlinks:
@@ -128,6 +133,8 @@ class Application(QApplication):
             QWebEngineProfile.ForcePersistentCookies)
         self._visitedlinks = VisitedLinks(os.path.join(profile_path,
                                                        "visitedlinks.db"))
+        self._autofill = Autofill(PasswordDb(os.path.join(profile_path,
+                                                          "autofill.db")))
         default_profile.setCachePath(os.path.join(path, "cache"))
 
         def inject_js(src, ipoint=QWebEngineScript.DocumentCreation,

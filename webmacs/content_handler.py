@@ -8,17 +8,22 @@ from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .minibuffer import current_minibuffer
 from .minibuffer.prompt import YesNoPrompt
 from .autofill import FormData
+from .application import Application
 
 
 class SavePasswordPrompt(YesNoPrompt):
     def __init__(self, parent, formdata):
         YesNoPrompt.__init__(self, "Save password ?", parent)
+        self.buffer = parent
         self.formdata = formdata
         self.closed.connect(self.__on_closed)
 
     def __on_closed(self):
         self.deleteLater()
-        print("closed!")
+        if self.yes:
+            Application.INSTANCE.autofill().add_form_entry(
+                self.buffer.url(), self.formdata
+            )
 
 
 class WebContentHandler(QObject):
@@ -55,8 +60,11 @@ class WebContentHandler(QObject):
 
     @Slot(str, str, str, str)
     def autoFillFormSubmitted(self, url, username, password, data):
-        print(url, username, password, data)
         formdata = FormData(url=QUrl(url), username=username,
                             password=password, data=data)
-        prompt = SavePasswordPrompt(self.buffer, formdata)
-        current_minibuffer().do_prompt(prompt)
+        passwords = Application.INSTANCE.autofill().passwords_for_url(
+            self.buffer.url()
+        )
+        if not passwords:
+            prompt = SavePasswordPrompt(self.buffer, formdata)
+            current_minibuffer().do_prompt(prompt)
