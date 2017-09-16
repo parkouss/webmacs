@@ -6,6 +6,8 @@ from PyQt5.QtWebEngineWidgets import QWebEngineScript
 from collections import namedtuple
 
 from .db import PasswordEntry
+from ..minibuffer import current_minibuffer
+from .prompt import SavePasswordPrompt
 
 FormData = namedtuple(
     "FormData",
@@ -35,6 +37,15 @@ class Autofill(QObject):
     def __init__(self, db, parent=None):
         QObject.__init__(self, parent)
         self._db = db
+
+    def maybe_save_form_password(self, buffer, formdata):
+        passwords = self.passwords_for_url(
+            buffer.url()
+        )
+        print (passwords)
+        if not passwords:
+            prompt = SavePasswordPrompt(self, buffer, formdata)
+            current_minibuffer().do_prompt(prompt)
 
     def add_form_entry(self, url, formdata):
         host = create_host(url)
