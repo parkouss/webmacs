@@ -29,6 +29,7 @@ class PasswordDb(object):
         INSERT INTO autofill (host, username, password, data, updated)
         VALUES (?, ?, ?, ?, ?)
         """, (pe.host, pe.username, pe.password, pe.data, datetime.now()))
+        self._conn.commit()
 
     def get_entries(self, host):
         return [
