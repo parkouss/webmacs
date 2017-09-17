@@ -31,11 +31,17 @@ class PasswordDb(object):
         """, (pe.host, pe.username, pe.password, pe.data, datetime.now()))
         self._conn.commit()
 
-    def get_entries(self, host):
+    def _get_entries(self, host, where):
         return [
             PasswordEntry(*row)
             for row in self._conn.execute("""
         SELECT id, host, username, password, data, updated FROM autofill
-        WHERE host=? ORDER BY updated DESC
-        """, (host,))
+        WHERE host=? %s ORDER BY updated DESC
+        """ % where, (host,))
         ]
+
+    def get_form_entries(self, host):
+        return self._get_entries(host, where="AND data IS NOT NULL")
+
+    def get_auth_entries(self, host):
+        return self._get_entries(host, where="AND data IS NULL")

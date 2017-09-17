@@ -39,10 +39,9 @@ class Autofill(QObject):
         self._db = db
 
     def maybe_save_form_password(self, buffer, formdata):
-        passwords = self.passwords_for_url(
+        passwords = self.form_passwords_for_url(
             buffer.url()
         )
-        print (passwords)
         if not passwords:
             prompt = SavePasswordPrompt(self, buffer, formdata)
             current_minibuffer().do_prompt(prompt)
@@ -62,13 +61,17 @@ class Autofill(QObject):
             if formdata.username == pwd.username:
                 pass
 
-    def passwords_for_url(self, url):
-        return self._db.get_entries(create_host(url))
+    def form_passwords_for_url(self, url):
+        return self._db.get_form_entries(create_host(url))
+
+    def auth_passwords_for_url(self, url):
+        return self._db.get_auth_entries(create_host(url))
 
     def complete_buffer(self, buffer, url):
         host = create_host(url)
         logging.info("checking autofill for %s", host)
-        passwords = self._db.get_entries(host)
+        passwords = self.form_passwords_for_url(url)
+
         if passwords:
             logging.info("autofilling for %s", host)
             buffer.runJavaScript("complete_form_data('%s')"

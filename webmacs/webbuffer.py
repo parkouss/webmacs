@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtCore import QUrl, pyqtSlot as Slot
+from PyQt5.QtCore import QUrl, pyqtSlot as Slot, QEventLoop
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 from PyQt5.QtWebChannel import QWebChannel
 
@@ -9,6 +9,9 @@ from .window import current_window
 from .webview import FullScreenWindow
 from .content_handler import WebContentHandler
 from .application import Application
+from .minibuffer import current_minibuffer
+from .autofill import FormData
+from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 
 
 BUFFERS = []
@@ -71,6 +74,8 @@ class WebBuffer(QWebEnginePage):
                            QWebEngineScript.ApplicationWorld)
 
         self.loadFinished.connect(self.finished)
+        self.authenticationRequired.connect(self.handle_authentication)
+        self.__authentication_data = None
 
         if url:
             self.load(url)
@@ -178,7 +183,40 @@ class WebBuffer(QWebEnginePage):
         return buffer
 
     def finished(self):
-        Application.INSTANCE.autofill().complete_buffer(self, self.url())
+        autofill = Application.INSTANCE.autofill()
+        if self.__authentication_data:
+            # save authentication data
+            sprompt = SavePasswordPrompt(autofill, self,
+                                         self.__authentication_data)
+            self.__authentication_data = None
+            current_minibuffer().do_prompt(sprompt)
+        else:
+            autofill.complete_buffer(self, self.url())
+
+    def handle_authentication(self, url, authenticator):
+        autofill = Application.INSTANCE.autofill()
+        passwords = autofill.auth_passwords_for_url(url)
+        if passwords:
+            data = passwords[0]
+            authenticator.setUser(data.username)
+            authenticator.setPassword(data.password)
+            return
+
+        # ask authentication credentials
+        loop = QEventLoop()
+        prompt = AskPasswordPrompt(autofill, self)
+        current_minibuffer().do_prompt(prompt)
+
+        def save_auth():
+            data = self.__authentication_data = FormData(url, prompt.username,
+                                                         prompt.password, None)
+            authenticator.setUser(data.username)
+            authenticator.setPassword(data.password)
+            loop.quit()
+
+        prompt.closed.connect(save_auth)
+
+        loop.exec_()
 
 
 KEYMAP.define_key("g", "go-to")
