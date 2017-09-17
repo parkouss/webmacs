@@ -1,3 +1,7 @@
+{% extends "base.html" %}
+
+{% block title %}Version{% endblock %}
+{% block content %}
 <table>
   <tr>
     <td>webmacs version:</td><td>{{version}}</td>
@@ -6,3 +10,4 @@
     <td>qt version:</td><td>{{qt_version}}</td>
   </tr>
 </table>
+{% endblock %}
