@@ -15,6 +15,7 @@ from .visited_links import VisitedLinks
 from .commands import COMMANDS
 from .autofill import Autofill
 from .autofill.db import PasswordDb
+from .scheme_handlers.webmacs import WebmacsSchemeHandler
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -126,6 +127,10 @@ class Application(QApplication):
     def _setup_default_profile(self):
         default_profile = QWebEngineProfile.defaultProfile()
         default_profile.setRequestInterceptor(self._interceptor)
+        default_profile.installUrlSchemeHandler(
+            b"webmacs",
+            WebmacsSchemeHandler(self)
+        )
         path = self.profiles_path()
         profile_path = os.path.join(path, "default")
         default_profile.setPersistentStoragePath(profile_path)
