@@ -10,6 +10,7 @@ from .webview import FullScreenWindow
 from .content_handler import WebContentHandler
 from .application import Application
 from .minibuffer import current_minibuffer
+from .minibuffer.prompt import YesNoPrompt
 from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import send_key_event
@@ -221,6 +222,15 @@ class WebBuffer(QWebEnginePage):
         prompt.closed.connect(save_auth)
 
         loop.exec_()
+
+    def javaScriptConfirm(self, url, msg):
+        loop = QEventLoop()
+        prompt = YesNoPrompt("[js-confirm] {} ".format(msg))
+        current_minibuffer().do_prompt(prompt)
+
+        prompt.closed.connect(loop.quit)
+        loop.exec_()
+        return prompt.yes
 
 
 KEYMAP.define_key("g", "go-to")
