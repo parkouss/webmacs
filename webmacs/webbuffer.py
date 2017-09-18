@@ -183,6 +183,9 @@ class WebBuffer(QWebEnginePage):
         return buffer
 
     def finished(self):
+        Application.INSTANCE.visitedlinks().visit(self.url().toString(),
+                                                  self.title())
+
         autofill = Application.INSTANCE.autofill()
         if self.__authentication_data:
             # save authentication data

@@ -22,8 +22,6 @@ THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class UrlInterceptor(QWebEngineUrlRequestInterceptor):
-    visited_link = Signal(str)
-
     def __init__(self, app):
         QWebEngineUrlRequestInterceptor.__init__(self)
         self.app = app
@@ -39,10 +37,7 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
     def interceptRequest(self, request):
         url = request.requestUrl()
         url_s = url.toString()
-        if request.resourceType() == request.ResourceTypeMainFrame:
-            if url == request.firstPartyUrl():
-                self.visited_link.emit(url_s)
-        elif self._use_adblock and self._adblock.matches(
+        if self._use_adblock and self._adblock.matches(
                 url_s,
                 request.firstPartyUrl().toString(),):
             logging.info("filtered: %s", url_s)
@@ -62,7 +57,6 @@ class Application(QApplication):
         self._setup_conf_paths()
 
         self._interceptor = UrlInterceptor(self)
-        self._interceptor.visited_link.connect(self._on_visited_link)
         self._setup_default_profile()
 
         self.installEventFilter(KeyEater(COMMANDS))
@@ -115,11 +109,6 @@ class Application(QApplication):
 
     def autofill(self):
         return self._autofill
-
-    @Slot(str)
-    def _on_visited_link(self, url):
-        if self._visitedlinks:
-            self._visitedlinks.visit(url)
 
     def url_interceptor(self):
         return self._interceptor

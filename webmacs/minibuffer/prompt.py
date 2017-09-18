@@ -24,7 +24,13 @@ class PromptTableModel(QAbstractTableModel):
         if role != Qt.DisplayRole:
             return None
 
-        return self._data[index.row()][index.column()]
+        return index.internalPointer()
+
+    def index(self, row, col, parent=QModelIndex()):
+        try:
+            return self.createIndex(row, col, self._data[row][col])
+        except IndexError:
+            return QModelIndex()
 
 
 class Prompt(QObject):

@@ -7,17 +7,17 @@ class VisitedLinks(object):
         self._conn = sqlite3.connect(dbbath)
         self._conn.execute("""
         CREATE TABLE IF NOT EXISTS visitedlinks
-        (url TEXT PRIMARY KEY, lastseen DATE);
+        (url TEXT PRIMARY KEY, title TEXT, lastseen DATE);
         """)
 
-    def visit(self, url):
+    def visit(self, url, title):
         self._conn.execute("""
-        INSERT OR REPLACE INTO visitedlinks (url, lastseen)
-        VALUES (?, ?)
-        """, (url, datetime.now()))
+        INSERT OR REPLACE INTO visitedlinks (url, title, lastseen)
+        VALUES (?, ?, ?)
+        """, (url, title, datetime.now()))
         self._conn.commit()
 
     def visited_urls(self):
-        return [row[0] for row in self._conn.execute(
-            "select url from visitedlinks order by lastseen DESC"
+        return [(row[0], row[1]) for row in self._conn.execute(
+            "select url, title from visitedlinks order by lastseen DESC"
         )]

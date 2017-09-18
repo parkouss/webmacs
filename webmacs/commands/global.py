@@ -3,6 +3,7 @@ import itertools
 
 from . import define_command, COMMANDS
 from ..minibuffer import Prompt
+from ..minibuffer.prompt import PromptTableModel
 from ..application import Application
 from ..window import current_window
 from ..webbuffer import create_buffer, BUFFERS
@@ -120,8 +121,10 @@ class VisitedLinksPrompt(Prompt):
     }
 
     def completer_model(self):
-        model = QStringListModel(self)
-        model.setStringList(Application.INSTANCE.visitedlinks().visited_urls())
+        model = PromptTableModel(
+            Application.INSTANCE.visitedlinks().visited_urls(),
+            self
+        )
         return model
 
 
@@ -129,5 +132,5 @@ class VisitedLinksPrompt(Prompt):
 def visited_links_history(prompt):
     index = prompt.index()
     if index.isValid():
-        url = index.model().data(index)
+        url = index.internalPointer()
         current_window().current_web_view().buffer().load(url)
