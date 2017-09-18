@@ -4,7 +4,7 @@ from PyQt5.QtCore import QUrl, pyqtSlot as Slot, QEventLoop
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 from PyQt5.QtWebChannel import QWebChannel
 
-from .keymaps import Keymap
+from .keymaps import Keymap, KeyPress
 from .window import current_window
 from .webview import FullScreenWindow
 from .content_handler import WebContentHandler
@@ -12,6 +12,7 @@ from .application import Application
 from .minibuffer import current_minibuffer
 from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
+from .keyboardhandler import send_key_event
 
 
 BUFFERS = []
@@ -229,10 +230,6 @@ KEYMAP.define_key("S-f", "go-forward")
 KEYMAP.define_key("S-b", "go-backward")
 KEYMAP.define_key("C-s", "i-search-forward")
 KEYMAP.define_key("C-r", "i-search-backward")
-KEYMAP.define_key("C-n", "scroll-down")
-KEYMAP.define_key("C-p", "scroll-up")
-KEYMAP.define_key("n", "scroll-down")
-KEYMAP.define_key("p", "scroll-up")
 KEYMAP.define_key("C-v", "scroll-page-down")
 KEYMAP.define_key("M-v", "scroll-page-up")
 KEYMAP.define_key("M->", "scroll-bottom")
@@ -243,6 +240,28 @@ KEYMAP.define_key("r", "reload-buffer")
 KEYMAP.define_key("S-r", "reload-buffer-no-cache")
 KEYMAP.define_key("h", "visited-links-history")
 KEYMAP.define_key("q", "close-buffer")
+
+
+@KEYMAP.define_key("C-n")
+@KEYMAP.define_key("n")
+def send_down():
+    send_key_event(KeyPress.from_str("Down"))
+
+
+@KEYMAP.define_key("C-p")
+@KEYMAP.define_key("p")
+def send_up():
+    send_key_event(KeyPress.from_str("Up"))
+
+
+@KEYMAP.define_key("C-f")
+def send_right():
+    send_key_event(KeyPress.from_str("Right"))
+
+
+@KEYMAP.define_key("C-b")
+def send_left():
+    send_key_event(KeyPress.from_str("Left"))
 
 
 from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP
