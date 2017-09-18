@@ -77,6 +77,7 @@ class WebBuffer(QWebEnginePage):
 
         self.loadFinished.connect(self.finished)
         self.authenticationRequired.connect(self.handle_authentication)
+        self.linkHovered.connect(self.on_url_hovered)
         self.__authentication_data = None
 
         if url:
@@ -231,6 +232,9 @@ class WebBuffer(QWebEnginePage):
         prompt.closed.connect(loop.quit)
         loop.exec_()
         return prompt.yes
+
+    def on_url_hovered(self, url):
+        current_minibuffer().show_info(url)
 
 
 KEYMAP.define_key("g", "go-to")

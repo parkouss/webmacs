@@ -215,6 +215,10 @@ class Minibuffer(QWidget):
         self._input.hide()
         self._prompt = None
 
+    def show_info(self, text):
+        if self._input.isHidden():
+            self.label.setText(text)
+
     def input(self):
         return self._input
 
