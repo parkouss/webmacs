@@ -21,3 +21,8 @@ class VisitedLinks(object):
         return [(row[0], row[1]) for row in self._conn.execute(
             "select url, title from visitedlinks order by lastseen DESC"
         )]
+
+    def remove(self, url):
+        self._conn.execute("""
+        DELETE from visitedlinks WHERE url = ?
+        """, (url,))

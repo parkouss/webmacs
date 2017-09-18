@@ -1,12 +1,13 @@
-from PyQt5.QtCore import QStringListModel
+from PyQt5.QtCore import QStringListModel, QModelIndex
 import itertools
 
 from . import define_command, COMMANDS
-from ..minibuffer import Prompt
+from ..minibuffer import Prompt, KEYMAP
 from ..minibuffer.prompt import PromptTableModel
 from ..application import Application
 from ..window import current_window
-from ..webbuffer import create_buffer, BUFFERS
+from ..webbuffer import create_buffer, BUFFERS, current_minibuffer
+from ..keymaps import Keymap
 
 
 class CommandsListPrompt(Prompt):
@@ -114,18 +115,42 @@ def toggle_ad_block():
     reload_buffer_no_cache()
 
 
+class VisitedLinksModel(PromptTableModel):
+    def __init__(self, parent):
+        visitedlinks = Application.INSTANCE.visitedlinks()
+        PromptTableModel.__init__(self, visitedlinks.visited_urls())
+        self.visitedlinks = visitedlinks
+
+    def remove_history_entry(self, index):
+        self.beginRemoveRows(QModelIndex(), index.row(), index.row())
+        self.visitedlinks.remove(self._data.pop(index.row())[0])
+        self.endRemoveRows()
+
+
+VISITEDLINKS_KEYMAP = Keymap("visited-links-list", parent=KEYMAP)
+
+
 class VisitedLinksPrompt(Prompt):
     label = "Find url from visited links:"
     complete_options = {
         "match": Prompt.FuzzyMatch,
     }
+    keymap = VISITEDLINKS_KEYMAP
 
     def completer_model(self):
-        model = PromptTableModel(
-            Application.INSTANCE.visitedlinks().visited_urls(),
-            self
-        )
-        return model
+        return VisitedLinksModel(self)
+
+
+@VISITEDLINKS_KEYMAP.define_key("C-k")
+def visited_links_remove_entry():
+    pinput = current_minibuffer().input()
+
+    selection = pinput.popup().selectionModel().currentIndex()
+    if not selection.isValid():
+        return
+
+    selection = selection.model().mapToSource(selection)
+    pinput.completer_model().remove_history_entry(selection)
 
 
 @define_command("visited-links-history", prompt=VisitedLinksPrompt)
