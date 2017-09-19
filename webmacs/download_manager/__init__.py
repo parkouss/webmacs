@@ -1,7 +1,6 @@
 from PyQt5.QtCore import QObject, pyqtSlot as Slot, QEventLoop
-from PyQt5.QtWidgets import QFileSystemModel
 
-from ..minibuffer.prompt import Prompt
+from ..minibuffer.prompt import Prompt, FSModel
 from ..minibuffer import current_minibuffer
 from ..minibuffer.keymap import KEYMAP
 from ..keymaps import Keymap
@@ -19,6 +18,9 @@ def cancel_dl():
 
 class DlPrompt(Prompt):
     keymap = DL_PROMPT_KEYMAP
+    complete_options = {
+        "autocomplete": True
+    }
 
     def __init__(self, dl):
         Prompt.__init__(self)
@@ -27,8 +29,7 @@ class DlPrompt(Prompt):
 
     def completer_model(self):
         # todo, not working
-        model = QFileSystemModel(self)
-        model.setRootPath("")
+        model = FSModel(self)
         return model
 
     def enable(self, minibuffer):

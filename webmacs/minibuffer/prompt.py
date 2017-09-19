@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtCore import QObject, QAbstractTableModel, QModelIndex, Qt, \
     pyqtSlot as Slot, pyqtSignal as Signal, QRegExp
 
@@ -5,6 +7,50 @@ from PyQt5.QtGui import QRegExpValidator
 
 from ..keyboardhandler import set_global_keymap_enabled
 from ..keymaps import Keymap
+
+
+class FSModel(QAbstractTableModel):
+    """
+    A custom filesystemmodel that does work with the custom completer;
+
+    May not be as efficient as the qt version, but works without much pain.
+    """
+    def __init__(self, parent=None):
+        QAbstractTableModel.__init__(self, parent)
+        self._root_dir = ""
+        self._files = []
+
+    def rowCount(self, index=QModelIndex()):
+        return len(self._files)
+
+    def columnCount(self, index=QModelIndex()):
+        return 1
+
+    def data(self, index, role=Qt.DisplayRole):
+        if role != Qt.DisplayRole:
+            return None
+
+        try:
+            return os.path.join(self._root_dir, self._files[index.row()])
+        except IndexError:
+            return None
+
+    @Slot(str)
+    def text_changed(self, text):
+        if text.endswith("/"):
+            root_dir = text
+        else:
+            root_dir = os.path.dirname(text)
+
+        if root_dir != self._root_dir:
+            try:
+                files = os.listdir(root_dir)
+            except OSError:
+                return
+            self.beginResetModel()
+            self._files = files
+            self._root_dir = root_dir
+            self.endResetModel()
 
 
 class PromptTableModel(QAbstractTableModel):
@@ -55,7 +101,10 @@ class Prompt(QObject):
         buffer_input.setText("")
         buffer_input.show()
         buffer_input.setFocus()
-        buffer_input.set_completer_model(self.completer_model())
+        completer_model = self.completer_model()
+        if hasattr(completer_model, "text_changed"):
+            buffer_input.textEdited.connect(completer_model.text_changed)
+        buffer_input.set_completer_model(completer_model)
         buffer_input.returnPressed.connect(self._on_edition_finished)
         buffer_input.completion_activated.connect(
             self._on_completion_activated)
