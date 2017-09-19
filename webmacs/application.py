@@ -5,8 +5,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript, \
     QWebEngineSettings
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot, QFile, \
-    QTextStream
+from PyQt5.QtCore import QFile, QTextStream
 
 from . import require
 from .keyboardhandler import KeyEater
@@ -16,6 +15,7 @@ from .commands import COMMANDS
 from .autofill import Autofill
 from .autofill.db import PasswordDb
 from .scheme_handlers.webmacs import WebmacsSchemeHandler
+from .download_manager import DownloadManager
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -57,6 +57,8 @@ class Application(QApplication):
         self._setup_conf_paths()
 
         self._interceptor = UrlInterceptor(self)
+        self._download_manager = DownloadManager(self)
+
         self._setup_default_profile()
 
         self.installEventFilter(KeyEater(COMMANDS))
@@ -113,6 +115,9 @@ class Application(QApplication):
     def url_interceptor(self):
         return self._interceptor
 
+    def download_manager(self):
+        return self._download_manager
+
     def _setup_default_profile(self):
         default_profile = QWebEngineProfile.defaultProfile()
         default_profile.setRequestInterceptor(self._interceptor)
@@ -130,6 +135,9 @@ class Application(QApplication):
         self._autofill = Autofill(PasswordDb(os.path.join(profile_path,
                                                           "autofill.db")))
         default_profile.setCachePath(os.path.join(path, "cache"))
+        default_profile.downloadRequested.connect(
+            self._download_manager.download_requested
+        )
 
         def inject_js(src, ipoint=QWebEngineScript.DocumentCreation,
                       iid=QWebEngineScript.ApplicationWorld):
