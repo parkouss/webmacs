@@ -2,7 +2,7 @@ from PyQt5.QtCore import QObject, pyqtSlot as Slot, QEventLoop
 
 from ..minibuffer.prompt import Prompt, FSModel
 from ..minibuffer import current_minibuffer
-from ..minibuffer.keymap import KEYMAP
+from ..minibuffer.keymap import KEYMAP, cancel
 from ..keymaps import Keymap
 
 DL_PROMPT_KEYMAP = Keymap("dl-prompt", parent=KEYMAP)
@@ -12,8 +12,8 @@ DL_PROMPT_KEYMAP = Keymap("dl-prompt", parent=KEYMAP)
 def cancel_dl():
     prompt = current_minibuffer().prompt()
     prompt._dl.cancel()
-    prompt.close()
-    prompt.finished.emit()
+    cancel()
+    prompt.finished.emit()  # to end the event loop
 
 
 class DlPrompt(Prompt):
