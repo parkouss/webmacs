@@ -233,6 +233,10 @@ class WebBuffer(QWebEnginePage):
         loop.exec_()
         return prompt.yes
 
+    def javaScriptAlert(self, url, msg):
+        msg = "[js-alert] {}".format(msg)
+        current_minibuffer().show_info(msg)
+
     def on_url_hovered(self, url):
         current_minibuffer().show_info(url)
 
