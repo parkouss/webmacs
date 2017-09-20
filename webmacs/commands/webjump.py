@@ -40,7 +40,7 @@ class WebJumpPrompt(Prompt):
         data = []
         for name, w in WEBJUMPS.items():
             if w.allow_args:
-                name = name + " "
+                name = name
             data.append((name, w.doc))
         return PromptTableModel(data)
 
@@ -63,7 +63,7 @@ class WebJumpPrompt(Prompt):
         model = self._wb_model
         for name, w in WEBJUMPS.items():
             if w.allow_args and w.complete_fn:
-                name = name + " "
+                name = name
                 if text.startswith(name):
                     model = self._wc_model
                     self._active_webjump = (w, name)
