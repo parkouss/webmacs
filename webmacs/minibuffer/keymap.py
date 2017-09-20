@@ -53,9 +53,9 @@ def cancel():
 def clean_aindent_bsunindent():
     input = current_minibuffer().input()
 
-    parts = re.split(r"([-_ ])", input.text())
+    parts = re.split(r"([-_ /])", input.text())
     while parts:
-        if parts[-1] in ("", "-", "_", " "):
+        if parts[-1] in ("", "-", "_", " ", "/"):
             parts.pop()
         else:
             break
