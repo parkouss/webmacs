@@ -5,6 +5,8 @@ from ... import __version__
 
 
 class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
+    scheme = b"webmacs"
+
     def __init__(self, parent=None):
         QWebEngineUrlSchemeHandler.__init__(self, parent)
         self.env = Environment(

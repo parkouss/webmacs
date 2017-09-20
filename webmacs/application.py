@@ -121,10 +121,13 @@ class Application(QApplication):
     def _setup_default_profile(self):
         default_profile = QWebEngineProfile.defaultProfile()
         default_profile.setRequestInterceptor(self._interceptor)
-        default_profile.installUrlSchemeHandler(
-            b"webmacs",
-            WebmacsSchemeHandler(self)
-        )
+
+        self._scheme_handlers = {}  # keep a python reference
+        for handler in (WebmacsSchemeHandler,):
+            h = handler(self)
+            self._scheme_handlers[handler.scheme] = h
+            default_profile.installUrlSchemeHandler(handler.scheme, h)
+
         path = self.profiles_path()
         profile_path = os.path.join(path, "default")
         default_profile.setPersistentStoragePath(profile_path)
