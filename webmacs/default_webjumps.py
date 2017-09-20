@@ -5,6 +5,7 @@ from PyQt5.QtCore import QUrl
 from .commands.webjump import define_webjump
 from urllib.request import urlopen
 from .minibuffer.prompt import FSModel
+from .scheme_handlers.webmacs import PAGES as webmacs_pages
 
 
 def google_complete(text):
@@ -37,3 +38,13 @@ define_webjump("file://",
                "file://%s",
                "Local uris",
                complete_fn=complete_fs())
+
+
+def complete_pages(text):
+    return [p for p in webmacs_pages if text in p]
+
+
+define_webjump("webmacs://",
+               "webmacs://%s",
+               "webmacs internal pages",
+               complete_fn=complete_pages)
