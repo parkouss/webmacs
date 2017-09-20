@@ -134,6 +134,7 @@ class VisitedLinksPrompt(Prompt):
     label = "Find url from visited links:"
     complete_options = {
         "match": Prompt.FuzzyMatch,
+        "complete-empty": True,
     }
     keymap = VISITEDLINKS_KEYMAP
 
