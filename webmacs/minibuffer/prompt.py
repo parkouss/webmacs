@@ -165,4 +165,7 @@ class YesNoPrompt(Prompt):
     def _on_text_edited(self, text):
         self.yes = text in ('y', 'Y')
         self.close()
+        buffer_input = self.minibuffer.input()
+        buffer_input.validator().deleteLater()
+        buffer_input.setValidator(None)
         set_global_keymap_enabled(True)
