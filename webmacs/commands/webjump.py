@@ -106,7 +106,7 @@ class WebJumpPromptCurrentUrl(WebJumpPrompt):
 
 def get_url(value):
     args = value.split(" ", 1)
-    command = args[0]
+    command = args[0] + " "
     try:
         webjump = WEBJUMPS[command]
     except KeyError:
