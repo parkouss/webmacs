@@ -69,10 +69,10 @@ def main():
 
     window = Window()
 
-    buffer = create_buffer("http://www.google.fr")
+    buffer = create_buffer("http://duckduckgo.com/?kae=t")
     window.current_web_view().setBuffer(buffer)
 
-    window.show()
+    window.showMaximized()
 
     signal_wakeup(app)
     signal.signal(signal.SIGINT, lambda s, h: app.quit())
