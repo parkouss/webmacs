@@ -2,18 +2,19 @@ function registerExternal(channel) {
     console.log("registering...");
     window.__webmacsHandler__ = channel.objects.contentHandler;
 
-    function isTextInput(nodeName) {
-        return nodeName == "INPUT" || nodeName == "TEXTAREA";
+    function isTextInput(node) {
+        return node.isContentEditable
+            || node.nodeName == "INPUT" || node.nodeName == "TEXTAREA";
     }
 
     document.addEventListener("focusin", function(e) {
-        if (isTextInput(e.target.nodeName)) {
+        if (isTextInput(e.target)) {
             __webmacsHandler__.onTextFocus(true);
         }
     }, true);
 
     document.addEventListener("focusout", function(e) {
-        if (isTextInput(e.target.nodeName)) {
+        if (isTextInput(e.target)) {
             __webmacsHandler__.onTextFocus(false);
         }
     }, true);
