@@ -90,7 +90,9 @@ function escapeRegExp(str) {
 function Hint(obj, manager, left, top) {
     this.obj = obj;
     this.objBackground = obj.style.background;
+    this.objColor = obj.style.color;
     obj.style.background = manager.options.background;
+    obj.style.color = manager.options.text_color;
     this.index = manager.hints.length + 1;
     var hint = document.createElement("span");
     hint.textContent = this.index;
@@ -120,6 +122,7 @@ Hint.prototype.url = function() {
 
 Hint.prototype.remove = function() {
     this.obj.style.background = this.objBackground;
+    this.obj.style.color = this.objColor;
     this.hint.parentNode.removeChild(this.hint);
 }
 
@@ -135,8 +138,10 @@ Hint.prototype.refresh = function() {
         } else {
             this.obj.style.background = this.manager.options.background;
         }
+        this.obj.style.color = this.manager.options.text_color;
     } else {
         this.obj.style.background = this.objBackground;
+        this.obj.style.color = this.objColor;
     }
 }
 
@@ -159,7 +164,8 @@ function HintManager() {
         hint_background: "red",
         hint_color: "white",
         background: "yellow",
-        background_active: "#88FF00"
+        background_active: "#88FF00",
+        text_color: "black"
     };
     this.activeHint = null;
 }
