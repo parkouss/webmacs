@@ -61,6 +61,6 @@ def complete_duckduckgo(text):
 
 
 define_webjump("duckduckgo ",
-               "https://www.duckduckgo.com/?q=%s",
+               "https://www.duckduckgo.com/?q=%s&kae=t",
                "Duckduckgo Search",
                complete_fn=complete_duckduckgo)
