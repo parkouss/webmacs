@@ -99,6 +99,8 @@ class Prompt(QObject):
         minibuffer.label.setText(self.label)
         buffer_input = minibuffer.input()
         buffer_input.setText("")
+        buffer_input.setEchoMode(buffer_input.Normal)
+        buffer_input.setValidator(None)
         buffer_input.show()
         buffer_input.setFocus()
         completer_model = self.completer_model()
@@ -158,7 +160,7 @@ class YesNoPrompt(Prompt):
         Prompt.enable(self, minibuffer)
         buffer_input = minibuffer.input()
 
-        validator = QRegExpValidator(QRegExp("[yYnN]"))
+        validator = QRegExpValidator(QRegExp("[yYnN]"), self)
         buffer_input.setValidator(validator)
         buffer_input.textEdited.connect(self._on_text_edited)
 
@@ -167,5 +169,4 @@ class YesNoPrompt(Prompt):
         self.close()
         buffer_input = self.minibuffer.input()
         buffer_input.validator().deleteLater()
-        buffer_input.setValidator(None)
         set_global_keymap_enabled(True)
