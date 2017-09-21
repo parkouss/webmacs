@@ -48,3 +48,19 @@ define_webjump("webmacs://",
                "webmacs://%s",
                "webmacs internal pages",
                complete_fn=complete_pages)
+
+
+def complete_duckduckgo(text):
+    if not text:
+        return []
+    url = ("https://www.duckduckgo.com/ac/?q={}&type=list".format(
+        str(QUrl.toPercentEncoding(text), "utf-8"))
+    )
+    with urlopen(url) as conn:
+        return json.loads(str(conn.read(), "utf-8"))[1]
+
+
+define_webjump("duckduckgo ",
+               "https://www.duckduckgo.com/?q=%s",
+               "Duckduckgo Search",
+               complete_fn=complete_duckduckgo)
