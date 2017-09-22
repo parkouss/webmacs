@@ -98,9 +98,7 @@ class Prompt(QObject):
         self.minibuffer = minibuffer
         minibuffer.label.setText(self.label)
         buffer_input = minibuffer.input()
-        buffer_input.setText("")
-        buffer_input.setEchoMode(buffer_input.Normal)
-        buffer_input.setValidator(None)
+        buffer_input.reinit()
         buffer_input.show()
         buffer_input.setFocus()
         completer_model = self.completer_model()

@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, \
     QTableView, QHeaderView, QApplication
+from PyQt5.QtGui import QPainter
 from PyQt5.QtCore import pyqtSignal as Signal, \
     QPoint, QEvent, QSortFilterProxyModel, QRegExp, Qt, QModelIndex
 
@@ -60,6 +61,7 @@ class MinibufferInput(QLineEdit):
         self._popup.activated.connect(self._on_completion_activated)
         self._popup.selectionModel().currentRowChanged.connect(
             self._on_row_changed)
+        self._right_italic_text = ""
         self._mark = False
         self.configure_completer({})
 
@@ -197,6 +199,28 @@ class MinibufferInput(QLineEdit):
             value = not self._mark
         self._mark = value
         return self._mark
+
+    def reinit(self):
+        self.setText("")
+        self.setEchoMode(self.Normal)
+        self.setValidator(None)
+        self._right_italic_text = ""
+
+    def set_right_italic_text(self, text):
+        self._right_italic_text = text
+        self.update()
+
+    def paintEvent(self, event):
+        QLineEdit.paintEvent(self, event)
+        if not self._right_italic_text:
+            return
+        painter = QPainter(self)
+        font = painter.font()
+        font.setItalic(True)
+        painter.setFont(font)
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.drawText(self.rect().adjusted(0, 0, -10, 0), Qt.AlignRight,
+                         self._right_italic_text)
 
 
 class Minibuffer(QWidget):

@@ -42,6 +42,7 @@ class FollowPrompt(Prompt):
 
     def on_browser_object_activated(self, bo):
         self.browser_object_activated = bo
+        self.minibuffer.input().set_right_italic_text(bo.get("url", ""))
 
     def on_text_edited(self, text):
         self.page.filter_browser_objects(text)
