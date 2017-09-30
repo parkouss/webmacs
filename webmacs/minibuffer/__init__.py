@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, \
-    QTableView, QHeaderView, QApplication
+    QTableView, QHeaderView, QApplication, QSizePolicy
 from PyQt5.QtGui import QPainter
 from PyQt5.QtCore import pyqtSignal as Signal, \
     QPoint, QEvent, QSortFilterProxyModel, QRegExp, Qt, QModelIndex
@@ -231,13 +231,27 @@ class Minibuffer(QWidget):
         self.setLayout(layout)
 
         self.label = QLabel(self)
+        self.__default_label_policy = self.label.sizePolicy()
+        # when input line edit is hidden, this size policy allow to not resize
+        # the parent widget if the text in the label is too long.
+        self.label.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         layout.addWidget(self.label)
 
         self._input = MinibufferInput(self)
         layout.addWidget(self._input)
 
+        self._input.installEventFilter(self)
         self._input.hide()
         self._prompt = None
+
+    def eventFilter(self, obj, event):
+        if obj == self._input:
+            if event.type() == QEvent.Hide:
+                self.label.setSizePolicy(QSizePolicy.Ignored,
+                                         QSizePolicy.Fixed)
+            elif event.type() == QEvent.Show:
+                self.label.setSizePolicy(self.__default_label_policy)
+        return False
 
     def show_info(self, text):
         if self._input.isHidden():
