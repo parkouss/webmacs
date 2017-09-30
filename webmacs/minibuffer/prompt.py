@@ -101,7 +101,10 @@ class Prompt(QObject):
         buffer_input.reinit()
         buffer_input.show()
         buffer_input.setFocus()
-        completer_model = self.completer_model()
+        # keeping valid references of qobjects is really hard sometimes
+        # without this completer reference on self, visited_links_history
+        # will (quite) randomly generate segfault...
+        self.__completer_model = completer_model = self.completer_model()
         if hasattr(completer_model, "text_changed"):
             buffer_input.textEdited.connect(completer_model.text_changed)
         buffer_input.set_completer_model(completer_model)
