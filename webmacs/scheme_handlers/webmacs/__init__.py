@@ -1,10 +1,12 @@
-from PyQt5.QtCore import QT_VERSION_STR, QBuffer
+import os
+from PyQt5.QtCore import QT_VERSION_STR, QBuffer, QFile
 from PyQt5.QtWebEngineCore import QWebEngineUrlSchemeHandler
 from jinja2 import Environment, PackageLoader
 from ... import __version__
 
 
 PAGES = {}
+THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def register_page(meth):
@@ -24,9 +26,17 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
         )
 
     def requestStarted(self, job):
-        request = job.requestUrl().authority()
+        url = job.requestUrl()
+        request = url.authority()
 
         if request not in PAGES:
+            path = url.path()
+            if path.startswith("/js/"):
+                js_path = os.path.join(THIS_DIR, "js", path[4:])
+                if os.path.isfile(js_path):
+                    f = QFile(js_path, self)
+                    job.reply(b"application/javascript", f)
+
             return
 
         template = self.env.get_template(request + ".html")
