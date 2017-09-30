@@ -47,6 +47,7 @@ def close_buffer(wb):
             # associate the first buffer that does not have any view yet
             wb.view().setBuffer(invisibles[0])
 
+    Application.INSTANCE.download_manager().detach_buffer(wb)
     BUFFERS.remove(wb)
     return True
 
@@ -187,10 +188,11 @@ class WebBuffer(QWebEnginePage):
         return buffer
 
     def finished(self):
-        Application.INSTANCE.visitedlinks().visit(self.url().toString(),
-                                                  self.title())
+        url = self.url()
+        app = Application.INSTANCE
+        app.visitedlinks().visit(url.toString(), self.title())
 
-        autofill = Application.INSTANCE.autofill()
+        autofill = app.autofill()
         if self.__authentication_data:
             # save authentication data
             sprompt = SavePasswordPrompt(autofill, self,
@@ -198,7 +200,12 @@ class WebBuffer(QWebEnginePage):
             self.__authentication_data = None
             current_minibuffer().do_prompt(sprompt)
         else:
-            autofill.complete_buffer(self, self.url())
+            autofill.complete_buffer(self, url)
+
+        if url.scheme() == "webmacs" and url.authority() == "downloads":
+            app.download_manager().attach_buffer(self)
+        else:
+            app.download_manager().detach_buffer(self)
 
     def handle_authentication(self, url, authenticator):
         autofill = Application.INSTANCE.autofill()

@@ -53,3 +53,7 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
             "version": __version__,
             "qt_version": QT_VERSION_STR
         }
+
+    @register_page
+    def downloads(self):
+        return {}

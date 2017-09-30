@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="webmacs:///js/vue.js"></script>
+{% raw %}
+<script>
+ var app = null;
+ window.onload = function() {
+     app = new Vue({
+         el: "#app",
+         data: {
+             downloads: []
+         }
+     });
+ }
+ function add_download(dl) {
+     app.downloads.push(dl);
+ }
+
+ function download(id) {
+     for (let dl of app.downloads) {
+         if (dl.id == id) { return dl; }
+     }
+     return null;
+ }
+
+ function update_download(dl) {
+     var index = app.downloads.indexOf(download(dl.id));
+     if (index != -1) {
+         Vue.set(app.downloads, index, dl);
+     }
+ }
+ console.log("loaded");
+</script>
+{% endraw %}
+{% endblock %}
+
+{% block title %}Downloads{% endblock %}
+
+{% block content %}
+
+<table id="app">
+  {% raw %}
+  <tr v-for="download in downloads">
+    <td>
+      {{download.path}}
+    </td>
+    <td>
+      {{download.state}}
+    </td>
+  </tr>
+  {% endraw %}
+</table>
+{% endblock %}
