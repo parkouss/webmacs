@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 
 {% block head %}
+<style>
+ .progress { width: 100%; background-color: #ddd }
+ .bar { height: 30px; background-color: #0066ff; text-align: center }
+ td.state { width: 100px; }
+</style>
 <script src="webmacs:///js/vue.js"></script>
 {% raw %}
 <script>
@@ -30,7 +35,6 @@
          Vue.set(app.downloads, index, dl);
      }
  }
- console.log("loaded");
 </script>
 {% endraw %}
 {% endblock %}
@@ -42,11 +46,16 @@
 <table id="app">
   {% raw %}
   <tr v-for="download in downloads">
-    <td>
-      {{download.path}}
+    <td v-if="download.isFinished" class="state">
+      {{download.state}}
+    </td>
+    <td v-else class="state">
+      <div class="progress">
+        <div class="bar" v-bind:style="{width: download.progress + '%'}">{{download.progress}}%</div>
+      </div>
     </td>
     <td>
-      {{download.state}}
+      {{download.path}}
     </td>
   </tr>
   {% endraw %}

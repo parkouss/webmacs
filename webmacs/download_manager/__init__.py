@@ -67,6 +67,9 @@ def download_to_json(dlitem):
         "path": dlitem.path(),
         "state": state_str(dlitem.state()),
         "id": dlitem.id(),
+        "isFinished": dlitem.isFinished(),
+        "progress": (round(dlitem.receivedBytes() / float(dlitem.totalBytes())
+                           * 100, 2)),
     })
 
 
