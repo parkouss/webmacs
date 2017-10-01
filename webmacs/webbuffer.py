@@ -8,7 +8,7 @@ from .keymaps import Keymap, KeyPress
 from .window import current_window
 from .webview import FullScreenWindow
 from .content_handler import WebContentHandler
-from .application import Application
+from .application import app
 from .minibuffer import current_minibuffer
 from .minibuffer.prompt import YesNoPrompt
 from .autofill import FormData
@@ -47,7 +47,7 @@ def close_buffer(wb):
             # associate the first buffer that does not have any view yet
             wb.view().setBuffer(invisibles[0])
 
-    Application.INSTANCE.download_manager().detach_buffer(wb)
+    app().download_manager().detach_buffer(wb)
     BUFFERS.remove(wb)
     return True
 
@@ -189,11 +189,10 @@ class WebBuffer(QWebEnginePage):
 
     def finished(self):
         url = self.url()
-        app = Application.INSTANCE
         if url.isValid() and not url.scheme() == "webmacs":
-            app.visitedlinks().visit(url.toString(), self.title())
+            app().visitedlinks().visit(url.toString(), self.title())
 
-        autofill = app.autofill()
+        autofill = app().autofill()
         if self.__authentication_data:
             # save authentication data
             sprompt = SavePasswordPrompt(autofill, self,
@@ -204,12 +203,12 @@ class WebBuffer(QWebEnginePage):
             autofill.complete_buffer(self, url)
 
         if url.scheme() == "webmacs" and url.authority() == "downloads":
-            app.download_manager().attach_buffer(self)
+            app().download_manager().attach_buffer(self)
         else:
-            app.download_manager().detach_buffer(self)
+            app().download_manager().detach_buffer(self)
 
     def handle_authentication(self, url, authenticator):
-        autofill = Application.INSTANCE.autofill()
+        autofill = app().autofill()
         passwords = autofill.auth_passwords_for_url(url)
         if passwords:
             data = passwords[0]
@@ -244,10 +243,10 @@ class WebBuffer(QWebEnginePage):
 
     def javaScriptAlert(self, url, msg):
         msg = "[js-alert] {}".format(msg)
-        Application.INSTANCE.minibuffer_show_info(msg)
+        app().minibuffer_show_info(msg)
 
     def on_url_hovered(self, url):
-        Application.INSTANCE.minibuffer_show_info(url)
+        app().minibuffer_show_info(url)
 
     def on_title_changed(self, title):
         current_window().setWindowTitle("{} - Webmacs".format(title))

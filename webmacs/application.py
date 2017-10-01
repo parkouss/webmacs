@@ -45,6 +45,10 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
             request.block(True)
 
 
+def app():
+    return Application.INSTANCE
+
+
 class Application(QApplication):
     INSTANCE = None
 

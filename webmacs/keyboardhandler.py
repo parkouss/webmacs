@@ -147,11 +147,10 @@ def send_key_event(keypress):
     if obj:
         obj = obj()
         if obj:
-            from .application import Application
-            Application.INSTANCE.postEvent(
-                obj, keypress.to_qevent(QEvent.KeyPress))
-            Application.INSTANCE.postEvent(
-                obj, keypress.to_qevent(QEvent.KeyRelease))
+            from .application import app as _app
+            app = _app()
+            app.postEvent(obj, keypress.to_qevent(QEvent.KeyPress))
+            app.postEvent(obj, keypress.to_qevent(QEvent.KeyRelease))
 
 
 def local_keymap():

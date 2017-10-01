@@ -8,7 +8,7 @@ from ..minibuffer.prompt import Prompt, PromptTableModel
 from ..commands import define_command
 from ..webbuffer import current_buffer, create_buffer
 from ..window import current_window
-from ..application import Application
+from ..application import app
 
 WebJump = namedtuple("WebJump", ("url", "doc", "allow_args", "complete_fn"))
 WEBJUMPS = {}
@@ -49,7 +49,7 @@ class WebJumpPrompt(Prompt):
         minibuffer.input().textEdited.connect(self._text_edited)
         self._wc_model = QStringListModel()
         self._wb_model = minibuffer.input().completer_model()
-        self._cthread = QThread(Application.INSTANCE)
+        self._cthread = QThread(app())
         self._creceiver = CompletionReceiver()
         self._creceiver.moveToThread(self._cthread)
         self._completion_timer = 0

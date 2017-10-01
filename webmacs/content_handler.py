@@ -6,7 +6,7 @@ from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
 from .window import current_window
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .autofill import FormData
-from .application import Application
+from .application import app
 
 
 class WebContentHandler(QObject):
@@ -37,14 +37,10 @@ class WebContentHandler(QObject):
 
     @Slot(str)
     def copyToClipboard(self, text):
-        from .application import Application
-
-        Application.INSTANCE.clipboard().setText(text)
+        app().clipboard().setText(text)
 
     @Slot(str, str, str, str)
     def autoFillFormSubmitted(self, url, username, password, data):
         formdata = FormData(url=QUrl(url), username=username,
                             password=password, data=data)
-        Application.INSTANCE.autofill().maybe_save_form_password(
-            self.buffer, formdata
-        )
+        app().autofill().maybe_save_form_password(self.buffer, formdata)

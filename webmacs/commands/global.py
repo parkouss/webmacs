@@ -4,7 +4,7 @@ import itertools
 from . import define_command, COMMANDS
 from ..minibuffer import Prompt, KEYMAP
 from ..minibuffer.prompt import PromptTableModel
-from ..application import Application
+from ..application import app
 from ..window import current_window
 from ..webbuffer import create_buffer, BUFFERS, current_minibuffer
 from ..keymaps import Keymap
@@ -28,7 +28,7 @@ class CommandsListPrompt(Prompt):
 
 @define_command("quit")
 def quit():
-    Application.INSTANCE.quit()
+    app().quit()
 
 
 @define_command("M-x", prompt=CommandsListPrompt, visible=False)
@@ -111,13 +111,13 @@ def maximise_view():
 def toggle_ad_block():
     from .webbuffer import reload_buffer_no_cache
 
-    Application.INSTANCE.url_interceptor().toggle_use_adblock()
+    app().url_interceptor().toggle_use_adblock()
     reload_buffer_no_cache()
 
 
 class VisitedLinksModel(PromptTableModel):
     def __init__(self, parent):
-        visitedlinks = Application.INSTANCE.visitedlinks()
+        visitedlinks = app().visitedlinks()
         PromptTableModel.__init__(self, visitedlinks.visited_urls())
         self.visitedlinks = visitedlinks
 

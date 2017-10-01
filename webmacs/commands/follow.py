@@ -4,7 +4,6 @@ from ..minibuffer import Prompt, KEYMAP as MKEYMAP, current_minibuffer
 from ..keymaps import Keymap
 from ..webbuffer import current_buffer
 from ..commands import define_command
-from ..application import Application
 
 
 KEYMAP = Keymap("follow", MKEYMAP)
