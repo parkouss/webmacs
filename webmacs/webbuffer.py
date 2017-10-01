@@ -244,10 +244,10 @@ class WebBuffer(QWebEnginePage):
 
     def javaScriptAlert(self, url, msg):
         msg = "[js-alert] {}".format(msg)
-        current_minibuffer().show_info(msg)
+        Application.INSTANCE.minibuffer_show_info(msg)
 
     def on_url_hovered(self, url):
-        current_minibuffer().show_info(url)
+        Application.INSTANCE.minibuffer_show_info(url)
 
     def on_title_changed(self, title):
         current_window().setWindowTitle("{} - Webmacs".format(title))

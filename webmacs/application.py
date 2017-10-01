@@ -16,6 +16,7 @@ from .autofill import Autofill
 from .autofill.db import PasswordDb
 from .scheme_handlers.webmacs import WebmacsSchemeHandler
 from .download_manager import DownloadManager
+from .minibuffer import current_minibuffer
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -61,7 +62,13 @@ class Application(QApplication):
 
         self._setup_default_profile()
 
-        self.installEventFilter(KeyEater(COMMANDS))
+        key_eater = KeyEater(COMMANDS)
+        key_eater.on_keychord.connect(
+            lambda kc: self.minibuffer_show_info(
+                " ".join((str(k) for k in kc))
+            )
+        )
+        self.installEventFilter(key_eater)
 
         settings = QWebEngineSettings.globalSettings()
         settings.setAttribute(
@@ -117,6 +124,9 @@ class Application(QApplication):
 
     def download_manager(self):
         return self._download_manager
+
+    def minibuffer_show_info(self, text):
+        current_minibuffer().show_info(text)
 
     def _setup_default_profile(self):
         default_profile = QWebEngineProfile.defaultProfile()

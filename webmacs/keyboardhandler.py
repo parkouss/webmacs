@@ -1,7 +1,8 @@
 import logging
 import weakref
 
-from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot
+from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot, \
+    pyqtSignal as Signal
 
 from .keymaps import KeyPress, global_key_map
 from . import hooks
@@ -66,6 +67,7 @@ hooks.webview_closed.add(LOCAL_KEYMAP_SETTER.view_destroyed)
 
 class KeyEater(QObject):
     INSTANCE = None
+    on_keychord = Signal(object)
     """
     Handle Qt keypresses events.
     """
@@ -108,6 +110,7 @@ class KeyEater(QObject):
         incomplete_keychord = False
         command_called = False
         self._keypresses.append(keypress)
+        self.on_keychord.emit(self._keypresses)
         logging.debug("keychord: %s" % self._keypresses)
 
         for keymap in self.active_keymaps():
