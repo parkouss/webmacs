@@ -190,7 +190,8 @@ class WebBuffer(QWebEnginePage):
     def finished(self):
         url = self.url()
         app = Application.INSTANCE
-        app.visitedlinks().visit(url.toString(), self.title())
+        if url.isValid() and not url.scheme() == "webmacs":
+            app.visitedlinks().visit(url.toString(), self.title())
 
         autofill = app.autofill()
         if self.__authentication_data:
