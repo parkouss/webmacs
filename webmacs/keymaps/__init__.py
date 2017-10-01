@@ -172,6 +172,9 @@ class Keymap(object):
         else:
             return None
 
+    def __str__(self):
+        return self.name
+
 
 GLOBAL_KEYMAP = Keymap("global")
 

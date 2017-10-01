@@ -80,6 +80,7 @@ class KeyEater(QObject):
 
     def set_local_key_map(self, keymap):
         self._local_key_map = keymap
+        logging.debug("local keymap activated: %s", keymap)
 
     def local_key_map(self):
         return self._local_key_map
