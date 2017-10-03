@@ -63,13 +63,17 @@ class DlPrompt(Prompt):
 
 
 def download_to_json(dlitem):
+    try:
+        progress = (round(dlitem.receivedBytes() / float(dlitem.totalBytes())
+                          * 100, 2))
+    except ZeroDivisionError:
+        progress = -1
     return json.dumps({
         "path": dlitem.path(),
         "state": state_str(dlitem.state()),
         "id": dlitem.id(),
         "isFinished": dlitem.isFinished(),
-        "progress": (round(dlitem.receivedBytes() / float(dlitem.totalBytes())
-                           * 100, 2)),
+        "progress": progress,
     })
 
 
