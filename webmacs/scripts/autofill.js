@@ -1,3 +1,5 @@
+var allowedInputTypeForName = ['text', 'email', 'tel'];
+
 (function() {
     function findUsername(inputs) {
         var usernameNames = ['user', 'name', 'login'];
@@ -6,12 +8,11 @@
                 if (inputs[j].type == 'text' && inputs[j].value.length && inputs[j].name.indexOf(usernameNames[i]) != -1)
                     return inputs[j].value;
         }
-        for (var i = 0; i < inputs.length; ++i)
-            if (inputs[i].type == 'text' && inputs[i].value.length)
-                return inputs[i].value;
-        for (var i = 0; i < inputs.length; ++i)
-            if (inputs[i].type == 'email' && inputs[i].value.length)
-                return inputs[i].value;
+        for (let inputType of allowedInputTypeForName) {
+            for (var i = 0; i < inputs.length; ++i)
+                if (inputs[i].type == inputType && inputs[i].value.length)
+                    return inputs[i].value;
+        }
         return '';
     }
 
@@ -24,7 +25,7 @@
             for (var i = 0; i < inputs.length; ++i) {
                 var input = inputs[i];
                 var type = input.type.toLowerCase();
-                if (type != 'text' && type != 'password' && type != 'email')
+                if (type != 'password' && !allowedInputTypeForName.includes(type))
                     continue;
                 if (!password && type == 'password')
                     password = input.value;
@@ -71,7 +72,7 @@ function complete_form_data(d) {
         for (var j = 0; j < inputs.length; ++j) {
             var input = inputs[j];
             var type = input.type.toLowerCase();
-            if (type != 'text' && type != 'password' && type != 'email')
+            if (type != 'password' && !allowedInputTypeForName.includes(type))
                 continue;
             if (input.name == key)
                 input.value = val;
