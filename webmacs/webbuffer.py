@@ -232,6 +232,23 @@ class WebBuffer(QWebEnginePage):
 
         loop.exec_()
 
+    def certificateError(self, error):
+        url = "{}:{}".format(error.url().host(), error.url().port(80))
+        db = app().ignored_certs()
+        if db.is_ignored(url):
+            return True
+
+        loop = QEventLoop()
+        prompt = YesNoPrompt("[certificate error] {} - ignore ? "
+                             .format(error.errorDescription()))
+        current_minibuffer().do_prompt(prompt)
+
+        prompt.closed.connect(loop.quit)
+        loop.exec_()
+        if prompt.yes:
+            db.ignore(url)
+        return prompt.yes
+
     def javaScriptConfirm(self, url, msg):
         loop = QEventLoop()
         prompt = YesNoPrompt("[js-confirm] {} ".format(msg))

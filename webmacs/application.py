@@ -17,6 +17,7 @@ from .autofill.db import PasswordDb
 from .scheme_handlers.webmacs import WebmacsSchemeHandler
 from .download_manager import DownloadManager
 from .minibuffer import current_minibuffer
+from .ignore_certificates import IgnoredCertificates
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -129,6 +130,9 @@ class Application(QApplication):
     def download_manager(self):
         return self._download_manager
 
+    def ignored_certs(self):
+        return self._ignored_certs
+
     def minibuffer_show_info(self, text):
         current_minibuffer().show_info(text)
 
@@ -151,6 +155,9 @@ class Application(QApplication):
                                                        "visitedlinks.db"))
         self._autofill = Autofill(PasswordDb(os.path.join(profile_path,
                                                           "autofill.db")))
+        self._ignored_certs = IgnoredCertificates(
+            os.path.join(profile_path, "ignoredcerts.db")
+        )
         default_profile.setCachePath(os.path.join(path, "cache"))
         default_profile.downloadRequested.connect(
             self._download_manager.download_requested
