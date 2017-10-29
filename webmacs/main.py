@@ -8,6 +8,16 @@ from PyQt5.QtNetwork import QAbstractSocket
 from .webbuffer import create_buffer
 from .application import Application
 from .window import Window
+try:
+    # on some graphic cards (at least Intel HD Graphics 620 (Kabylake GT2))
+    # without this line trying to show a QWebEngineView does segfault.
+    # see https://github.com/spyder-ide/spyder/issues/4495
+    # for now I don't require that as an install dependencies (pip install
+    # pyopengl) but I let that code here to remember and to let the user a
+    # chance to fix the issue by just installing pyopengl.
+    from OpenGL import GL # noqa
+except ImportError:
+    pass
 
 
 def signal_wakeup(app):
