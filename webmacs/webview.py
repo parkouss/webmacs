@@ -50,6 +50,22 @@ class WebView(QWebEngineView):
         self.window._change_current_webview(self)
         self.setFocus()
 
+    def request_fullscreen(self, toggle_on):
+        w = self.window
+
+        if toggle_on:
+            if w.fullscreen_window:
+                return
+            w.fullscreen_window = FullScreenWindow(self.window)
+            w.fullscreen_window.enable(self)
+            return True
+        else:
+            if not w.fullscreen_window:
+                return
+            w.fullscreen_window.disable()
+            w.fullscreen_window = None
+            return True
+
 
 FULLSCREEN_KEYMAP = Keymap("fullscreen")
 

@@ -6,7 +6,6 @@ from PyQt5.QtWebChannel import QWebChannel
 
 from .keymaps import Keymap, KeyPress
 from .window import current_window
-from .webview import FullScreenWindow
 from .content_handler import WebContentHandler
 from .application import app
 from .minibuffer import current_minibuffer
@@ -167,20 +166,8 @@ class WebBuffer(QWebEnginePage):
         view = self.view()
         if not view:
             return
-        fsw = view.window.fullscreen_window
-
-        if request.toggleOn():
-            if fsw:
-                return
+        if view.request_fullscreen(request.toggleOn()):
             request.accept()
-            view.window.fullscreen_window = FullScreenWindow(view.window)
-            view.window.fullscreen_window.enable(view)
-        else:
-            if not fsw:
-                return
-            request.accept()
-            fsw.disable()
-            view.window.fullscreen_window = None
 
     def createWindow(self, type):
         buffer = create_buffer()
