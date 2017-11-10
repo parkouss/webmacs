@@ -9,9 +9,12 @@ from .prompt import Prompt
 
 
 class Popup(QTableView):
-    def __init__(self):
-        QTableView.__init__(self)
-        self.setParent(None, Qt.Popup)
+    def __init__(self, window, buffer_input):
+        QTableView.__init__(self, window)
+        self.setVisible(False)
+        self._window = window
+        self._buffer_input = buffer_input
+        window.installEventFilter(self)
         self.setFocusPolicy(Qt.NoFocus)
         self.horizontalHeader().hide()
         self.verticalHeader().hide()
@@ -24,21 +27,33 @@ class Popup(QTableView):
         self.setShowGrid(False)
         self._max_visible_items = 10
 
-    def popup(self, widget):
+    def _resize(self, size):
+        # size is calculated given the window and the minibuffer input
+        # geometries
         h = (24) * min(self._max_visible_items, self.model().rowCount()) + 3
+        w = size.width()
+        y = size.height() - h - self._buffer_input.height()
 
-        w = widget.width()
-        pos = widget.mapToGlobal(QPoint(0, -h))
+        self.setGeometry(0, y, w, h)
 
-        self.setGeometry(pos.x(), pos.y(), w, h)
-
+        # Split the columns width, nicer when we have at least two of them.
         cols = self.model().columnCount()
-        col_width = w / cols
-        for i in range(cols):
-            self.setColumnWidth(i, col_width)
+        if cols > 0:
+            col_width = w / cols
+            for i in range(cols):
+                self.setColumnWidth(i, col_width)
+
+    def popup(self):
+        self._resize(self._window.size())
 
         if not self.isVisible():
             self.show()
+
+    def eventFilter(self, obj, event):
+        # resize the popup when the window is resized
+        if obj == self._window and event.type() == QEvent.Resize:
+            self._resize(event.size())
+        return False
 
 
 class MinibufferInput(QLineEdit):
@@ -47,10 +62,10 @@ class MinibufferInput(QLineEdit):
     FuzzyMatch = Prompt.FuzzyMatch
     SimpleMatch = Prompt.SimpleMatch
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, window):
         QLineEdit.__init__(self, parent)
         self._completer_model = None
-        self._popup = Popup()
+        self._popup = Popup(window, self)
         self.textEdited.connect(self._show_completions)
         self._popup.installEventFilter(self)
         self.installEventFilter(self)
@@ -140,7 +155,7 @@ class MinibufferInput(QLineEdit):
         elif not txt and not force:
             self._popup.hide()
         else:
-            self._popup.popup(self)
+            self._popup.popup()
 
     def show_completions(self):
         self._show_completions(self.text(), True)
@@ -237,7 +252,7 @@ class Minibuffer(QWidget):
         self.label.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         layout.addWidget(self.label)
 
-        self._input = MinibufferInput(self)
+        self._input = MinibufferInput(self, window)
         layout.addWidget(self._input)
 
         self._input.installEventFilter(self)
