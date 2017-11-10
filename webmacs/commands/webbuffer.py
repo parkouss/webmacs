@@ -76,6 +76,14 @@ class BufferListPrompt(Prompt):
     def completer_model(self):
         return BufferTableModel()
 
+    def enable(self, minibuffer):
+        Prompt.enable(self, minibuffer)
+        # auto-select the most recent not currently visible buffer
+        for i, buf in enumerate(BUFFERS):
+            if not buf.view():
+                minibuffer.input().popup().selectRow(i)
+                break
+
 
 @define_command("switch-buffer", prompt=BufferListPrompt)
 def switch_buffer(prompt):

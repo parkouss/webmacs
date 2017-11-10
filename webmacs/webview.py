@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout
 
 from .keymaps import Keymap
 from .keyboardhandler import local_keymap, set_local_keymap
+from . import BUFFERS
 
 
 class WebViewContainer(QFrame):
@@ -39,6 +40,10 @@ class WebView(QWebEngineView):
 
     def setBuffer(self, buffer):
         self.setPage(buffer)
+        # move the buffer so it becomes the most recently opened
+        if buffer != BUFFERS[0]:
+            BUFFERS.remove(buffer)
+            BUFFERS.insert(0, buffer)
 
     def buffer(self):
         return self.page()

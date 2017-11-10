@@ -13,9 +13,9 @@ from .minibuffer.prompt import YesNoPrompt
 from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import send_key_event
+from .import BUFFERS
 
 
-BUFFERS = []
 KEYMAP = Keymap("webbuffer")
 
 
@@ -65,7 +65,8 @@ class WebBuffer(QWebEnginePage):
 
     def __init__(self, url=None):
         QWebEnginePage.__init__(self)
-        BUFFERS.append(self)
+        # put the most recent buffer at the beginning of the BUFFERS list
+        BUFFERS.insert(0, self)
 
         self.fullScreenRequested.connect(self._on_full_screen_requested)
         self._content_handler = WebContentHandler(self)
