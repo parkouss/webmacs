@@ -7,7 +7,7 @@ from PyQt5.QtNetwork import QAbstractSocket
 
 from .webbuffer import create_buffer
 from .application import Application
-from .window import Window
+from .window import Window, HANDLER as WINDOWS_HANDLER
 try:
     # on some graphic cards (at least Intel HD Graphics 620 (Kabylake GT2))
     # without this line trying to show a QWebEngineView does segfault.
@@ -78,9 +78,12 @@ def main():
     app = Application(["webmacs"])
 
     window = Window()
+    # register the window as being the current one
+    WINDOWS_HANDLER.current_window = window
 
-    buffer = create_buffer("http://duckduckgo.com/?kae=t")
-    window.current_web_view().setBuffer(buffer)
+    if not app.load_session():
+        buffer = create_buffer("http://duckduckgo.com/?kae=t")
+        window.current_web_view().setBuffer(buffer)
 
     window.showMaximized()
 

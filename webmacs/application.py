@@ -67,6 +67,8 @@ class Application(QApplication):
 
         self._setup_default_profile()
 
+        self.aboutToQuit.connect(self.save_session)
+
         key_eater = KeyEater(COMMANDS)
         key_eater.on_keychord.connect(
             lambda kc: self.minibuffer_show_info(
@@ -136,6 +138,18 @@ class Application(QApplication):
     def minibuffer_show_info(self, text):
         current_minibuffer().show_info(text)
 
+    def load_session(self):
+        from .session import Session
+        if os.path.exists(self._session_file):
+            with open(self._session_file, "r") as f:
+                Session.load(f).apply()
+                return True
+
+    def save_session(self):
+        from .session import Session
+        with open(self._session_file, "w") as f:
+            Session().save(f)
+
     def _setup_default_profile(self):
         default_profile = QWebEngineProfile.defaultProfile()
         default_profile.setRequestInterceptor(self._interceptor)
@@ -148,9 +162,12 @@ class Application(QApplication):
 
         path = self.profiles_path()
         profile_path = os.path.join(path, "default")
+        if not os.path.isdir(profile_path):
+            os.mkdir(profile_path)
         default_profile.setPersistentStoragePath(profile_path)
         default_profile.setPersistentCookiesPolicy(
             QWebEngineProfile.ForcePersistentCookies)
+        self._session_file = os.path.join(profile_path, "session.json")
         self._visitedlinks = VisitedLinks(os.path.join(profile_path,
                                                        "visitedlinks.db"))
         self._autofill = Autofill(PasswordDb(os.path.join(profile_path,

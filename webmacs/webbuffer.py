@@ -31,8 +31,8 @@ def create_buffer(url=None):
     return WebBuffer(url)
 
 
-def close_buffer(wb):
-    if len(BUFFERS) < 2:
+def close_buffer(wb, keep_one=True):
+    if keep_one and len(BUFFERS) < 2:
         return  # can't close if there is only one buffer left
 
     if wb.view():
