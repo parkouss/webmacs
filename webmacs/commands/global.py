@@ -14,6 +14,7 @@ class CommandsListPrompt(Prompt):
     label = "M-x: "
     complete_options = {
         "match": Prompt.FuzzyMatch,
+        "complete-empty": True,
     }
 
     def validate(self, name):
