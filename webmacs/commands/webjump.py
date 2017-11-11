@@ -69,7 +69,7 @@ class WebJumpPrompt(Prompt):
                     self._active_webjump = (w, name)
                     if self._completion_timer != 0:
                         self.killTimer(self._completion_timer)
-                    self._completion_timer = self.startTimer(250)
+                    self._completion_timer = self.startTimer(10)
                     break
         if self.minibuffer.input().completer_model() != model:
             self.minibuffer.input().popup().hide()
