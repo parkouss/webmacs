@@ -81,7 +81,7 @@ def main():
     # register the window as being the current one
     WINDOWS_HANDLER.current_window = window
 
-    if not app.load_session():
+    if not app.profile.load_session():
         buffer = create_buffer("http://duckduckgo.com/?kae=t")
         window.current_web_view().setBuffer(buffer)
 
