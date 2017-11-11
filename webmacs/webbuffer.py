@@ -258,10 +258,10 @@ class WebBuffer(QWebEnginePage):
 
 
 KEYMAP.define_key("g", "go-to")
-KEYMAP.define_key("S-g", "go-to-selected-url")
+KEYMAP.define_key("G", "go-to-selected-url")
 KEYMAP.define_key("b", "buffer-history")
-KEYMAP.define_key("S-f", "go-forward")
-KEYMAP.define_key("S-b", "go-backward")
+KEYMAP.define_key("F", "go-forward")
+KEYMAP.define_key("B", "go-backward")
 KEYMAP.define_key("C-s", "i-search-forward")
 KEYMAP.define_key("C-r", "i-search-backward")
 KEYMAP.define_key("C-v", "scroll-page-down")
@@ -271,7 +271,7 @@ KEYMAP.define_key("M-<", "scroll-top")
 KEYMAP.define_key("f", "follow")
 KEYMAP.define_key("M-w", "webcontent-copy")
 KEYMAP.define_key("r", "reload-buffer")
-KEYMAP.define_key("S-r", "reload-buffer-no-cache")
+KEYMAP.define_key("R", "reload-buffer-no-cache")
 KEYMAP.define_key("h", "visited-links-history")
 KEYMAP.define_key("q", "close-buffer")
 
