@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout
 from .keymaps import Keymap
 from .keyboardhandler import local_keymap, set_local_keymap
 from . import BUFFERS
+from .application import app
 
 
 class WebViewContainer(QFrame):
@@ -95,7 +96,10 @@ class FullScreenWindow(WebView):
         self.setPage(webview.page())
         self._other_keymap = local_keymap()
         set_local_keymap(self.keymap())
+        # show fullscreen on the right place.
+        screen = app().screens()[app().desktop().screenNumber(webview)]
         self.showFullScreen()
+        self.setGeometry(screen.geometry())
 
     def disable(self):
         self._other_view.setPage(self.page())
