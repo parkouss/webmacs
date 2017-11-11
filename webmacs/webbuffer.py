@@ -40,6 +40,7 @@ def close_buffer(wb, keep_one=True):
 
     app().download_manager().detach_buffer(wb)
     BUFFERS.remove(wb)
+    wb.deleteLater()
     return True
 
 
