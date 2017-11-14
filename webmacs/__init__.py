@@ -1,6 +1,7 @@
 import importlib
 
 from PyQt5.QtCore import QObject, QEvent
+from PyQt5.QtGui import QWindow
 
 
 __version__ = '0.1'
@@ -69,6 +70,21 @@ class WindowsHandler(QObject):
 
 
 WINDOWS_HANDLER = WindowsHandler()
+
+
+def _handle_app_click(obj, evt):
+    if not isinstance(obj, QWindow):
+        return
+
+    for win in windows():
+        for view in win.webviews():
+            if view.underMouse():
+                if view != win.current_web_view():
+                    view.set_current()
+                break
+
+
+register_global_event_callback(QEvent.MouseButtonPress, _handle_app_click)
 
 
 def windows():
