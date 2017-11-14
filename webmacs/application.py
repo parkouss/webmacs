@@ -5,12 +5,9 @@ from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt5.QtWidgets import QApplication
 
-from . import require
-from .keyboardhandler import KeyEater
+from . import require, GLOBAL_EVENT_FILTER
 from .adblock import EASYLIST, Adblocker
-from .commands import COMMANDS
 from .download_manager import DownloadManager
-from .minibuffer import current_minibuffer
 from .profile import default_profile
 
 
@@ -64,13 +61,7 @@ class Application(QApplication):
 
         self.aboutToQuit.connect(self.profile.save_session)
 
-        key_eater = KeyEater(COMMANDS)
-        key_eater.on_keychord.connect(
-            lambda kc: self.minibuffer_show_info(
-                " ".join((str(k) for k in kc))
-            )
-        )
-        self.installEventFilter(key_eater)
+        self.installEventFilter(GLOBAL_EVENT_FILTER)
 
         settings = QWebEngineSettings.globalSettings()
         settings.setAttribute(
@@ -129,6 +120,3 @@ class Application(QApplication):
 
     def ignored_certs(self):
         return self.profile.ignored_certs
-
-    def minibuffer_show_info(self, text):
-        current_minibuffer().show_info(text)

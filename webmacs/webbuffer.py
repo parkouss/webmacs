@@ -5,26 +5,18 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 from PyQt5.QtWebChannel import QWebChannel
 
 from .keymaps import Keymap, KeyPress
-from .window import current_window
+from . import current_window, BUFFERS, current_minibuffer, \
+    minibuffer_show_info, current_buffer
 from .content_handler import WebContentHandler
 from .application import app
-from .minibuffer import current_minibuffer
 from .minibuffer.prompt import YesNoPrompt
 from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import send_key_event
-from .import BUFFERS
+from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP
 
 
 KEYMAP = Keymap("webbuffer")
-
-
-def current_buffer():
-    return current_window().current_web_view().buffer()
-
-
-def buffers():
-    return BUFFERS
 
 
 def create_buffer(url=None):
@@ -251,7 +243,7 @@ class WebBuffer(QWebEnginePage):
         app().minibuffer_show_info(msg)
 
     def on_url_hovered(self, url):
-        app().minibuffer_show_info(url)
+        minibuffer_show_info(url)
 
     def on_title_changed(self, title):
         current_window().setWindowTitle("{} - Webmacs".format(title))
@@ -296,6 +288,3 @@ def send_right():
 @KEYMAP.define_key("C-b")
 def send_left():
     send_key_event(KeyPress.from_str("Left"))
-
-
-from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP

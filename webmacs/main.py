@@ -7,7 +7,9 @@ from PyQt5.QtNetwork import QAbstractSocket
 
 from .webbuffer import create_buffer
 from .application import Application
-from .window import Window, HANDLER as WINDOWS_HANDLER
+from .window import Window
+from . import WINDOWS_HANDLER
+
 try:
     # on some graphic cards (at least Intel HD Graphics 620 (Kabylake GT2))
     # without this line trying to show a QWebEngineView does segfault.

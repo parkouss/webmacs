@@ -1,7 +1,6 @@
 from PyQt5.QtCore import QObject, pyqtSlot as Slot
-from ..minibuffer import current_minibuffer, Prompt
-
-COMMANDS = {}
+from ..minibuffer import Prompt
+from .. import COMMANDS, current_minibuffer
 
 
 class CommandExecutor(QObject):

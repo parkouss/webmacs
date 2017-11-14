@@ -2,9 +2,9 @@ from PyQt5.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, \
     QTableView, QHeaderView, QApplication, QSizePolicy
 from PyQt5.QtGui import QPainter
 from PyQt5.QtCore import pyqtSignal as Signal, \
-    QPoint, QEvent, QSortFilterProxyModel, QRegExp, Qt, QModelIndex
+    QEvent, QSortFilterProxyModel, QRegExp, Qt, QModelIndex
 
-from .keymap import KEYMAP, current_minibuffer  # noqa
+from .keymap import KEYMAP
 from .prompt import Prompt
 
 

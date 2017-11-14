@@ -1,9 +1,10 @@
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from ..commands import define_command
-from ..minibuffer import Prompt, KEYMAP, current_minibuffer
-from ..webbuffer import BUFFERS, current_buffer, WebBuffer, close_buffer
-from ..window import current_window
+from ..minibuffer import Prompt, KEYMAP
+from ..webbuffer import WebBuffer, close_buffer
+from .. import current_window, current_minibuffer, BUFFERS, \
+    current_buffer
 from ..keymaps import Keymap
 
 

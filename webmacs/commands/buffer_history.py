@@ -4,7 +4,7 @@ from PyQt5.QtGui import QImage
 import concurrent.futures
 import urllib.request
 
-from ..webbuffer import current_buffer
+from .. import current_buffer
 from ..minibuffer import Prompt
 from ..commands import define_command
 

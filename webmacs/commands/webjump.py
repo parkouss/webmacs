@@ -6,8 +6,8 @@ from PyQt5.QtCore import QUrl, QThread, pyqtSlot as Slot, \
 
 from ..minibuffer.prompt import Prompt, PromptTableModel
 from ..commands import define_command
-from ..webbuffer import current_buffer, create_buffer
-from ..window import current_window
+from ..webbuffer import create_buffer
+from .. import current_window, current_buffer
 from ..application import app
 
 WebJump = namedtuple("WebJump", ("url", "doc", "allow_args", "complete_fn"))

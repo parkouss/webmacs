@@ -1,9 +1,9 @@
 from PyQt5.QtCore import QEvent, Qt
 
-from ..minibuffer import Prompt, KEYMAP as MKEYMAP, current_minibuffer
+from ..minibuffer import Prompt, KEYMAP as MKEYMAP
 from ..keymaps import Keymap
-from ..webbuffer import current_buffer
 from ..commands import define_command
+from .. import current_minibuffer, current_buffer
 
 
 KEYMAP = Keymap("follow", MKEYMAP)

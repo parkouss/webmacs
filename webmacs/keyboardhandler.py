@@ -1,11 +1,11 @@
 import logging
 import weakref
 
-from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot, \
-    pyqtSignal as Signal
+from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot
 
 from .keymaps import KeyPress, global_key_map
 from . import hooks
+from . import register_global_event_callback, COMMANDS, minibuffer_show_info
 
 
 class LocalKeymapSetter(QObject):
@@ -65,17 +65,13 @@ hooks.webview_created.add(LOCAL_KEYMAP_SETTER.register_view)
 hooks.webview_closed.add(LOCAL_KEYMAP_SETTER.view_destroyed)
 
 
-class KeyEater(QObject):
-    INSTANCE = None
-    on_keychord = Signal(object)
+class KeyEater(object):
     """
     Handle Qt keypresses events.
     """
-    def __init__(self, commands):
-        QObject.__init__(self)
-        KeyEater.INSTANCE = self
+    def __init__(self):
         self._keypresses = []
-        self._commands = commands
+        self._commands = COMMANDS
         self._local_key_map = None
         self.current_obj = None
         self._use_global_keymap = True
@@ -90,15 +86,13 @@ class KeyEater(QObject):
     def set_global_keymap_enabled(self, enable):
         self._use_global_keymap = enable
 
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.KeyPress:
-            key = KeyPress.from_qevent(event)
-            if key is None:
-                return False
-            self.current_obj = weakref.ref(obj)
-            if self._handle_keypress(key):
-                return True
-        return QObject.eventFilter(self, obj, event)
+    def event_filter(self, obj, event):
+        key = KeyPress.from_qevent(event)
+        if key is None:
+            return False
+        self.current_obj = weakref.ref(obj)
+        if self._handle_keypress(key):
+            return True
 
     def active_keymaps(self):
         if self._local_key_map:
@@ -110,7 +104,9 @@ class KeyEater(QObject):
         incomplete_keychord = False
         command_called = False
         self._keypresses.append(keypress)
-        self.on_keychord.emit(self._keypresses)
+        minibuffer_show_info(
+            " ".join((str(k) for k in self._keypresses))
+        )
         logging.debug("keychord: %s" % self._keypresses)
 
         for keymap in self.active_keymaps():
@@ -142,8 +138,12 @@ class KeyEater(QObject):
         command()
 
 
+KEY_EATER = KeyEater()
+register_global_event_callback(QEvent.KeyPress, KEY_EATER.event_filter)
+
+
 def send_key_event(keypress):
-    obj = KeyEater.INSTANCE.current_obj
+    obj = KEY_EATER.current_obj
     if obj:
         obj = obj()
         if obj:
@@ -154,12 +154,12 @@ def send_key_event(keypress):
 
 
 def local_keymap():
-    return KeyEater.INSTANCE.local_key_map()
+    return KEY_EATER.local_key_map()
 
 
 def set_local_keymap(keymap):
-    KeyEater.INSTANCE.set_local_key_map(keymap)
+    KEY_EATER.set_local_key_map(keymap)
 
 
 def set_global_keymap_enabled(enable):
-    KeyEater.INSTANCE.set_global_keymap_enabled(enable)
+    KEY_EATER.set_global_keymap_enabled(enable)

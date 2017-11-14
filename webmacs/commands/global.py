@@ -5,9 +5,9 @@ from . import define_command, COMMANDS
 from ..minibuffer import Prompt, KEYMAP
 from ..minibuffer.prompt import PromptTableModel
 from ..application import app
-from ..window import current_window
-from ..webbuffer import create_buffer, BUFFERS, current_minibuffer
+from ..webbuffer import create_buffer
 from ..keymaps import Keymap
+from .. import current_minibuffer, BUFFERS, current_window
 
 
 class CommandsListPrompt(Prompt):

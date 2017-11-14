@@ -3,7 +3,7 @@ import json
 from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
     QUrl
 
-from .window import current_window
+from . import current_window
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .autofill import FormData
 from .application import app

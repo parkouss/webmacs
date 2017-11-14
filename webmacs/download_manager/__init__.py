@@ -6,7 +6,7 @@ from PyQt5.QtCore import QObject, pyqtSlot as Slot, QEventLoop, \
 from PyQt5.QtWebEngineWidgets import QWebEngineDownloadItem
 
 from ..minibuffer.prompt import Prompt, FSModel
-from ..minibuffer import current_minibuffer
+from .. import current_minibuffer
 from ..minibuffer.keymap import KEYMAP, cancel
 from ..keymaps import Keymap
 

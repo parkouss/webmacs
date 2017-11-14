@@ -1,8 +1,7 @@
 import json
 
-from .import BUFFERS
+from .import BUFFERS, current_window, windows
 from .webbuffer import create_buffer, close_buffer
-from .window import current_window, windows
 
 
 class Session(object):

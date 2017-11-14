@@ -1,7 +1,7 @@
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from .keymaps import Keymap, KeyPress
-from .webbuffer import current_buffer
+from . import current_buffer
 from .keyboardhandler import send_key_event
 
 KEYMAP = Keymap("webcontent-edit")

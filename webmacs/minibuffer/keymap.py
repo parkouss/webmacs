@@ -1,13 +1,9 @@
 import re
 
 from ..keymaps import Keymap
+from .. import current_minibuffer
 
 KEYMAP = Keymap("minibuffer")
-
-
-def current_minibuffer():
-    from ..window import current_window
-    return current_window().minibuffer()
 
 
 @KEYMAP.define_key("Tab")

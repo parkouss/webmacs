@@ -1,8 +1,8 @@
-from ..minibuffer import Prompt, KEYMAP as MKEYMAP, current_minibuffer
+from ..minibuffer import Prompt, KEYMAP as MKEYMAP
 from ..keymaps import Keymap
-from ..window import current_window
 from ..webbuffer import WebBuffer
 from ..commands import define_command
+from .. import current_window, current_minibuffer
 
 KEYMAP = Keymap("i-search", MKEYMAP)
 

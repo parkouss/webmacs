@@ -6,7 +6,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineScript
 from collections import namedtuple
 
 from .db import PasswordEntry
-from ..minibuffer import current_minibuffer
+from .. import current_minibuffer
 from .prompt import SavePasswordPrompt
 
 FormData = namedtuple(
