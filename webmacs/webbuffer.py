@@ -250,6 +250,7 @@ class WebBuffer(QWebEnginePage):
 
 
 KEYMAP.define_key("g", "go-to")
+KEYMAP.define_key("s", "search-default")
 KEYMAP.define_key("G", "go-to-selected-url")
 KEYMAP.define_key("b", "buffer-history")
 KEYMAP.define_key("F", "go-forward")

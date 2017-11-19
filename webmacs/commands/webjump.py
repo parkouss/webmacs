@@ -12,11 +12,17 @@ from ..application import app
 
 WebJump = namedtuple("WebJump", ("url", "doc", "allow_args", "complete_fn"))
 WEBJUMPS = {}
+DEFAULT_WEBJUMP_SEARCH = None
 
 
 def define_webjump(name, url, doc="", complete_fn=None):
     allow_args = "%s" in url
     WEBJUMPS[name] = WebJump(url, doc, allow_args, complete_fn)
+
+
+def set_default(text):
+    global DEFAULT_WEBJUMP_SEARCH
+    DEFAULT_WEBJUMP_SEARCH = text
 
 
 class CompletionReceiver(QObject):
@@ -104,6 +110,13 @@ class WebJumpPromptCurrentUrl(WebJumpPrompt):
         input.setSelection(0, len(url))
 
 
+class DefaultSearchPrompt(WebJumpPrompt):
+    def enable(self, minibuffer):
+        WebJumpPrompt.enable(self, minibuffer)
+        if DEFAULT_WEBJUMP_SEARCH:
+            minibuffer.input().setText(DEFAULT_WEBJUMP_SEARCH)
+
+
 def get_url(value):
     args = value.split(" ", 1)
     command = args[0] + " "
@@ -143,3 +156,8 @@ def go_to_new_buffer(prompt):
     if url:
         view = current_window().current_web_view()
         view.setBuffer(create_buffer(url))
+
+
+@define_command("search-default", prompt=DefaultSearchPrompt)
+def search_default(prompt):
+    go_to(prompt)
