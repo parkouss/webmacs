@@ -176,6 +176,18 @@ _set_key(Qt.Key_Icircumflex, "î", "Î")
 _set_key(Qt.Key_Idiaeresis, "ï", "Ï")
 _set_key(Qt.Key_ETH, "Ð")
 _set_key(Qt.Key_Ntilde, "ñ", "Ñ")
+_set_key(Qt.Key_Ograve, "ò", "Ò")
+_set_key(Qt.Key_Oacute, "ó", "Ó")
+_set_key(Qt.Key_Ocircumflex, "ô", "Ô")
+_set_key(Qt.Key_Odiaeresis, "ö", "Ö")
+_set_key(Qt.Key_multiply, "×")
+_set_key(Qt.Key_Ooblique, "Ø", "ø")
+_set_key(Qt.Key_Ugrave, "ù", "Ù")
+_set_key(Qt.Key_Uacute, "ú", "Ú")
+_set_key(Qt.Key_Ucircumflex, "û", "Û")
+_set_key(Qt.Key_Udiaeresis, "ü", "Ü")
+_set_key(Qt.Key_Yacute, "ý", "Ý")
+_set_key(Qt.Key_THORN, "þ", "Þ")
 
 
 def is_one_letter_upcase(char):
