@@ -9,6 +9,7 @@ from .webbuffer import create_buffer
 from .application import Application
 from .window import Window
 from . import WINDOWS_HANDLER
+from .ipc import IpcServer
 
 try:
     # on some graphic cards (at least Intel HD Graphics 620 (Kabylake GT2))
@@ -77,7 +78,19 @@ def main():
     opts = parse_args()
     setup_logging(getattr(logging, opts.log_level.upper()),
                   getattr(logging, opts.webcontent_log_level.upper()))
+
+    conn = IpcServer.check_server_connection()
+    if conn:
+        conn.send_data(opts.__dict__)
+        data = conn.get_data()
+        conn.sock.close()
+        msg = data.get("message")
+        if msg:
+            print(msg)
+        return
+
     app = Application(["webmacs"])
+    server = IpcServer()
 
     window = Window()
     # register the window as being the current one
@@ -91,7 +104,10 @@ def main():
 
     signal_wakeup(app)
     signal.signal(signal.SIGINT, lambda s, h: app.quit())
-    app.exec_()
+    try:
+        app.exec_()
+    finally:
+        server.cleanup()
 
 
 if __name__ == '__main__':
