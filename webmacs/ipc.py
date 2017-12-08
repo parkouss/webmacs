@@ -110,4 +110,10 @@ class IpcServer(QObject):
 
 
 def ipc_dispatch(data):
-    return "not implemented"
+    from . import current_window
+    from .webbuffer import create_buffer
+    win = current_window()
+    url = data.get("url")
+    if url:
+        view = win.current_web_view()
+        view.setBuffer(create_buffer(url))

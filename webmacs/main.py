@@ -71,6 +71,9 @@ def parse_args(argv=None):
                         default="critical",
                         choices=("info", "warning", "error", "critical"))
 
+    parser.add_argument("url", nargs="?",
+                        help="url to open")
+
     return parser.parse_args(argv)
 
 
@@ -96,8 +99,8 @@ def main():
     # register the window as being the current one
     WINDOWS_HANDLER.current_window = window
 
-    if not app.profile.load_session():
-        buffer = create_buffer("http://duckduckgo.com/?kae=t")
+    if opts.url or not app.profile.load_session():
+        buffer = create_buffer(opts.url or "http://duckduckgo.com/?kae=t")
         window.current_web_view().setBuffer(buffer)
 
     window.showMaximized()
