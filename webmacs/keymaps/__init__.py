@@ -258,6 +258,10 @@ class KeyPress(_KeyPress):
         else:
             return QKeyEvent(type, key, modifiers)
 
+    def has_any_modifier(self):
+        return (self.control_modifier or self.alt_modifier
+                or self.super_modifier)
+
     def __str__(self):
         keyrepr = []
 

@@ -3,7 +3,7 @@ import weakref
 
 from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot
 
-from .keymaps import KeyPress, global_key_map
+from .keymaps import KeyPress, global_key_map, CHAR2KEY
 from . import hooks
 from . import register_global_event_callback, COMMANDS, minibuffer_show_info
 
@@ -75,6 +75,13 @@ class KeyEater(object):
         self._local_key_map = None
         self.current_obj = None
         self._use_global_keymap = True
+        self.universal_key = KeyPress.from_str("C-u")
+        self._prefix_arg = None
+        self._reset_prefix_arg = False
+        self._allowed_universal_keys = {}
+        for i in "1234567890":
+            self._allowed_universal_keys[CHAR2KEY[i]] \
+                = lambda: self._num_update_prefix_arg(i)
 
     def set_local_key_map(self, keymap):
         self._local_key_map = keymap
@@ -100,14 +107,45 @@ class KeyEater(object):
         if self._use_global_keymap:
             yield global_key_map()
 
-    def _handle_keypress(self, keypress):
-        incomplete_keychord = False
-        command_called = False
+    def _add_keypress(self, keypress):
         self._keypresses.append(keypress)
         minibuffer_show_info(
             " ".join((str(k) for k in self._keypresses))
         )
         logging.debug("keychord: %s" % self._keypresses)
+
+    def _num_update_prefix_arg(self, numstr):
+        if not isinstance(self._prefix_arg, int):
+            self._prefix_arg = int(numstr)
+        else:
+            self._prefix_arg = int(str(self._prefix_arg) + numstr)
+
+    def _handle_keypress(self, keypress):
+        if self._reset_prefix_arg:
+            self._reset_prefix_arg = False
+            self._prefix_arg = None
+        if keypress == self.universal_key:
+            if isinstance(self._prefix_arg, tuple):
+                self._prefix_arg = (self._prefix_arg[0] * 4,)
+            else:
+                self._prefix_arg = (4,)
+                self._keypresses = []
+            self._add_keypress(keypress)
+            return True
+        if self._prefix_arg is not None:
+            try:
+                func = self._allowed_universal_keys[keypress.key]
+            except KeyError:
+                pass
+            else:
+                if not keypress.has_any_modifier():
+                    func()
+                    self._add_keypress(keypress)
+                    return True
+
+        incomplete_keychord = False
+        command_called = False
+        self._add_keypress(keypress)
 
         for keymap in self.active_keymaps():
             result = keymap.lookup(self._keypresses)
@@ -125,6 +163,9 @@ class KeyEater(object):
 
         if command_called or not incomplete_keychord:
             self._keypresses = []
+
+        if command_called:
+            self._reset_prefix_arg = True
 
         return command_called or incomplete_keychord
 
@@ -163,3 +204,7 @@ def set_local_keymap(keymap):
 
 def set_global_keymap_enabled(enable):
     KEY_EATER.set_global_keymap_enabled(enable)
+
+
+def current_prefix_arg():
+    return KEY_EATER._prefix_arg
