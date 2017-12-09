@@ -9,6 +9,7 @@ from ..commands import define_command
 from ..webbuffer import create_buffer
 from .. import current_window, current_buffer
 from ..application import app
+from ..keyboardhandler import current_prefix_arg
 
 WebJump = namedtuple("WebJump", ("url", "doc", "allow_args", "complete_fn"))
 WEBJUMPS = {}
@@ -41,6 +42,7 @@ class WebJumpPrompt(Prompt):
     }
 
     ask_completions = Signal(object, str, str)
+    force_new_buffer = False
 
     def completer_model(self):
         data = []
@@ -52,6 +54,12 @@ class WebJumpPrompt(Prompt):
 
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
+        if self.force_new_buffer:
+            self.new_buffer = True
+        else:
+            self.new_buffer = current_prefix_arg() == (4,)
+        if self.new_buffer:
+            minibuffer.label.setText(minibuffer.label.text() + " (new buffer)")
         minibuffer.input().textEdited.connect(self._text_edited)
         self._wc_model = QStringListModel()
         self._wb_model = minibuffer.input().completer_model()
@@ -100,6 +108,15 @@ class WebJumpPrompt(Prompt):
         self._wb_model.deleteLater()
         self._wc_model.deleteLater()
 
+    def get_buffer(self):
+        if self.new_buffer:
+            buf = create_buffer()
+            view = current_window().current_web_view()
+            view.setBuffer(buf)
+        else:
+            buf = current_buffer()
+        return buf
+
 
 class WebJumpPromptCurrentUrl(WebJumpPrompt):
     def enable(self, minibuffer):
@@ -136,18 +153,18 @@ def get_url(value):
 def go_to(prompt):
     url = get_url(prompt.value())
     if url:
-        current_buffer().load(url)
+        prompt.get_buffer().load(url)
 
 
 @define_command("go-to-selected-url", prompt=WebJumpPromptCurrentUrl)
 def go_to_selected_url(prompt):
     url = get_url(prompt.value())
     if url:
-        current_buffer().load(url)
+        prompt.get_buffer().load(url)
 
 
 class WebJumpPromptNewUrl(WebJumpPrompt):
-    label = "url/webjump (new buffer):"
+    force_new_buffer = False
 
 
 @define_command("go-to-new-buffer", prompt=WebJumpPromptNewUrl)

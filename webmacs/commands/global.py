@@ -7,7 +7,8 @@ from ..minibuffer.prompt import PromptTableModel
 from ..application import app
 from ..webbuffer import create_buffer
 from ..keymaps import Keymap
-from .. import current_minibuffer, BUFFERS, current_window
+from ..keyboardhandler import current_prefix_arg
+from .. import current_minibuffer, BUFFERS, current_window, current_buffer
 
 
 class CommandsListPrompt(Prompt):
@@ -139,8 +140,23 @@ class VisitedLinksPrompt(Prompt):
     }
     keymap = VISITEDLINKS_KEYMAP
 
+    def enable(self, minibuffer):
+        Prompt.enable(self, minibuffer)
+        self.new_buffer = current_prefix_arg() == (4,)
+        if self.new_buffer:
+            minibuffer.label.setText(minibuffer.label.text() + " (new buffer)")
+
     def completer_model(self):
         return VisitedLinksModel(self)
+
+    def get_buffer(self):
+        if self.new_buffer:
+            buf = create_buffer()
+            view = current_window().current_web_view()
+            view.setBuffer(buf)
+        else:
+            buf = current_buffer()
+        return buf
 
 
 @VISITEDLINKS_KEYMAP.define_key("C-k")
