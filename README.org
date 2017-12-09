@@ -1,0 +1,109 @@
+* webmacs
+
+*webmacs* is yet another browser for keyboard-based web navigation.
+
+I started to wrote this as I was a fan user of [[http://conkeror.org/]conkeror],
+but unfortunately with Firefox quantum it is no longer working.
+
+webmacs is based on qt webengine and written mainly in Python (version 3).
+
+
+* Can I use it on a day to day use ?
+
+I started to use it as my main web browser both at work and home, so I believe
+yes. Though there are some corner cases and bugs and sometimes I have to fall
+back to some other browser (namely Firefox).
+
+
+* Installation
+
+Use pip/virtualenv - be prepared to have a working c and c++ compiler with
+python development library. Note I only have tested on linux.
+
+You will also need the PyQt5 library, as I believe it can't be installed through
+pip. It's easy to install using any package manager though.
+
+To test it, or work on it, I recommend virtualenv:
+
+#+BEGIN_SRC bash
+virtualenv --system-site-packages -p python3 venv
+# activate the virtualenv
+source venv/bin/activate
+# install webmacs in there
+pip install -e <path_to_webmacs_sources>
+# and now to run webmacs
+python -m webmacs.main
+#+END_SRC
+
+Or you can install it globally:
+#+BEGIN_SRC bash
+cd <path_to_webmacs_sources>
+sudo pip3 install .
+#+END_SRC
+
+
+* Features
+
+*webmacs* quite mimics the conkeror way of browsing. Short list of the already
+ supported features:
+
+- navigate through hints (shortcut: **f**)
+- go to url or webjump (shortcut: **g**)
+- navigate backward (shortcut: **B**)
+- navigate forward (shortcut: **F**)
+- go to with a default browser webjump (shortcut **s**)
+- switch buffer (shortcut **C-x b**)
+- close current buffer (shortcut **C-x k**, shortcut **q**)
+- open a new view (shortcuts **C-x 3** to split right, **C-x 2** to split bottom)
+- switch view (shortcut **C-x o**)
+- close view (shortcut **C-x 0**)
+- maximize view (shortcut **C-x 1**)
+- history access (shortcut **h**)
+- ad blocking using [[https://easylist.to/]easylist]. Implemented in C for high
+ performances. Note currently the first run of *webmacs* is slow because the
+  lists are downloaded and prepared for use.
+- for go-to and history command, the prefix **C-u** opens the url in a new
+  buffer.
+- handle basic authentication
+- handle basic certificates errors
+- automatic save/restore of passwords
+- a simple download-manager (go to webmacs://downloads)
+- fuzzy matching an completion nearly everywhere (using **Tab** and **Enter** to
+ validate)
+- emacs like search: starts with **C-s** or **C-r**
+- emacs-like navigation key bindings in the page (shortcuts: **C-n**, **C-p** to
+  move up and down a little, **C-v**, **M-v** to move the page up and down a bit
+  more, **M->** to scroll at the bottom and **M-<** to scroll at the top.
+- emacs like navigation binding inside editable web content (**C-f**, **C-b**,
+  **M-f**, **M-b**, **C-n**, **C-p**, ...)
+- as in emacs, **C-g** to get out of something.
+- call command by name (shortcut **M-x**)
+
+
+* Known bugs
+
+- sometimes the keymap between in-content page and out-of-content page get mixed
+  up.
+- key bindings inside frames are broken.
+
+And probably more :D.
+
+* Desired features
+
+A lot!
+
+- bugs fixes
+- init file for user customization, like emacs.d/init.el
+- help discovery, like C-h in emacs
+- history for prompts
+- caret navigation
+- more bindings
+
+I can't come up with more right now, but there are a lot more for sure.
+
+
+* Contributions
+
+Contributions are much welcome! Writing this browser is exciting and I love
+that, though I don't have many time to spend on it, having a family life and a
+job; And anyway the more we are to work on it and use the tool, the better!
