@@ -4,7 +4,7 @@ from PyQt5.QtCore import QUrl, QThread, pyqtSlot as Slot, \
     pyqtSignal as Signal, QStringListModel, QObject
 
 
-from ..minibuffer.prompt import Prompt, PromptTableModel
+from ..minibuffer.prompt import Prompt, PromptTableModel, PromptHistory
 from ..commands import define_command
 from ..webbuffer import create_buffer
 from .. import current_window, current_buffer
@@ -40,6 +40,7 @@ class WebJumpPrompt(Prompt):
     complete_options = {
         "autocomplete": True,
     }
+    history = PromptHistory()
 
     ask_completions = Signal(object, str, str)
     force_new_buffer = False

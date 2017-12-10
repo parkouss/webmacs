@@ -1,4 +1,5 @@
 import os
+import collections
 
 from PyQt5.QtCore import QObject, QAbstractTableModel, QModelIndex, Qt, \
     pyqtSlot as Slot, pyqtSignal as Signal, QRegExp
@@ -83,6 +84,7 @@ class Prompt(QObject):
     label = ""
     complete_options = {}
     keymap = None
+    history = None
 
     SimpleMatch = 0
     FuzzyMatch = 1
@@ -144,8 +146,62 @@ class Prompt(QObject):
 
     @Slot()
     def _on_edition_finished(self):
+        history = self.history
+        if history:
+            history.push(self.value())
+            history.reset()
         self.close()
         self.finished.emit()
+
+
+class PromptHistory(object):
+    """
+    In memory history for prompts.
+    """
+    def __init__(self, maxsize=50):
+        self._history = collections.deque(maxlen=maxsize)
+        self.reset()
+
+    def reset(self):
+        self._in_user_value = True
+        self._user_value = ""
+        self._cursor = 0
+
+    def push(self, text):
+        # avoid following duplicates
+        if self._history and self._history[0] == text:
+            return
+        self._history.insert(0, text)
+
+    def in_user_value(self):
+        return self._in_user_value
+
+    def set_user_value(self, text):
+        self._user_value = text
+
+    def __get(self, delta):
+        # delta must be 1 or -1
+        size = len(self._history)
+        if size == 0:
+            return self._user_value
+
+        if self._in_user_value:
+            self._in_user_value = False
+            self._cursor = 0 if delta > 0 else size - 1
+        else:
+            cursor = self._cursor + delta
+            if cursor >= size or cursor < 0:
+                self._in_user_value = True
+                return self._user_value
+            self._cursor = cursor
+
+        return self._history[self._cursor]
+
+    def get_next(self):
+        return self.__get(1)
+
+    def get_previous(self):
+        return self.__get(-1)
 
 
 class YesNoPrompt(Prompt):

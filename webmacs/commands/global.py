@@ -3,7 +3,7 @@ import itertools
 
 from . import define_command, COMMANDS
 from ..minibuffer import Prompt, KEYMAP
-from ..minibuffer.prompt import PromptTableModel
+from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
 from ..webbuffer import create_buffer
 from ..keymaps import Keymap
@@ -17,6 +17,7 @@ class CommandsListPrompt(Prompt):
         "match": Prompt.FuzzyMatch,
         "complete-empty": True,
     }
+    history = PromptHistory()
 
     def validate(self, name):
         return name

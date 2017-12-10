@@ -78,6 +78,7 @@ sudo pip3 install .
   *M-f*, *M-b*, *C-n*, *C-p*, ...)
 - as in emacs, *C-g* to get out of something.
 - call command by name (shortcut *M-x*)
+- command history within a session in minibuffer input (shortcut *M-n*, *M-p*)
 
 
 * Known bugs
@@ -95,7 +96,6 @@ A lot!
 - bugs fixes
 - init file for user customization, like emacs.d/init.el
 - help discovery, like C-h in emacs
-- history for prompts
 - caret navigation
 - more bindings
 

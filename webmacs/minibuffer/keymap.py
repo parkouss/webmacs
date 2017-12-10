@@ -28,6 +28,27 @@ def previous_completion():
     current_minibuffer().input().select_next_completion(False)
 
 
+def _prompt_history(func):
+    minibuff = current_minibuffer()
+    history = minibuff.prompt().history
+    if history:
+        if history.in_user_value():
+            history.set_user_value(minibuff.input().text())
+        text = func(history)
+        if text is not None:
+            minibuff.input().setText(text)
+
+
+@KEYMAP.define_key("M-n")
+def prompt_history_next():
+    _prompt_history(lambda h: h.get_next())
+
+
+@KEYMAP.define_key("M-p")
+def prompt_history_previous():
+    _prompt_history(lambda h: h.get_previous())
+
+
 @KEYMAP.define_key("Return")
 def edition_finished():
     current_minibuffer().input().complete()
