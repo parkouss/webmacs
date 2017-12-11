@@ -177,4 +177,4 @@ def visited_links_history(prompt):
     index = prompt.index()
     if index.isValid():
         url = index.internalPointer()
-        current_window().current_web_view().buffer().load(url)
+        prompt.get_buffer().load(url)
