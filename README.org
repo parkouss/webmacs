@@ -23,7 +23,7 @@ python development library. Note I only have tested on linux.
 You will also need the PyQt5 library, as I believe it can't be installed through
 pip. It's easy to install using any package manager though.
 
-Then you have to check out the repository (do not forget the *--recursive*):
+Then you have to check out the repository (do not forget the *recursive* flag):
 
 #+BEGIN_SRC bash
 git clone --recursive https://github.com/parkouss/webmacs
