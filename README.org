@@ -102,7 +102,7 @@ A lot!
 - bugs fixes
 - init file for user customization, like emacs.d/init.el
 - help discovery, like C-h in emacs
-- caret navigation
+- caret navigation (navigation in web content for non-editable web elements)
 - more bindings
 
 I can't come up with more right now, but there are a lot more for sure.
