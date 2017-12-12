@@ -21,7 +21,7 @@ adblocker = Extension(
     language="c++",
     include_dirs=[bloom_dir, hashset_dir, adblock_dir],
     # not sure if that help for speed. Careful it strip the debug symbols
-    extra_compile_args=["-g0"],
+    extra_compile_args=["-g0", "-std=c++11"],
     sources=[
         os.path.join(bloom_dir, "BloomFilter.cpp"),
         os.path.join(bloom_dir, "hashFn.cpp"),
