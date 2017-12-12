@@ -1,3 +1,4 @@
+import logging
 from collections import namedtuple
 
 from PyQt5.QtCore import QUrl, QThread, pyqtSlot as Slot, \
@@ -31,8 +32,12 @@ class CompletionReceiver(QObject):
 
     @Slot(object, str, str)
     def get_completions(self, w, name, text):
-        self.got_completions.emit([name + d
-                                   for d in w.complete_fn(text)])
+        try:
+            completions = [name + d for d in w.complete_fn(text)]
+        except:
+            logging.exception("Can not autocomplete for the webjump.")
+        else:
+            self.got_completions.emit(completions)
 
 
 class WebJumpPrompt(Prompt):
