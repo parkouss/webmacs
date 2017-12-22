@@ -148,6 +148,8 @@ class Prompt(QObject):
         buffer_input.set_completer_model(None)
         if c_model:
             c_model.deleteLater()
+        if self.history:
+            self.history.reset()
         self.closed.emit()
 
     def _on_completion_activated(self, index):
@@ -164,7 +166,6 @@ class Prompt(QObject):
         history = self.history
         if history:
             history.push(self.value())
-            history.reset()
         self.close()
         self.finished.emit()
 
@@ -174,7 +175,7 @@ class PromptHistory(object):
     In memory history for prompts.
     """
     def __init__(self, maxsize=50):
-        self._history = collections.deque(maxlen=maxsize)
+        self._history = collections.deque((), maxlen=maxsize)
         self.reset()
 
     def reset(self):
@@ -186,9 +187,12 @@ class PromptHistory(object):
         # avoid following duplicates
         if self._history and self._history[0] == text:
             return
-        self._history.insert(0, text)
+        self._history.append(text)
 
     def in_user_value(self):
+        """
+        indicate if we are in the state where the user see its custom value
+        """
         return self._in_user_value
 
     def set_user_value(self, text):
