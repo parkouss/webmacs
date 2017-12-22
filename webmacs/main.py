@@ -17,13 +17,15 @@ import argparse
 import signal
 import socket
 import logging
+import imp
+import sys
 
 from PyQt5.QtNetwork import QAbstractSocket
 
 from .webbuffer import create_buffer
-from .application import Application
+from .application import Application, app as _app
 from .window import Window
-from . import WINDOWS_HANDLER
+from . import WINDOWS_HANDLER, current_window
 from .ipc import IpcServer
 
 try:
@@ -92,6 +94,30 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
+def init(opts):
+    app = _app()
+    window = current_window()
+    if opts.url or not app.profile.load_session():
+        buffer = create_buffer(opts.url or "http://duckduckgo.com/?kae=t")
+        window.current_web_view().setBuffer(buffer)
+
+    window.showMaximized()
+
+
+def _handle_user_init_error(msg):
+    import traceback
+    conf_path = _app().conf_path()
+    stack_size = 0
+    tbs = traceback.extract_tb(sys.exc_info()[2])
+    for i, t in enumerate(tbs):
+        if t[0].startswith(conf_path):
+            stack_size = -len(tbs[i:])
+            break
+    logging.critical(("%s\n\n" % msg)
+                     + traceback.format_exc(stack_size))
+    sys.exit(1)
+
+
 def main():
     opts = parse_args()
     setup_logging(getattr(logging, opts.log_level.upper()),
@@ -114,11 +140,26 @@ def main():
     # register the window as being the current one
     WINDOWS_HANDLER.current_window = window
 
-    if opts.url or not app.profile.load_session():
-        buffer = create_buffer(opts.url or "http://duckduckgo.com/?kae=t")
-        window.current_web_view().setBuffer(buffer)
+    # load a user init module if any
+    try:
+        spec = imp.find_module("init", [app.conf_path()])
+    except ImportError:
+        user_init = None
+    else:
+        try:
+            user_init = imp.load_module("_webmacs_userconfig", *spec)
+        except Exception:
+            _handle_user_init_error("Error reading the user configuration.")
 
-    window.showMaximized()
+    # and exectute its init function if there is one
+    if user_init is None or not hasattr(user_init, "init"):
+        init(opts)
+    else:
+        try:
+            user_init.init(opts)
+        except Exception:
+            _handle_user_init_error("Error executing user init function in %s."
+                                    % user_init.__file__)
 
     signal_wakeup(app)
     signal.signal(signal.SIGINT, lambda s, h: app.quit())
