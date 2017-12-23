@@ -85,6 +85,9 @@ class FollowPrompt(Prompt):
 
 @define_command("follow", prompt=FollowPrompt)
 def follow(prompt):
+    """
+    Hint links in the buffer and follow them on selection.
+    """
     prompt.page.focus_active_browser_object()
     current_buffer().stop_select_browser_objects()
 

@@ -123,6 +123,9 @@ class BufferHistoryListPrompt(Prompt):
 
 @define_command("buffer-history", prompt=BufferHistoryListPrompt)
 def buffer_history(prompt):
+    """
+    Prompt to navigate in the local buffer history.
+    """
     selected = prompt.index()
     if selected.row() >= 0:
         prompt.page_history.goToItem(selected.internalPointer())

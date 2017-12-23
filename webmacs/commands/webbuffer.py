@@ -103,6 +103,9 @@ class BufferListPrompt(Prompt):
 
 @define_command("switch-buffer", prompt=BufferListPrompt)
 def switch_buffer(prompt):
+    """
+    Prompt to select a buffer to display in the current view.
+    """
     selected = prompt.index()
     if selected.row() >= 0:
         view = current_window().current_web_view()
@@ -111,70 +114,112 @@ def switch_buffer(prompt):
 
 @define_command("go-forward")
 def go_forward():
+    """
+    Navigate forward in history for the current buffer.
+    """
     current_buffer().triggerAction(WebBuffer.Forward)
 
 
 @define_command("go-backward")
 def go_backward():
+    """
+    Navigate backward in history for the current buffer.
+    """
     current_buffer().triggerAction(WebBuffer.Back)
 
 
 @define_command("scroll-down")
 def scroll_down():
+    """
+    Scroll the current buffer down a bit.
+    """
     current_buffer().scroll_by(y=20)
 
 
 @define_command("scroll-up")
 def scroll_up():
+    """
+    Scroll the current buffer up a bit.
+    """
     current_buffer().scroll_by(y=-20)
 
 
 @define_command("scroll-page-down")
 def scroll_page_down():
+    """
+    Scroll the current buffer one page down.
+    """
     current_buffer().scroll_page(1)
 
 
 @define_command("scroll-page-up")
 def scroll_page_up():
+    """
+    Scroll the current buffer one page up.
+    """
     current_buffer().scroll_page(-1)
 
 
 @define_command("scroll-top")
 def scroll_top():
+    """
+    Scroll the current buffer to the top.
+    """
     current_buffer().scroll_top()
 
 
 @define_command("scroll-bottom")
 def scroll_bottom():
+    """
+    Scroll the current buffer to the bottom.
+    """
     current_buffer().scroll_bottom()
 
 
 @define_command("webcontent-copy")
 def webcontent_copy():
+    """
+    Copy the selection in the current buffer.
+    """
     current_buffer().triggerAction(WebBuffer.Copy)
 
 
 @define_command("webcontent-cut")
 def webcontent_cut():
+    """
+    Cut the selection in the current buffer.
+    """
     current_buffer().triggerAction(WebBuffer.Cut)
 
 
 @define_command("webcontent-paste")
 def webcontent_paste():
+    """
+    Paste the selection in the current buffer.
+    """
     current_buffer().triggerAction(WebBuffer.Paste)
 
 
 @define_command("reload-buffer")
 def reload_buffer():
+    """
+    Reload the current buffer.
+    """
     current_buffer().triggerAction(WebBuffer.Reload)
 
 
 @define_command("reload-buffer-no-cache")
 def reload_buffer_no_cache():
+    """
+    Reload the current buffer bypassing any cache.
+    """
     current_buffer().triggerAction(WebBuffer.ReloadAndBypassCache)
 
 
 @define_command("close-buffer")
 def buffer_close():
+    """
+    Close the current buffer.
+    """
     current = current_buffer()
     close_buffer(current)

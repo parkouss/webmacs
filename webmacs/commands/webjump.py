@@ -172,6 +172,9 @@ def get_url(value):
 
 @define_command("go-to", prompt=WebJumpPrompt)
 def go_to(prompt):
+    """
+    Prompt to open an url or a webjump.
+    """
     url = get_url(prompt.value())
     if url:
         prompt.get_buffer().load(url)
@@ -179,6 +182,9 @@ def go_to(prompt):
 
 @define_command("go-to-selected-url", prompt=WebJumpPromptCurrentUrl)
 def go_to_selected_url(prompt):
+    """
+    Prompt (defaulting to current selection) to open an url or a webjump.
+    """
     url = get_url(prompt.value())
     if url:
         prompt.get_buffer().load(url)
@@ -190,6 +196,9 @@ class WebJumpPromptNewUrl(WebJumpPrompt):
 
 @define_command("go-to-new-buffer", prompt=WebJumpPromptNewUrl)
 def go_to_new_buffer(prompt):
+    """
+    Prompt to open an url or webjump in a new buffer.
+    """
     url = get_url(prompt.value())
     if url:
         view = current_window().current_web_view()
@@ -198,4 +207,7 @@ def go_to_new_buffer(prompt):
 
 @define_command("search-default", prompt=DefaultSearchPrompt)
 def search_default(prompt):
+    """
+    Prompt to open an url with the default webjump.
+    """
     go_to(prompt)

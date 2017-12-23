@@ -56,6 +56,18 @@ def app():
     return Application.INSTANCE
 
 
+def _app_requires():
+    require(".keymaps.global")
+
+    require(".commands.follow")
+    require(".commands.buffer_history")
+    require(".commands.global")
+    require(".commands.isearch")
+    require(".commands.webbuffer")
+
+    require(".default_webjumps")
+
+
 class Application(QApplication):
     INSTANCE = None
 
@@ -92,15 +104,7 @@ class Application(QApplication):
             QWebEngineSettings.JavascriptCanOpenWindows, True,
         )
 
-        require(".keymaps.global")
-
-        require(".commands.follow")
-        require(".commands.buffer_history")
-        require(".commands.global")
-        require(".commands.isearch")
-        require(".commands.webbuffer")
-
-        require(".default_webjumps")
+        _app_requires()
 
     def _setup_conf_paths(self):
         self._conf_path = os.path.join(os.path.expanduser("~"), ".webmacs")

@@ -46,11 +46,17 @@ class CommandsListPrompt(Prompt):
 
 @define_command("quit")
 def quit():
+    """
+    Quit the application.
+    """
     app().quit()
 
 
 @define_command("M-x", prompt=CommandsListPrompt, visible=False)
 def commands(prompt):
+    """
+    Prompt for a command name to execute.
+    """
     try:
         COMMANDS[prompt.value()]()
     except KeyError:
@@ -59,6 +65,9 @@ def commands(prompt):
 
 @define_command("toggle-fullscreen")
 def toggle_fullscreen():
+    """
+    Toggle fullscreen state of the current window.
+    """
     win = current_window()
     if not win:
         return
@@ -70,6 +79,9 @@ def toggle_fullscreen():
 
 @define_command("toggle-maximized")
 def toggle_maximised():
+    """
+    Toggle maximised state of the current window.
+    """
     win = current_window()
     if not win:
         return
@@ -93,6 +105,9 @@ def _get_or_create_buffer(win):
 
 @define_command("split-view-right")
 def split_window_right():
+    """
+    Create a new view on right of the current one.
+    """
     win = current_window()
     view = win.create_webview_on_right()
     view.setBuffer(_get_or_create_buffer(win))
@@ -101,6 +116,9 @@ def split_window_right():
 
 @define_command("split-view-bottom")
 def split_window_bottom():
+    """
+    Create a new view below the current one.
+    """
     win = current_window()
     view = win.create_webview_on_bottom()
     view.setBuffer(_get_or_create_buffer(win))
@@ -109,24 +127,36 @@ def split_window_bottom():
 
 @define_command("other-view")
 def other_view():
+    """
+    Focus on the next view.
+    """
     win = current_window()
     win.other_view()
 
 
 @define_command("close-view")
 def close_view():
+    """
+    Close the current view.
+    """
     window = current_window()
     window.close_view(window.current_web_view())
 
 
 @define_command("maximise-view")
 def maximise_view():
+    """
+    Close all the views in the current window except the current one.
+    """
     win = current_window()
     win.close_other_views()
 
 
 @define_command("toggle-ad-block")
 def toggle_ad_block():
+    """
+    Toggle ad blocking on or off.
+    """
     from .webbuffer import reload_buffer_no_cache
 
     app().url_interceptor().toggle_use_adblock()
@@ -189,6 +219,9 @@ def visited_links_remove_entry():
 
 @define_command("visited-links-history", prompt=VisitedLinksPrompt)
 def visited_links_history(prompt):
+    """
+    Prompt to open a link previously visited.
+    """
     index = prompt.index()
     if index.isValid():
         url = index.internalPointer()

@@ -97,6 +97,9 @@ class ISearchPrompt(Prompt):
 
 @define_command("i-search-forward", prompt=ISearchPrompt)
 def i_search_forward(prompt):
+    """
+    Begin an incremental search (forward).
+    """
     pass
 
 
@@ -106,4 +109,7 @@ class ISearchPromptBackward(ISearchPrompt):
 
 @define_command("i-search-backward", prompt=ISearchPromptBackward)
 def i_search_backward(prompt):
+    """
+    Begin an incremental search (backward).
+    """
     pass
