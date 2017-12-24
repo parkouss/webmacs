@@ -98,6 +98,8 @@ html_theme_options = {
     'github_repo': project,
     "github_button": True,
     'description': "An emacs-like keyboard-driven web browser",
+    # defaults is 940, gives a bit more so viewcode looks good.
+    'page_width': "1050px",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

@@ -16,6 +16,7 @@ basic usage and keybindings.
    :caption: Contents:
 
    user_configuration
+   api
 
 
 Indices and tables

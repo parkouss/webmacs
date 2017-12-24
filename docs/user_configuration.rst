@@ -51,4 +51,57 @@ opening the given url for example.
    It is not required to create an init function in the user configuration
    _\_init_\_.py file. Only do so if you want to change the default webmacs
    initialization. Other changes can be applied early, directly at the module
-   level, such as defining **webjumps**.
+   level, such as defining **webjumps** or **binding keys**.
+
+
+Binding keys
+************
+
+In webmacs, like in emacs, it is possible to bind a key to command on a given keymap.
+
+Keymaps
+-------
+
+There are multiple keymaps, the most useful are:
+
+- the global keymap (in :func:`webmacs.keymaps.global_key_map`). This
+  keymap is almost always enabled and act as a fallback to the current
+  local keymap.
+
+- the webbuffer keymap (in :data:`webmacs.webbuffer.KEYMAP`). This
+  keymap is active as the current local keymap when there is not
+  editable field focused in the web content buffer.
+
+
+Commands
+--------
+
+Here is the list of the currently available commands:
+
+.. webmacs-commands::
+
+
+Binding a command to a keymap
+-----------------------------
+
+You should use :meth:`webmacs.keymaps.Keymap.define_key`. Here is an example:
+
+.. code-block:: python
+
+   from webmacs.keymaps import global_key_map
+   from webmacs.webbuffer importr KEYMAP as buffer_keymap
+
+   global_map = global_key_map()
+   global_map.define_key("C-c |", "split-view-right")
+   global_map.define_key("C-c _", "split-view-bottom")
+
+   buffer_keymap.define_key("x", "close-buffer")
+
+
+.. note::
+
+   The global buffer should not define single letter keychords, as you
+   won't be able to type that letter in editable fields, thus this is
+   possible in the webbuffer keymap.
+
+

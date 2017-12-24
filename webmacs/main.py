@@ -95,6 +95,18 @@ def parse_args(argv=None):
 
 
 def init(opts):
+    """
+    Default initialization of webmacs.
+
+    If an url is given on the command line, it opens it. Else it try
+    to load the buffers that were opened the last time webmacs has
+    exited. If none of that works, the default is to open a buffer
+    with an url to the duckduck go search engine.
+
+    Also open the view maximized.
+
+    :param opts: the result of the parsed command line.
+    """
     app = _app()
     window = current_window()
     if opts.url or not app.profile.load_session():

@@ -332,9 +332,11 @@ class Keymap(object):
 
     def define_key(self, key, binding=None):
         """
-        Define a binding (callable) for a key chord on the keymap.
+        Define a binding (callable or command name) for a key chord.
 
-        Note that if binding is not given, it should be used as a decorator.
+        :param key: a string representing the key chord, such as "C-c x".
+        :param binding: either a command name (a string) or a callable, or None.
+                        If None, it must be used as a function decorator.
         """
         if binding is None:
             def wrapper(func):
@@ -382,4 +384,7 @@ GLOBAL_KEYMAP = Keymap("global")
 
 
 def global_key_map():
+    """
+    Returns the global :class:`Keymap`.
+    """
     return GLOBAL_KEYMAP
