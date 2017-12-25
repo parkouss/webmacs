@@ -19,7 +19,7 @@ from PyQt5.QtCore import QUrl, pyqtSlot as Slot, QEventLoop
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 from PyQt5.QtWebChannel import QWebChannel
 
-from .keymaps import Keymap, KeyPress
+from .keymaps import Keymap, KeyPress, BUFFER_KEYMAP as KEYMAP
 from . import current_window, BUFFERS, current_minibuffer, \
     minibuffer_show_info, current_buffer
 from .content_handler import WebContentHandler
@@ -29,9 +29,6 @@ from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import send_key_event
 from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP
-
-
-KEYMAP = Keymap("webbuffer")
 
 
 def create_buffer(url=None):

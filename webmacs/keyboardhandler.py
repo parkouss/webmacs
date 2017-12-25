@@ -18,7 +18,7 @@ import weakref
 
 from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot
 
-from .keymaps import KeyPress, global_key_map, CHAR2KEY
+from .keymaps import KeyPress, global_keymap, CHAR2KEY
 from . import hooks
 from . import register_global_event_callback, COMMANDS, minibuffer_show_info
 
@@ -120,7 +120,7 @@ class KeyEater(object):
         if self._local_key_map:
             yield self._local_key_map
         if self._use_global_keymap:
-            yield global_key_map()
+            yield global_keymap()
 
     def _add_keypress(self, keypress):
         self._keypresses.append(keypress)

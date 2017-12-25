@@ -381,10 +381,24 @@ class Keymap(object):
 
 
 GLOBAL_KEYMAP = Keymap("global")
+BUFFER_KEYMAP = Keymap("webbuffer")
 
 
-def global_key_map():
+def global_keymap():
     """
     Returns the global :class:`Keymap`.
+
+    It is almost always active, and act as a fallback if there is
+    an active keymap.
     """
     return GLOBAL_KEYMAP
+
+
+def webbuffer_keymap():
+    """
+    Returns the :class:`Keymap` associated to web buffers.
+
+    This keymap is active when there is no focus for an editable
+    element in web contents.
+    """
+    return BUFFER_KEYMAP

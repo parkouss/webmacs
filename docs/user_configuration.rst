@@ -87,13 +87,14 @@ Keymaps
 
 There are multiple keymaps, the most useful are:
 
-- the global keymap (in :func:`webmacs.keymaps.global_key_map`). This
-  keymap is almost always enabled and act as a fallback to the current
-  local keymap.
+- the global keymap (returned by
+  :func:`webmacs.keymaps.global_keymap`). This keymap is almost always
+  enabled and act as a fallback to the current local keymap.
 
-- the webbuffer keymap (in :data:`webmacs.webbuffer.KEYMAP`). This
-  keymap is active as the current local keymap when there is not
-  editable field focused in the web content buffer.
+- the webbuffer keymap (returned by
+  :data:`webmacs.keymaps.webbuffer_keymap`). This keymap is active as
+  the current local keymap when there is not editable field focused in
+  the web content buffer.
 
 
 Commands
@@ -111,13 +112,13 @@ You should use :meth:`webmacs.keymaps.Keymap.define_key`. Here is an example:
 
 .. code-block:: python
 
-   from webmacs.keymaps import global_key_map
-   from webmacs.webbuffer importr KEYMAP as buffer_keymap
+   from webmacs import keymaps
 
-   global_map = global_key_map()
+   global_map = keymaps.global_keymap()
    global_map.define_key("C-c |", "split-view-right")
    global_map.define_key("C-c _", "split-view-bottom")
 
+   buffer_keymap = keymaps.webbuffer_keymap()
    buffer_keymap.define_key("x", "close-buffer")
 
 

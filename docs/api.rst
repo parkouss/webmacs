@@ -11,11 +11,9 @@ Initialisation
 Keymaps
 *******
 
-.. autofunction:: webmacs.keymaps.global_key_map
+.. autofunction:: webmacs.keymaps.global_keymap
 
-.. autodata:: webmacs.webbuffer.KEYMAP
-   :annotation: The keymap used in web buffers when there is nothing editable
-		focused.
+.. autofunction:: webmacs.keymaps.webbuffer_keymap
 
 .. autoclass:: webmacs.keymaps.Keymap
    :members: define_key
