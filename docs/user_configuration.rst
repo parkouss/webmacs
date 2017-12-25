@@ -2,7 +2,7 @@ User configuration
 ==================
 
 **webmacs** can be configured by writing Python code. The files should lives in
-a ~/.webmacs/init directory, starting with an _\_init_\_.py file.
+a ``~/.webmacs/init`` directory, starting with an ``__init__.py`` file.
 
 If this file exists, it will be loaded early in the application.
 
