@@ -54,6 +54,29 @@ opening the given url for example.
    level, such as defining **webjumps** or **binding keys**.
 
 
+Using more than one configuration file
+**************************************
+
+It is possible to write more than one configuration file. The
+directory where the ``__init__.py`` file lives is a python package, so
+it is possible to just use relative imports.
+
+For example:
+
+``__init__.py``
+
+.. code-block:: python
+
+   import .webjumps
+
+
+``webjumps.py``
+
+.. code-block:: python
+
+   print("definition of my custom webjumps should go there.")
+
+
 Binding keys
 ************
 
