@@ -105,3 +105,32 @@ You should use :meth:`webmacs.keymaps.Keymap.define_key`. Here is an example:
    possible in the webbuffer keymap.
 
 
+Webjumps
+********
+
+Webjumps represents a quick way to access some urls, possibly with a
+variable part. A webjump name becomes a part of the webmacs "go-to"
+bar, so for example you can type:
+
+``google foo bar``
+
+to execute a google query with "foo bar" terms. Here is the
+implementation of the google webjump:
+
+.. literalinclude:: ../webmacs/default_webjumps.py
+   :start-after: # ----------- doc example
+   :end-before: # ----------- end of doc example
+
+
+The list of defined webjumps in webmacs:
+
+.. webmacs-webjumps::
+
+
+You can implement your own webjumps, or override the existing
+ones. See :func:`webmacs.commands.webjump.define_webjump` and the
+example above.
+
+By default in webmacs, pressing the ``s`` key will call the command
+``search-default``, wich will use the duckduckgo webjump. To change
+that default, use :func:`webmacs.commands.webjump.set_default`.

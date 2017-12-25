@@ -23,6 +23,8 @@ from .minibuffer.prompt import FSModel
 from .scheme_handlers.webmacs import PAGES as webmacs_pages
 
 
+# ----------- doc example
+
 def google_complete(text):
     if not text:
         return []
@@ -36,6 +38,8 @@ define_webjump("google ",
                "https://www.google.fr/search?q=%s&ie=utf-8&oe=utf-8",
                "Google Search",
                complete_fn=google_complete)
+
+# ----------- end of doc example
 
 
 def complete_fs():

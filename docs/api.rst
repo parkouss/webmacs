@@ -19,3 +19,11 @@ Keymaps
 
 .. autoclass:: webmacs.keymaps.Keymap
    :members: define_key
+
+
+Webjumps
+********
+
+.. autofunction:: webmacs.commands.webjump.define_webjump
+
+.. autofunction:: webmacs.commands.webjump.set_default

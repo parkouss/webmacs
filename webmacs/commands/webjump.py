@@ -33,13 +33,35 @@ DEFAULT_WEBJUMP_SEARCH = None
 
 
 def define_webjump(name, url, doc="", complete_fn=None):
+    """
+    Define a webjump.
+
+    A webjump is a quick way to access an url, optionally with a
+    variable section (for example an url for a google search). A
+    function might be given to provide auto-completion.
+
+    :param name: the name of the webjump.
+    :param url: the url of the webjump. If the url contains "%s", it is
+                assumed that it as a variable part.
+    :param doc: associated documentation for the webjump.
+    :param complete_fn: a function that provides autocompletion. The
+                        function takes one parameter, the current
+                        text, and must returns a list of strings (the
+                        possible completions)
+
+    """
     allow_args = "%s" in url
     WEBJUMPS[name] = WebJump(url, doc, allow_args, complete_fn)
 
 
-def set_default(text):
+def set_default(name):
+    """
+    Set the default webjump.
+
+    :param name: the name of the webjump.
+    """
     global DEFAULT_WEBJUMP_SEARCH
-    DEFAULT_WEBJUMP_SEARCH = text
+    DEFAULT_WEBJUMP_SEARCH = name
 
 
 class CompletionReceiver(QObject):

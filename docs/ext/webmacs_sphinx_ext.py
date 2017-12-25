@@ -4,8 +4,11 @@ from docutils import nodes
 
 from webmacs import COMMANDS
 from webmacs.commands import InteractiveCommand
+from webmacs.commands.webjump import WEBJUMPS
 from webmacs.application import _app_requires
 
+
+# to include all commands, etc.
 _app_requires()
 
 
@@ -24,8 +27,7 @@ def as_rest_table(data):
     yield header
 
 
-
-class WebmacsCommands(Directive):
+class SimpleAutoDirective(Directive):
     has_content = False
     required_arguments = 0
     optional_arguments = 0
@@ -33,12 +35,23 @@ class WebmacsCommands(Directive):
     option_spec = {}
 
     def run(self):
+        self._result = ViewList()
+
+        self._run()
+
+        node = nodes.paragraph()
+        node.document = self.state.document
+        self.state.nested_parse(self._result, 0, node)
+        return node.children
+
+
+class WebmacsCommands(SimpleAutoDirective):
+    def _run(self):
+        result = self._result
         def get_doc(cmd):
             if isinstance(cmd, InteractiveCommand):
                 cmd = cmd.binding
             return cmd.__doc__ or "No description"
-
-        result = ViewList()
 
         table = [("Command", "description")]
         for name in sorted(COMMANDS):
@@ -47,11 +60,20 @@ class WebmacsCommands(Directive):
         for line in as_rest_table(table):
             result.append(line, "")
 
-        node = nodes.paragraph()
-        node.document = self.state.document
-        self.state.nested_parse(result, 0, node)
-        return node.children
+
+class WebmacsWebjumps(SimpleAutoDirective):
+    def _run(self):
+        result = self._result
+
+        table = [("Name", "url", "description")]
+        for name in sorted(WEBJUMPS):
+            webjump = WEBJUMPS[name]
+            table.append((name, webjump.url, webjump.doc))
+
+        for line in as_rest_table(table):
+            result.append(line, "")
 
 
 def setup(app):
     app.add_directive("webmacs-commands", WebmacsCommands)
+    app.add_directive("webmacs-webjumps", WebmacsWebjumps)
