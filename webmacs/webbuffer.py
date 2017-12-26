@@ -84,7 +84,7 @@ class WebBuffer(QWebEnginePage):
         self.loadFinished.connect(self.finished)
         self.authenticationRequired.connect(self.handle_authentication)
         self.linkHovered.connect(self.on_url_hovered)
-        self.titleChanged.connect(self.on_title_changed)
+        self.titleChanged.connect(self.update_title)
         self.__authentication_data = None
 
         if url:
@@ -258,8 +258,11 @@ class WebBuffer(QWebEnginePage):
     def on_url_hovered(self, url):
         minibuffer_show_info(url)
 
-    def on_title_changed(self, title):
-        current_window().setWindowTitle("{} - Webmacs".format(title))
+    def update_title(self, title=None):
+        if self == current_buffer():
+            current_window().update_title(
+                title if title is not None else self.title()
+            )
 
 
 KEYMAP.define_key("g", "go-to")

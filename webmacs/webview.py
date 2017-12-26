@@ -56,6 +56,7 @@ class WebView(QWebEngineView):
 
     def setBuffer(self, buffer):
         self.setPage(buffer)
+        buffer.update_title()
         # move the buffer so it becomes the most recently opened
         if buffer != BUFFERS[0]:
             BUFFERS.remove(buffer)
@@ -70,6 +71,7 @@ class WebView(QWebEngineView):
     def set_current(self):
         self.window._change_current_webview(self)
         self.setFocus()
+        self.buffer().update_title()
 
     def request_fullscreen(self, toggle_on):
         w = self.window

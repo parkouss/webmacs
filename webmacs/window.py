@@ -140,3 +140,9 @@ class Window(QWidget):
         # do not show the window focused if there is one left
         if len(self.webviews()) == 1:
             self.current_web_view().container().show_focused(False)
+
+    def update_title(self, title):
+        if title:
+            self.setWindowTitle("{} - Webmacs".format(title))
+        else:
+            self.setWindowTitle("Webmacs")
