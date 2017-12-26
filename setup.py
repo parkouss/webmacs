@@ -49,6 +49,8 @@ adblocker = Extension(
         os.path.join(THIS_DIR, "c", "adblock.c"),
     ])
 
+ext_modules = [adblocker]
+
 
 class PyTest(TestCommand):
     def run_tests(self):
@@ -56,6 +58,16 @@ class PyTest(TestCommand):
         sys.path.insert(0, THIS_DIR)
         errno = pytest.main([os.path.join(THIS_DIR, "tests")])
         sys.exit(errno)
+
+
+install_requires = ["dateparser", "jinja2"]
+# should be a dependency, but it fail with strange errors on arch;
+# install_requires += ["PyQt5"],
+
+if "READTHEDOCS" in os.environ:
+    # date parser can't be built due to regex C extension
+    install_requires.remove("dateparser")
+    ext_modules = []
 
 
 setup(
@@ -69,9 +81,7 @@ setup(
 Work in progress.
 ''',
     packages=find_packages(),
-    # should be a dependency, but it fail with strange errors on arch;
-    # install_requires=["PyQt5"],
-    install_requires=["dateparser", "jinja2"],
+    install_requires=install_requires,
     tests_require=["pytest"],
     cmdclass={'test': PyTest},
     entry_points={"console_scripts": ["webmacs = webmacs.main:main"]},
@@ -82,4 +92,4 @@ Work in progress.
         "scheme_handlers/webmacs/templates/*.html",
     ]},
     python_requires=">=3.3",
-    ext_modules=[adblocker])
+    ext_modules=ext_modules)

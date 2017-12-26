@@ -22,6 +22,29 @@ import sys
 sys.path.insert(0, os.path.join(os.path.abspath("."), "ext"))
 sys.path.insert(0, os.path.abspath('..'))
 
+if "READTHEDOCS" in os.environ:
+    class Mock(object):
+        __bases__ = (object,)
+        def __init__(self, *a, **kw):
+            pass
+        def __getattr__(self, name):
+            return Mock()
+        def __call__(self, *a, **kw):
+            return Mock()
+        def __iter__(self):
+            return iter(())
+        def __instancecheck__(self, instance):
+            return True
+        def __subclasscheck__(self, cls):
+            return True
+
+    MOCK_MODULES = ["PyQt5", "PyQt5.QtCore", "PyQt5.QtGui",
+                    "PyQt5.QtWidgets", "PyQt5.QtWebEngineWidgets",
+                    "PyQt5.QtWebEngineCore", "PyQt5.QtWebChannel",
+                    "PyQt5.QtNetwork",
+                    "_adblock", "dateparser"]
+    sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
 import webmacs
 
 
