@@ -85,7 +85,14 @@ sudo pip3 install .
 - as in emacs, *C-g* to get out of something.
 - call command by name (shortcut *M-x*)
 - command history within a session in minibuffer input (shortcut *M-n*, *M-p*)
+- user configuration written in Python, giving lots of power to
+  customize webmacs.
 
+
+* Documentation
+
+Documentation is available on [[http://webmacs.readthedocs.io/en/latest/index.html][readthedocs]]. Currently it is for user
+configuration only.
 
 * Known bugs
 
@@ -95,12 +102,12 @@ sudo pip3 install .
 
 And probably more :D.
 
+
 * Desired features
 
 A lot!
 
 - bugs fixes
-- init file for user customization, like emacs.d/init.el
 - help discovery, like C-h in emacs
 - caret navigation (navigation in web content for non-editable web elements)
 - more bindings
