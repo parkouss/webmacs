@@ -90,6 +90,7 @@ class Window(QWidget):
         self._webviews_layout.removeWidget(container)
         self._webviews.remove(webview)
         hooks.webview_closed.call(webview)
+        container.deleteLater()
         webview.deleteLater()
         return True
 
