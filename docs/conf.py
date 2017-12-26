@@ -23,8 +23,11 @@ sys.path.insert(0, os.path.join(os.path.abspath("."), "ext"))
 sys.path.insert(0, os.path.abspath('..'))
 
 if "READTHEDOCS" in os.environ:
+    # We can not install webmacs on readthedocs, as it requires to
+    # buid some C extensions (from dateparser, PyQt5, ...). The
+    # alternative is to mock any dependency used by webmacs.
+
     class Mock(object):
-        __bases__ = (object,)
         def __init__(self, *a, **kw):
             pass
         def __getattr__(self, name):
