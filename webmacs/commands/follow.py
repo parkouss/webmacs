@@ -67,9 +67,9 @@ class HintPrompt(Prompt):
         self.page.filter_browser_objects(text)
 
     def _update_label(self):
-        label = self.__class__.label
+        label = self.label
         if self.numbers:
-            label = label[:-1] + (" #%s:" % self.numbers)
+            label = label + (" #%s" % self.numbers)
         self.minibuffer.label.setText(label)
 
     def eventFilter(self, obj, event):
@@ -98,6 +98,8 @@ class FollowPrompt(HintPrompt):
             self.hint_selector = SELECTOR_LINK
         HintPrompt.enable(self, minibuffer)
         self.new_buffer.enable(minibuffer)
+        if self.new_buffer:
+            self.label = minibuffer.label.text()
 
 
 class CopyLinkPrompt(HintPrompt):
