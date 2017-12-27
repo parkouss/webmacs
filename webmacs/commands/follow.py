@@ -19,38 +19,38 @@ from ..minibuffer import Prompt, KEYMAP as MKEYMAP
 from ..keymaps import Keymap
 from ..commands import define_command
 from .. import current_minibuffer, current_buffer
+from ..application import app
 from .prompt_helper import PromptNewBuffer
 
 
-KEYMAP = Keymap("follow", MKEYMAP)
+KEYMAP = Keymap("hint", MKEYMAP)
+
+# took from conkeror
+SELECTOR_CLICKABLE = (
+    "//*[@onclick or @onmouseover or @onmousedown or @onmouseup or "
+    "@oncommand or @role='link' or @role='button' or @role='menuitem']"
+    " | //input[not(@type='hidden')] | //a[@href] | //area"
+    " | //iframe | //textarea | //button | //select"
+    " | //*[@contenteditable = 'true']"
+    " | //xhtml:*[@onclick or @onmouseover or @onmousedown or"
+    " @onmouseup or @oncommand or @role='link' or @role='button' or"
+    " @role='menuitem'] | //xhtml:input[not(@type='hidden')]"
+    " | //xhtml:a[@href] | //xhtml:area | //xhtml:iframe"
+    " | //xhtml:textarea | //xhtml:button | //xhtml:select"
+    " | //xhtml:*[@contenteditable = 'true'] | //svg:a"
+)
+
+SELECTOR_LINK = "//a[@href]"
 
 
-class FollowPrompt(Prompt):
-    label = "follow:"
+class HintPrompt(Prompt):
     keymap = KEYMAP
+    hint_selector = ""
 
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
-        self.new_buffer = PromptNewBuffer()
-        self.new_buffer.enable(minibuffer)
         self.page = current_buffer()
-        # took from conkeror
-        selector = (
-            "//*[@onclick or @onmouseover or @onmousedown or @onmouseup or "
-            "@oncommand or @role='link' or @role='button' or @role='menuitem']"
-            " | //input[not(@type='hidden')] | //a[@href] | //area"
-            " | //iframe | //textarea | //button | //select"
-            " | //*[@contenteditable = 'true']"
-            " | //xhtml:*[@onclick or @onmouseover or @onmousedown or"
-            " @onmouseup or @oncommand or @role='link' or @role='button' or"
-            " @role='menuitem'] | //xhtml:input[not(@type='hidden')]"
-            " | //xhtml:a[@href] | //xhtml:area | //xhtml:iframe"
-            " | //xhtml:textarea | //xhtml:button | //xhtml:select"
-            " | //xhtml:*[@contenteditable = 'true'] | //svg:a"
-        )
-        if self.new_buffer:
-            selector = "//a[@href]"
-        self.page.start_select_browser_objects(selector)
+        self.page.start_select_browser_objects(self.hint_selector)
         self.numbers = ""
         minibuffer.input().textChanged.connect(self.on_text_edited)
         self.browser_object_activated = {}
@@ -88,6 +88,23 @@ class FollowPrompt(Prompt):
         return Prompt.eventFilter(self, obj, event)
 
 
+class FollowPrompt(HintPrompt):
+    label = "follow:"
+    hint_selector = SELECTOR_CLICKABLE
+
+    def enable(self, minibuffer):
+        self.new_buffer = PromptNewBuffer()
+        if self.new_buffer:
+            self.hint_selector = SELECTOR_LINK
+        HintPrompt.enable(self, minibuffer)
+        self.new_buffer.enable(minibuffer)
+
+
+class CopyLinkPrompt(HintPrompt):
+    label = "copy link:"
+    hint_selector = SELECTOR_LINK
+
+
 @define_command("follow", prompt=FollowPrompt)
 def follow(prompt):
     """
@@ -100,6 +117,19 @@ def follow(prompt):
         prompt.new_buffer.get_buffer().load(
             prompt.browser_object_activated["url"]
         )
+    buff.stop_select_browser_objects()
+
+
+@define_command("copy-link", prompt=CopyLinkPrompt)
+def copy_link(prompt):
+    """
+    Hint links in the buffer to copy them.
+    """
+    buff = prompt.page
+    bo = prompt.browser_object_activated
+    if "url" in bo:
+        app().clipboard().setText(bo["url"])
+        prompt.minibuffer.show_info("Copied: {}".format(bo["url"]))
     buff.stop_select_browser_objects()
 
 
