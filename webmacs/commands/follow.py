@@ -106,6 +106,14 @@ class CopyLinkPrompt(HintPrompt):
     label = "copy link:"
     hint_selector = SELECTOR_LINK
 
+    def eventFilter(self, obj, event):
+        res = HintPrompt.eventFilter(self, obj, event)
+        if self.numbers == "0":
+            self.minibuffer.input().set_right_italic_text(
+                self.page.url().toString()
+            )
+        return res
+
 
 @define_command("follow", prompt=FollowPrompt)
 def follow(prompt):
@@ -129,11 +137,20 @@ def copy_link(prompt):
     Hint links in the buffer to copy them.
     """
     buff = prompt.page
-    bo = prompt.browser_object_activated
-    if "url" in bo:
-        app().clipboard().setText(bo["url"])
-        prompt.minibuffer.show_info("Copied: {}".format(bo["url"]))
+    url = None
     buff.stop_select_browser_objects()
+
+    if prompt.numbers == "0":
+        # special case, copy current url
+        url = buff.url().toString()
+    else:
+        bo = prompt.browser_object_activated
+        if "url" in bo:
+            url = bo["url"]
+
+    if url:
+        app().clipboard().setText(url)
+        prompt.minibuffer.show_info("Copied: {}".format(url))
 
 
 @KEYMAP.define_key("C-g")
