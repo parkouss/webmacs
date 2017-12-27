@@ -335,7 +335,7 @@ class Keymap(object):
         Define a binding (callable or command name) for a key chord.
 
         :param key: a string representing the key chord, such as "C-c x".
-        :param binding: either a command name (a string) or a callable, or None.
+        :param binding: A command name (a string), a callable, or None.
                         If None, it must be used as a function decorator.
         """
         if binding is None:

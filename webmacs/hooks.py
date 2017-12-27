@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
+
 class Hook(list):
     def call(self, *arg, **kwargs):
         for callback in self:

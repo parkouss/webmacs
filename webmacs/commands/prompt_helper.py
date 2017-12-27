@@ -1,5 +1,4 @@
-from ..keyboardhandler import set_global_keymap_enabled, current_prefix_arg
-from ..keymaps import Keymap
+from ..keyboardhandler import current_prefix_arg
 from ..webbuffer import create_buffer
 from .. import current_window, current_buffer
 

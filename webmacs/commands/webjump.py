@@ -25,7 +25,6 @@ from ..commands import define_command
 from ..webbuffer import create_buffer
 from .. import current_window, current_buffer
 from ..application import app
-from ..keyboardhandler import current_prefix_arg
 from .prompt_helper import PromptNewBuffer
 
 
@@ -73,7 +72,7 @@ class CompletionReceiver(QObject):
     def get_completions(self, w, name, text):
         try:
             completions = [name + d for d in w.complete_fn(text)]
-        except:
+        except Exception:
             logging.exception("Can not autocomplete for the webjump.")
         else:
             self.got_completions.emit(completions)

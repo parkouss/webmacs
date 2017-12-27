@@ -56,7 +56,7 @@ class Adblocker(object):
                     last_modified = dateparser.parse(
                         conn.info()["last-modified"],
                         languages=["en"])
-                except:
+                except Exception:
                     logging.exception(
                         "Unable to parse the last-modified header for %s",
                         url)
