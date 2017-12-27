@@ -110,14 +110,15 @@ def follow(prompt):
     """
     Hint links in the buffer and follow them on selection.
     """
-    buff = current_buffer()
+    buff = prompt.page
     if not prompt.new_buffer:
-        prompt.page.focus_active_browser_object()
+        buff.focus_active_browser_object()
+        buff.stop_select_browser_objects()
     elif "url" in prompt.browser_object_activated:
+        buff.stop_select_browser_objects()
         prompt.new_buffer.get_buffer().load(
             prompt.browser_object_activated["url"]
         )
-    buff.stop_select_browser_objects()
 
 
 @define_command("copy-link", prompt=CopyLinkPrompt)
