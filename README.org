@@ -87,6 +87,8 @@ sudo pip3 install .
 - command history within a session in minibuffer input (shortcut *M-n*, *M-p*)
 - user configuration written in Python, giving lots of power to
   customize webmacs.
+- copy link by hinting (shortcut *c*). Use the special number 0 to
+  copy the current url.
 
 
 * Documentation
