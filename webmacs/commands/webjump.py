@@ -26,6 +26,8 @@ from ..webbuffer import create_buffer
 from .. import current_window, current_buffer
 from ..application import app
 from ..keyboardhandler import current_prefix_arg
+from .prompt_helper import PromptNewBuffer
+
 
 WebJump = namedtuple("WebJump", ("url", "doc", "allow_args", "complete_fn"))
 WEBJUMPS = {}
@@ -97,12 +99,8 @@ class WebJumpPrompt(Prompt):
 
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
-        if self.force_new_buffer:
-            self.new_buffer = True
-        else:
-            self.new_buffer = current_prefix_arg() == (4,)
-        if self.new_buffer:
-            minibuffer.label.setText(minibuffer.label.text() + " (new buffer)")
+        self.new_buffer = PromptNewBuffer(self.force_new_buffer)
+        self.new_buffer.enable(minibuffer)
         minibuffer.input().textEdited.connect(self._text_edited)
         self._wc_model = QStringListModel()
         self._wb_model = minibuffer.input().completer_model()
@@ -152,13 +150,7 @@ class WebJumpPrompt(Prompt):
         self._wc_model.deleteLater()
 
     def get_buffer(self):
-        if self.new_buffer:
-            buf = create_buffer()
-            view = current_window().current_web_view()
-            view.setBuffer(buf)
-        else:
-            buf = current_buffer()
-        return buf
+        return self.new_buffer.get_buffer()
 
 
 class WebJumpPromptCurrentUrl(WebJumpPrompt):
