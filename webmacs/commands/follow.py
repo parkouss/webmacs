@@ -19,6 +19,7 @@ from ..minibuffer import Prompt, KEYMAP as MKEYMAP
 from ..keymaps import Keymap
 from ..commands import define_command
 from .. import current_minibuffer, current_buffer
+from .prompt_helper import PromptNewBuffer
 
 
 KEYMAP = Keymap("follow", MKEYMAP)
@@ -30,6 +31,8 @@ class FollowPrompt(Prompt):
 
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
+        self.new_buffer = PromptNewBuffer()
+        self.new_buffer.enable(minibuffer)
         self.page = current_buffer()
         # took from conkeror
         selector = (
@@ -45,6 +48,8 @@ class FollowPrompt(Prompt):
             " | //xhtml:textarea | //xhtml:button | //xhtml:select"
             " | //xhtml:*[@contenteditable = 'true'] | //svg:a"
         )
+        if self.new_buffer:
+            selector = "//a[@href]"
         self.page.start_select_browser_objects(selector)
         self.numbers = ""
         minibuffer.input().textChanged.connect(self.on_text_edited)
@@ -88,8 +93,14 @@ def follow(prompt):
     """
     Hint links in the buffer and follow them on selection.
     """
-    prompt.page.focus_active_browser_object()
-    current_buffer().stop_select_browser_objects()
+    buff = current_buffer()
+    if not prompt.new_buffer:
+        prompt.page.focus_active_browser_object()
+    elif "url" in prompt.browser_object_activated:
+        prompt.new_buffer.get_buffer().load(
+            prompt.browser_object_activated["url"]
+        )
+    buff.stop_select_browser_objects()
 
 
 @KEYMAP.define_key("C-g")
