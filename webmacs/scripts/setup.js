@@ -13,9 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-function registerExternal(channel) {
+function registerWebmacs(w) {
     console.log("registering...");
-    window.__webmacsHandler__ = channel.objects.contentHandler;
+    window.__webmacsHandler__ = w;
 
     function isTextInput(node) {
         return node.isContentEditable
@@ -40,6 +40,14 @@ function registerExternal(channel) {
 
     // force the focus on the current web content
     __webmacsHandler__.onTextFocus(false);
+
+    var event = document.createEvent('Event');
+    event.initEvent('_webmacs_external_created', true, true);
+    document.dispatchEvent(event);
+}
+
+function registerExternal(channel) {
+    registerWebmacs(channel.objects.contentHandler);
 }
 
 function registerWebChannel() {
@@ -49,7 +57,18 @@ function registerWebChannel() {
         setTimeout(registerWebChannel, 50);
     }
 }
-registerWebChannel();
+
+if (self != top) {
+    if (top.__webmacsHandler__) {
+        registerWebmacs(top.__webmacsHandler__);
+    } else {
+        top.document.addEventListener('_webmacs_external_created', function() {
+            registerWebmacs(top.__webmacsHandler__);
+        })
+    }
+} else {
+    registerWebChannel();
+}
 
 
 function clickLike(elem) {
@@ -187,11 +206,11 @@ function HintManager() {
 }
 
 // took from conkeror
-const XHTML_NS = "http://www.w3.org/1999/xhtml";
-const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
-const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
-const XLINK_NS = "http://www.w3.org/1999/xlink";
-const SVG_NS = "http://www.w3.org/2000/svg";
+XHTML_NS = "http://www.w3.org/1999/xhtml";
+XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+MATHML_NS = "http://www.w3.org/1998/Math/MathML";
+XLINK_NS = "http://www.w3.org/1999/xlink";
+SVG_NS = "http://www.w3.org/2000/svg";
 
 function xpath_lookup_namespace (prefix) {
     return {

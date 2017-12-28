@@ -27,7 +27,7 @@ def cancel():
     # if a mark is active, clear that but keep the focus. If there is no mark
     # active, then just unfocus the editable js object.
     current_buffer().runJavaScript("""
-    var e = document.activeElement;
+    var e = getActiveElement();
     if (has_any_mark(e)) {
         // be sure that we have a mark, then unset it.
         text_marks[e] = true;
@@ -53,7 +53,7 @@ def prev():
 @KEYMAP.define_key("C-Space")
 def set_mark():
     current_buffer().runJavaScript(
-        "set_or_unset_mark(document.activeElement);",
+        "set_or_unset_mark(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -61,7 +61,7 @@ def set_mark():
 @KEYMAP.define_key("C-f")
 def forward_char():
     current_buffer().runJavaScript(
-        "forward_char(document.activeElement);",
+        "forward_char(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -69,7 +69,7 @@ def forward_char():
 @KEYMAP.define_key("C-b")
 def backward_char():
     current_buffer().runJavaScript(
-        "backward_char(document.activeElement);",
+        "backward_char(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -77,7 +77,7 @@ def backward_char():
 @KEYMAP.define_key("M-f")
 def forward_word():
     current_buffer().runJavaScript(
-        "forward_word(document.activeElement);",
+        "forward_word(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -85,7 +85,7 @@ def forward_word():
 @KEYMAP.define_key("M-b")
 def backward_word():
     current_buffer().runJavaScript(
-        "backward_word(document.activeElement);",
+        "backward_word(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -93,7 +93,7 @@ def backward_word():
 @KEYMAP.define_key("C-a")
 def move_beginning_of_line():
     current_buffer().runJavaScript(
-        "move_beginning_of_line(document.activeElement);",
+        "move_beginning_of_line(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -101,7 +101,7 @@ def move_beginning_of_line():
 @KEYMAP.define_key("C-e")
 def move_end_of_line():
     current_buffer().runJavaScript(
-        "move_end_of_line(document.activeElement);",
+        "move_end_of_line(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -109,7 +109,7 @@ def move_end_of_line():
 @KEYMAP.define_key("C-d")
 def delete_char():
     current_buffer().runJavaScript(
-        "delete_char(document.activeElement);",
+        "delete_char(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -117,7 +117,7 @@ def delete_char():
 @KEYMAP.define_key("M-d")
 def delete_word():
     current_buffer().runJavaScript(
-        "delete_word(document.activeElement);",
+        "delete_word(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -125,7 +125,7 @@ def delete_word():
 @KEYMAP.define_key("M-Backspace")
 def delete_word_backward():
     current_buffer().runJavaScript(
-        "delete_word_backward(document.activeElement);",
+        "delete_word_backward(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -133,7 +133,7 @@ def delete_word_backward():
 @KEYMAP.define_key("M-w")
 def copy():
     current_buffer().runJavaScript(
-        "copy_text(document.activeElement);",
+        "copy_text(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -141,7 +141,7 @@ def copy():
 @KEYMAP.define_key("C-w")
 def cut():
     current_buffer().runJavaScript(
-        "copy_text(document.activeElement, true);",
+        "copy_text(getActiveElement(), true);",
         QWebEngineScript.ApplicationWorld
     )
 

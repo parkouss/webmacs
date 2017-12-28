@@ -68,21 +68,24 @@ class Profile(object):
             app.download_manager().download_requested
         )
 
-        def inject_js(src, ipoint=QWebEngineScript.DocumentCreation,
-                      iid=QWebEngineScript.ApplicationWorld):
+        def inject_js(filepath, ipoint=QWebEngineScript.DocumentCreation,
+                      iid=QWebEngineScript.ApplicationWorld, sub_frames=False):
+            f = QFile(filepath)
+            assert f.open(QFile.ReadOnly | QFile.Text)
+            src = QTextStream(f).readAll()
+
             script = QWebEngineScript()
             script.setInjectionPoint(ipoint)
             script.setSourceCode(src)
             script.setWorldId(iid)
+            script.setRunsOnSubFrames(sub_frames)
             self.q_profile.scripts().insert(script)
 
-        for script in (":/qtwebchannel/qwebchannel.js",
-                       os.path.join(THIS_DIR, "scripts", "textedit.js"),
-                       os.path.join(THIS_DIR, "scripts", "autofill.js"),
-                       os.path.join(THIS_DIR, "scripts", "setup.js"),):
-            f = QFile(script)
-            assert f.open(QFile.ReadOnly | QFile.Text)
-            inject_js(QTextStream(f).readAll())
+        inject_js(":/qtwebchannel/qwebchannel.js")
+        inject_js(os.path.join(THIS_DIR, "scripts", "setup.js"),
+                  sub_frames=True)
+        inject_js(os.path.join(THIS_DIR, "scripts", "textedit.js"))
+        inject_js(os.path.join(THIS_DIR, "scripts", "autofill.js"))
 
     def load_session(self):
         from .session import Session

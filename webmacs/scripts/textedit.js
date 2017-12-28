@@ -15,6 +15,16 @@
 
 var text_marks = {};
 
+var getActiveElement = function( doc ){
+    doc = doc || document;
+
+    var elt = doc.activeElement;
+    if (elt.tagName == 'IFRAME') {
+        return getActiveElement(elt.contentWindow.document);
+    }
+    return elt;
+};
+
 function set_or_unset_mark(e) {
     let enabled = !has_mark(e);
     if (!enabled) {
