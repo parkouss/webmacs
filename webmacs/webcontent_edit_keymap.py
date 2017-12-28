@@ -27,7 +27,7 @@ def cancel():
     # if a mark is active, clear that but keep the focus. If there is no mark
     # active, then just unfocus the editable js object.
     current_buffer().runJavaScript("""
-    var e = getActiveElement();
+    var e = top.webmacsFocusedElement;
     if (has_any_mark(e)) {
         // be sure that we have a mark, then unset it.
         text_marks[e] = true;
@@ -53,7 +53,7 @@ def prev():
 @KEYMAP.define_key("C-Space")
 def set_mark():
     current_buffer().runJavaScript(
-        "set_or_unset_mark(getActiveElement());",
+        "set_or_unset_mark(top.webmacsFocusedElement);",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -61,7 +61,7 @@ def set_mark():
 @KEYMAP.define_key("C-f")
 def forward_char():
     current_buffer().runJavaScript(
-        "forward_char(getActiveElement());",
+        "forward_char(top.webmacsFocusedElement);",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -69,7 +69,7 @@ def forward_char():
 @KEYMAP.define_key("C-b")
 def backward_char():
     current_buffer().runJavaScript(
-        "backward_char(getActiveElement());",
+        "backward_char(top.webmacsFocusedElement);",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -77,7 +77,7 @@ def backward_char():
 @KEYMAP.define_key("M-f")
 def forward_word():
     current_buffer().runJavaScript(
-        "forward_word(getActiveElement());",
+        "forward_word(top.webmacsFocusedElement);",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -85,7 +85,7 @@ def forward_word():
 @KEYMAP.define_key("M-b")
 def backward_word():
     current_buffer().runJavaScript(
-        "backward_word(getActiveElement());",
+        "backward_word(top.webmacsFocusedElement);",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -93,7 +93,7 @@ def backward_word():
 @KEYMAP.define_key("C-a")
 def move_beginning_of_line():
     current_buffer().runJavaScript(
-        "move_beginning_of_line(getActiveElement());",
+        "move_beginning_of_line(top.webmacsFocusedElement);",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -101,7 +101,7 @@ def move_beginning_of_line():
 @KEYMAP.define_key("C-e")
 def move_end_of_line():
     current_buffer().runJavaScript(
-        "move_end_of_line(getActiveElement());",
+        "move_end_of_line(top.webmacsFocusedElement);",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -109,7 +109,7 @@ def move_end_of_line():
 @KEYMAP.define_key("C-d")
 def delete_char():
     current_buffer().runJavaScript(
-        "delete_char(getActiveElement());",
+        "delete_char(top.webmacsFocusedElement);",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -117,7 +117,7 @@ def delete_char():
 @KEYMAP.define_key("M-d")
 def delete_word():
     current_buffer().runJavaScript(
-        "delete_word(getActiveElement());",
+        "delete_word(top.webmacsFocusedElement);",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -125,7 +125,7 @@ def delete_word():
 @KEYMAP.define_key("M-Backspace")
 def delete_word_backward():
     current_buffer().runJavaScript(
-        "delete_word_backward(getActiveElement());",
+        "delete_word_backward(top.webmacsFocusedElement);",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -133,7 +133,7 @@ def delete_word_backward():
 @KEYMAP.define_key("M-w")
 def copy():
     current_buffer().runJavaScript(
-        "copy_text(getActiveElement());",
+        "copy_text(top.webmacsFocusedElement);",
         QWebEngineScript.ApplicationWorld
     )
 
@@ -141,7 +141,7 @@ def copy():
 @KEYMAP.define_key("C-w")
 def cut():
     current_buffer().runJavaScript(
-        "copy_text(getActiveElement(), true);",
+        "copy_text(top.webmacsFocusedElement, true);",
         QWebEngineScript.ApplicationWorld
     )
 
