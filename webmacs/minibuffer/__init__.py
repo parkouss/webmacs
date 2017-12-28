@@ -21,6 +21,7 @@ from PyQt5.QtCore import pyqtSignal as Signal, \
 
 from .keymap import KEYMAP
 from .prompt import Prompt
+from .. import variables
 
 
 class Popup(QTableView):
@@ -253,6 +254,26 @@ class MinibufferInput(QLineEdit):
                          self._right_italic_text)
 
 
+def _update_minibuffer_height(var):
+    from .. import windows
+    for window in windows():
+        window.minibuffer().set_height(var.value)
+
+
+MINIBUFFER_HEIGHT = variables.define_variable(
+    "minibuffer-height",
+    "The height in pixel of the minibuffer.",
+    25,
+    conditions=(
+        variables.condition(lambda v: isinstance(v, int),
+                            "Must be an instance of int"),
+        variables.condition(lambda v: v > 0,
+                            "Must be greater than 0")
+    ),
+    callbacks=(_update_minibuffer_height,)
+)
+
+
 class Minibuffer(QWidget):
     def __init__(self, window):
         QWidget.__init__(self, window)
@@ -270,11 +291,14 @@ class Minibuffer(QWidget):
         self._input = MinibufferInput(self, window)
         layout.addWidget(self._input)
 
-        self.label.setMinimumHeight(25)
+        self.set_height(MINIBUFFER_HEIGHT.value)
 
         self._input.installEventFilter(self)
         self._input.hide()
         self._prompt = None
+
+    def set_height(self, height):
+        self.label.setMinimumHeight(height)
 
     def eventFilter(self, obj, event):
         if obj == self._input:
