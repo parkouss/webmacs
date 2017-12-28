@@ -270,6 +270,8 @@ class Minibuffer(QWidget):
         self._input = MinibufferInput(self, window)
         layout.addWidget(self._input)
 
+        self.label.setMinimumHeight(25)
+
         self._input.installEventFilter(self)
         self._input.hide()
         self._prompt = None
@@ -281,6 +283,7 @@ class Minibuffer(QWidget):
                                          QSizePolicy.Fixed)
             elif event.type() == QEvent.Show:
                 self.label.setSizePolicy(self.__default_label_policy)
+                obj.setMaximumHeight(self.label.height())
         return False
 
     def show_info(self, text):
