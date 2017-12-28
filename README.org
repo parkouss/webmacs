@@ -96,14 +96,6 @@ sudo pip3 install .
 Documentation is available on [[http://webmacs.readthedocs.io/en/latest/index.html][readthedocs]]. Currently it is for user
 configuration only.
 
-* Known bugs
-
-- sometimes the keymap between in-content page and out-of-content page get mixed
-  up.
-- key bindings inside frames are broken.
-
-And probably more :D.
-
 
 * Desired features
 
