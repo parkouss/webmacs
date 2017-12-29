@@ -44,7 +44,11 @@ class LocalKeymapSetter(QObject):
 
     @Slot(QObject)
     def _minibuffer_input_destroyed(self, minibuffer_input):
-        self._minibuffer_inputs.remove(minibuffer_input)
+        # TODO FIXME this fails under integration testing.
+        try:
+            self._minibuffer_inputs.remove(minibuffer_input)
+        except ValueError:
+            pass
 
     def eventFilter(self, obj, event):
         t = event.type()

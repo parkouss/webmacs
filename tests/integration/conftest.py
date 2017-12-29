@@ -8,8 +8,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import QEvent
 
 from webmacs.application import Application
-from webmacs import (windows, buffers, WINDOWS_HANDLER, current_buffer,
-                     current_window)
+from webmacs import windows, buffers, WINDOWS_HANDLER, current_buffer
 from webmacs.webbuffer import create_buffer
 from webmacs.window import Window
 from webmacs.webbuffer import close_buffer
@@ -117,17 +116,17 @@ class TestSession(object):
         self.check_javascript(script, True, buffer=buffer)
 
     def keyclick(self, key, widget=None, **kwargs):
-        widget = widget or current_window().current_web_view()
+        widget = widget or self.qapp.focusWidget()
         for w in iter_widgets_for_events(widget):
             QTest.keyClick(w, key, **kwargs)
 
     def keyclicks(self, keys, widget=None, **kwargs):
-        widget = widget or current_window().current_web_view()
+        widget = widget or self.qapp.focusWidget()
         for w in iter_widgets_for_events(widget):
             QTest.keyClicks(w, keys, **kwargs)
 
     def wkeyclicks(self, shortcut, widget=None):
-        widget = widget or current_window().current_web_view()
+        widget = widget or self.qapp.focusWidget()
         keys = [KeyPress.from_str(k) for k in shortcut.split()]
         for w in iter_widgets_for_events(widget):
             for key in keys:
@@ -170,11 +169,11 @@ def session(qtbot, qapp):
 
     yield sess
 
+    for buffer in buffers():
+        close_buffer(buffer)
+
     for w in windows():
         w.close()
         w.deleteLater()
-
-    for buffer in buffers():
-        close_buffer(buffer)
 
     qapp.processEvents()

@@ -96,14 +96,15 @@ function clickLike(elem) {
     elem.dispatchEvent(evt);
 }
 
-function rectElementInViewport(elem) {  // eslint-disable-line complexity
+function rectElementInViewport(elem, w) {  // eslint-disable-line complexity
     var win = elem.ownerDocument.defaultView;
     var rect = elem.getBoundingClientRect();
+    w = w || window;
 
     if (!rect ||
-        rect.top > window.innerHeight ||
+        rect.top > w.innerHeight ||
         rect.bottom < 0 ||
-        rect.left > window.innerWidth ||
+        rect.left > w.innerWidth ||
         rect.right < 0) {
         return null;
     }
@@ -225,18 +226,22 @@ function xpath_lookup_namespace (prefix) {
     }[prefix] || null;
 }
 
-HintManager.prototype.selectBrowserObjects = function(selector, options) {
-    Object.assign(this.options, options || {});
-    let xres = document.evaluate (selector, document, xpath_lookup_namespace,
-                                  XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+HintManager.prototype.selectBrowserObjecsInWindow = function(w, selector) {
+    var doc = w.document;
+    let xres = doc.evaluate (selector, doc, xpath_lookup_namespace,
+                             XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     let scrollX = window.scrollX;
     let scrollY = window.scrollY;
-    let fragment = document.createDocumentFragment();
+    let fragment = doc.createDocumentFragment();
 
     for (var j = 0; j < xres.snapshotLength; j++) {
         let obj = xres.snapshotItem(j);
-        let rect = rectElementInViewport(obj);
+        let rect = rectElementInViewport(obj, w);
         if (!rect) {
+            continue;
+        }
+        if (obj.tagName == "IFRAME") {
+            this.selectBrowserObjecsInWindow(obj.contentWindow, selector);
             continue;
         }
         var hint = new Hint(obj, this,
@@ -245,8 +250,13 @@ HintManager.prototype.selectBrowserObjects = function(selector, options) {
         this.hints.push(hint);
         fragment.appendChild(hint.hint);
     }
+    doc.documentElement.appendChild(fragment);
+}
+
+HintManager.prototype.selectBrowserObjects = function(selector, options) {
+    Object.assign(this.options, options || {});
+    this.selectBrowserObjecsInWindow(window, selector);
     this.setActiveHint((this.hints.length > 0) ? this.hints[0] : null);
-    document.documentElement.appendChild(fragment);
 }
 
 HintManager.prototype.setActiveHint = function(hint) {
