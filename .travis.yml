@@ -1,0 +1,15 @@
+sudo: false
+language: python
+dist: trusty
+python: 3.6
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+install:
+  - pip install PyQt5
+  - pip install -r test-requirements.txt
+
+script:
+  pytest tests

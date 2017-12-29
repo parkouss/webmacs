@@ -37,7 +37,8 @@ class WebContentHandler(QObject):
     @Slot(bool)
     def onTextFocus(self, enabled):
         win = current_window()
-        LOCAL_KEYMAP_SETTER.web_content_edit_focus_changed(win, enabled)
+        if win is not None:
+            LOCAL_KEYMAP_SETTER.web_content_edit_focus_changed(win, enabled)
 
     @Slot(str)
     def _browserObjectActivated(self, obj):
