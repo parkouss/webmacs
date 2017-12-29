@@ -223,3 +223,11 @@ def buffer_close():
     """
     current = current_buffer()
     close_buffer(current)
+
+
+@define_command("select-buffer-content")
+def buffer_select_content():
+    """
+    Select all content in the buffer.
+    """
+    current_buffer().triggerAction(WebBuffer.SelectAll)

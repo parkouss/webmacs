@@ -284,6 +284,7 @@ KEYMAP.define_key("r", "reload-buffer")
 KEYMAP.define_key("R", "reload-buffer-no-cache")
 KEYMAP.define_key("h", "visited-links-history")
 KEYMAP.define_key("q", "close-buffer")
+KEYMAP.define_key("C-x h", "select-buffer-content")
 
 
 @KEYMAP.define_key("C-n")
