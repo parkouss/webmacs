@@ -84,6 +84,7 @@ class Profile(object):
         inject_js(":/qtwebchannel/qwebchannel.js")
         inject_js(os.path.join(THIS_DIR, "scripts", "setup.js"),
                   sub_frames=True)
+        inject_js(os.path.join(THIS_DIR, "scripts", "hint.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "textedit.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "autofill.js"))
 
