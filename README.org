@@ -1,5 +1,3 @@
-[[https://travis-ci.org/parkouss/webmacs][https://travis-ci.org/parkouss/webmacs.svg?branch=master]]
-
 * webmacs
 
 *webmacs* is yet another browser for keyboard-based web navigation.
