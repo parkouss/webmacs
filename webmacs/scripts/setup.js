@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-top.webmacsFocusedElement = null;
-
 function registerWebmacs(w) {
     console.log("registering...");
     window.__webmacsHandler__ = w;
@@ -27,14 +25,12 @@ function registerWebmacs(w) {
     document.addEventListener("focusin", function(e) {
         if (isTextInput(e.target)) {
             __webmacsHandler__.onTextFocus(true);
-            top.webmacsFocusedElement = e.target;
         }
     }, true);
 
     document.addEventListener("focusout", function(e) {
         if (isTextInput(e.target)) {
             __webmacsHandler__.onTextFocus(false);
-            top.webmacsFocusedElement = null;
         }
     }, true);
 
@@ -42,8 +38,14 @@ function registerWebmacs(w) {
         __webmacsHandler__.onBufferFocus();
     };
 
+    if (self != top) {return;}
+
     // force the focus on the current web content
-    __webmacsHandler__.onTextFocus(false);
+    if (document.activeElement && isTextInput(document.activeElement)) {
+	__webmacsHandler__.onTextFocus(true);
+    } else {
+	__webmacsHandler__.onTextFocus(false);
+    }
 
     var event = document.createEvent('Event');
     event.initEvent('_webmacs_external_created', true, true);
