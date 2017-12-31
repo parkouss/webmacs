@@ -185,3 +185,35 @@ function copy_text(e, delselection) {
     }
     e.setSelectionRange(pos, pos);
 }
+
+function _change_next_word_case(e, fn) {
+    var pos = e.selectionDirection == "forward" ? e.selectionEnd :
+        e.selectionStart;
+    delete text_marks[e];
+    var txt = e.value;
+    var nextpos = txt.nextWordPosition(pos);
+    e.value = txt.slice(0, pos) + fn(txt.slice(pos, nextpos))
+	+ txt.slice(nextpos);
+    e.setSelectionRange(nextpos, nextpos);
+}
+
+
+function upcase_word(e) {
+    _change_next_word_case(e, function(t) { return t.toUpperCase() });
+}
+
+function downcase_word(e) {
+    _change_next_word_case(e, function(t) { return t.toLowerCase() });
+}
+
+function capitalize_word(e) {
+    _change_next_word_case(e, function(t) {
+	var startword = t.prevWordPosition(t.length - 1);
+	if (startword > 0) {
+	    return t.slice(0, startword) + t.charAt(startword).toUpperCase()
+		+ t.slice(startword + 1).toLowerCase();
+	} else {
+	    return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
+	}
+    });
+}

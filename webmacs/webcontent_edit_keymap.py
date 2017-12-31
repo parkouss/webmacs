@@ -147,3 +147,26 @@ def cut():
 
 
 KEYMAP.define_key("C-y", "webcontent-paste")
+
+@KEYMAP.define_key("M-u")
+def upcase_word():
+    current_buffer().runJavaScript(
+        "upcase_word(top.webmacsFocusedElement);",
+        QWebEngineScript.ApplicationWorld
+    )
+
+
+@KEYMAP.define_key("M-l")
+def downcase_word():
+    current_buffer().runJavaScript(
+        "downcase_word(top.webmacsFocusedElement);",
+        QWebEngineScript.ApplicationWorld
+    )
+
+@KEYMAP.define_key("M-c")
+def capitalize_word():
+    current_buffer().runJavaScript(
+        "capitalize_word(top.webmacsFocusedElement);",
+        QWebEngineScript.ApplicationWorld
+    )
+
