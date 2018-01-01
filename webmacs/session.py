@@ -16,13 +16,17 @@
 import json
 
 from .import BUFFERS, current_window, windows
-from .webbuffer import create_buffer, close_buffer
+from .webbuffer import (create_buffer, close_buffer, QUrl,
+                        DelayedLoadingUrl)
 
 
 class Session(object):
     def __init__(self, urls=None):
         if urls is None:
-            urls = [b.url().toString() for b in BUFFERS]
+            urls = [{
+                "url": b.url().toString(),
+                "title": b.title()
+            } for b in BUFFERS]
         self.urls = urls
 
     @classmethod
@@ -47,7 +51,16 @@ class Session(object):
 
         # now, load urls in buffers
         for url in reversed(self.urls):
-            create_buffer(url)
+            if isinstance(url, str):
+                # old format, no delay loading support
+                # TODO must be removed after some time
+                create_buffer(url)
+            else:
+                # new format, url must be a dict
+                create_buffer(DelayedLoadingUrl(
+                    url=QUrl(url["url"]),
+                    title=url["title"]
+                ))
 
         # and open the first buffer in the view
         if BUFFERS:

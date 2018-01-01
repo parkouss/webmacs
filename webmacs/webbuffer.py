@@ -18,6 +18,7 @@ import logging
 from PyQt5.QtCore import QUrl, pyqtSlot as Slot, QEventLoop
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 from PyQt5.QtWebChannel import QWebChannel
+from collections import namedtuple
 
 from .keymaps import KeyPress, BUFFER_KEYMAP as KEYMAP
 from . import current_window, BUFFERS, current_minibuffer, \
@@ -31,8 +32,8 @@ from .keyboardhandler import send_key_event
 from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP
 
 
-def create_buffer(url=None):
-    return WebBuffer(url)
+# a tuple of QUrl, str to delay loading of a page.
+DelayedLoadingUrl = namedtuple("DelayedLoadingUrl", ("url", "title"))
 
 
 def close_buffer(wb, keep_one=True):
@@ -86,14 +87,32 @@ class WebBuffer(QWebEnginePage):
         self.linkHovered.connect(self.on_url_hovered)
         self.titleChanged.connect(self.update_title)
         self.__authentication_data = None
+        self.__delay_loading_url = None
 
         if url:
-            self.load(url)
+            if isinstance(url, DelayedLoadingUrl):
+                self.__delay_loading_url = url
+            else:
+                self.load(url)
 
     def load(self, url):
         if not isinstance(url, QUrl):
             url = QUrl(url)
+        self.__delay_loading_url = None
         return QWebEnginePage.load(self, url)
+
+    def delayed_loading_url(self):
+        return self.__delay_loading_url
+
+    def url(self):
+        if self.__delay_loading_url:
+            return self.__delay_loading_url.url
+        return QWebEnginePage.url(self)
+
+    def title(self):
+        if self.__delay_loading_url:
+            return self.__delay_loading_url.title
+        return QWebEnginePage.title(self)
 
     @property
     def content_handler(self):
@@ -263,6 +282,10 @@ class WebBuffer(QWebEnginePage):
             current_window().update_title(
                 title if title is not None else self.title()
             )
+
+
+# alias to create a web buffer
+create_buffer = WebBuffer
 
 
 KEYMAP.define_key("g", "go-to")

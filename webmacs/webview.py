@@ -57,6 +57,9 @@ class WebView(QWebEngineView):
     def setBuffer(self, buffer):
         self.setPage(buffer)
         buffer.update_title()
+        url = buffer.delayed_loading_url()
+        if url:
+            buffer.load(url.url)
         # move the buffer so it becomes the most recently opened
         if buffer != BUFFERS[0]:
             BUFFERS.remove(buffer)
