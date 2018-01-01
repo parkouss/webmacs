@@ -330,3 +330,24 @@ def send_right():
 @KEYMAP.define_key("C-b")
 def send_left():
     send_key_event(KeyPress.from_str("Left"))
+
+@KEYMAP.define_key("C-c i")
+def doinit():
+    current_buffer().runJavaScript(
+        "CaretBrowsing.setInitialCursor();",
+        QWebEngineScript.ApplicationWorld
+    )
+
+@KEYMAP.define_key("C-c n")
+def doit():
+    current_buffer().runJavaScript(
+        "CaretBrowsing.moveDown();",
+        QWebEngineScript.ApplicationWorld
+    )
+
+@KEYMAP.define_key("C-c p")
+def doit2():
+    current_buffer().runJavaScript(
+        "CaretBrowsing.moveUp();",
+        QWebEngineScript.ApplicationWorld
+    )
