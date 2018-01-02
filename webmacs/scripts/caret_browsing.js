@@ -680,8 +680,8 @@ CaretBrowsing.injectCaretStyles = function() {
 };
 
 CaretBrowsing.setInitialCursor = function() {
+    const sel = window.getSelection();
     if (!CaretBrowsing.initiated) {
-        const sel = window.getSelection();
         if (sel.rangeCount == 0) {
             CaretBrowsing.positionCaret();
         }
@@ -691,6 +691,21 @@ CaretBrowsing.setInitialCursor = function() {
     }
 
     CaretBrowsing.toggle();
+    if (CaretBrowsing.isEnabled) {
+        // when doing an i-search, the selection is totally cleared (sigh)
+        if (sel.rangeCount == 0) {
+            CaretBrowsing.positionCaret();
+        }
+        // do not handle previous selection for now, just removes it.
+        CaretBrowsing.markEnabled = sel.type == "Range";
+        if (CaretBrowsing.markEnabled) {
+            CaretBrowsing.markEnabled = false;
+            sel.collapse(sel.anchorNode, sel.anchorOffset);
+            window.setTimeout(() => {
+                CaretBrowsing.updateCaretOrSelection(true);
+            }, 0);
+        }
+    }
 };
 
 CaretBrowsing.setAndValidateSelection = function(start, end) {

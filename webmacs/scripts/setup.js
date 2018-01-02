@@ -24,14 +24,12 @@ function registerWebmacs(w) {
 
     document.addEventListener("focusin", function(e) {
         if (isTextInput(e.target)) {
-            top.in_text_focus = true;
             __webmacsHandler__.onTextFocus(true);
         }
     }, true);
 
     document.addEventListener("focusout", function(e) {
         if (isTextInput(e.target)) {
-            top.in_text_focus = false;
             __webmacsHandler__.onTextFocus(false);
         }
     }, true);
@@ -44,23 +42,10 @@ function registerWebmacs(w) {
 
     // force the focus on the current web content
     if (document.activeElement && isTextInput(document.activeElement)) {
-        top.in_text_focus = true;
 	      __webmacsHandler__.onTextFocus(true);
     } else {
-        top.in_text_focus = false;
 	      __webmacsHandler__.onTextFocus(false);
     }
-
-    document.addEventListener("selectionchange", function(e) {
-        if (top.in_text_focus) { return; }
-
-        // console.log(CaretBrowsing.isEnabled);
-        // console.log("selection has changed!");
-        // var sel = window.getSelection();
-        // console.log(sel.type);
-        // console.log(sel.rangeCount);
-        // console.log(sel.anchorNode.nodeName);
-    }, true);
 
     var event = document.createEvent('Event');
     event.initEvent('_webmacs_external_created', true, true);
