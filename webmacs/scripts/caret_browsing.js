@@ -682,21 +682,14 @@ CaretBrowsing.injectCaretStyles = function() {
 CaretBrowsing.setInitialCursor = function() {
     if (!CaretBrowsing.initiated) {
         const sel = window.getSelection();
-        if (sel.rangeCount > 0) {
-            return;
+        if (sel.rangeCount == 0) {
+            CaretBrowsing.positionCaret();
         }
 
-        CaretBrowsing.positionCaret();
         CaretBrowsing.injectCaretStyles();
-        CaretBrowsing.toggle();
         CaretBrowsing.initiated = true;
-        CaretBrowsing.selectionEnabled = false;
-        return;
     }
 
-    // if (!window.getSelection().toString()) {
-    //     CaretBrowsing.positionCaret();
-    // }
     CaretBrowsing.toggle();
 };
 
