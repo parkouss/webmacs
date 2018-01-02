@@ -525,9 +525,9 @@ const CaretBrowsing = {};
 
 CaretBrowsing.isEnabled = false;
 
-CaretBrowsing.onEnable = undefined;
+CaretBrowsing.onEnable = "flash";
 
-CaretBrowsing.onJump = undefined;
+CaretBrowsing.onJump = "flash";
 
 CaretBrowsing.isWindowFocused = false;
 
@@ -555,8 +555,7 @@ CaretBrowsing.targetX = null;
 
 CaretBrowsing.blinkFlag = true;
 
-CaretBrowsing.isWindows =
-    window.navigator.userAgent.indexOf("Windows") !== -1;
+CaretBrowsing.markEnabled = false;
 
 CaretBrowsing.positionCaret = function() {
     var start = new Cursor(document.body, 0, '');
@@ -1049,6 +1048,11 @@ CaretBrowsing.toggle = function(enabled) {
     obj.enabled = CaretBrowsing.isEnabled;
     CaretBrowsing.updateIsCaretVisible();
     __webmacsHandler__.onCaretBrowsing(obj.enabled);
+    if (!obj.enabled) {
+        var sel = window.getSelection();
+        sel.collapse(sel.focusNode, sel.focusOffset);
+    }
+    console.log("CaretBrowsing.isEnabled " + CaretBrowsing.isEnabled);
 };
 
 CaretBrowsing.onClick = function() {
@@ -1081,7 +1085,7 @@ CaretBrowsing.updateIsCaretVisible = function() {
     CaretBrowsing.isCaretVisible =
         (CaretBrowsing.isEnabled && CaretBrowsing.isWindowFocused);
     if (CaretBrowsing.isCaretVisible && !CaretBrowsing.caretElement) {
-        CaretBrowsing.setInitialCursor();
+        // CaretBrowsing.setInitialCursor();
         CaretBrowsing.updateCaretOrSelection(true);
         if (CaretBrowsing.caretElement) {
             CaretBrowsing.blinkFunctionId = window.setInterval(
@@ -1181,7 +1185,7 @@ CaretBrowsing.backwards = function(cursor, nodesCrossed) {
  */
 CaretBrowsing.moveRight = function(by_word) {
     CaretBrowsing.targetX = null;
-    var use_mark = false;
+    var use_mark = CaretBrowsing.markEnabled;
 
     var sel = window.getSelection();
     if (!use_mark && !CaretBrowsing.isCollapsed(sel)) {
@@ -1238,7 +1242,7 @@ CaretBrowsing.moveRight = function(by_word) {
  */
 CaretBrowsing.moveLeft = function(by_word) {
     CaretBrowsing.targetX = null;
-    var use_mark = false;
+    var use_mark = CaretBrowsing.markEnabled;
 
     var sel = window.getSelection();
     if (!use_mark && !CaretBrowsing.isCollapsed(sel)) {
@@ -1299,7 +1303,7 @@ CaretBrowsing.moveLeft = function(by_word) {
  */
 CaretBrowsing.moveDown = function() {
     var sel = window.getSelection();
-    var use_mark = false;
+    var use_mark = CaretBrowsing.markEnabled;
     if (!use_mark && !CaretBrowsing.isCollapsed(sel)) {
         var right = CaretBrowsing.makeRightCursor(sel);
         CaretBrowsing.setAndValidateSelection(right, right);
@@ -1419,7 +1423,7 @@ CaretBrowsing.moveDown = function() {
  */
 CaretBrowsing.moveUp = function() {
     var sel = window.getSelection();
-    var use_mark = false;
+    var use_mark = CaretBrowsing.markEnabled;
     if (!use_mark && !CaretBrowsing.isCollapsed(sel)) {
         var left = CaretBrowsing.makeLeftCursor(sel);
         CaretBrowsing.setAndValidateSelection(left, left);
@@ -1523,3 +1527,15 @@ CaretBrowsing.moveUp = function() {
 
     return false;
 };
+
+
+CaretBrowsing.toggleMark = function() {
+    CaretBrowsing.markEnabled = !CaretBrowsing.markEnabled;
+    if (!CaretBrowsing.markEnabled) {
+        var sel = window.getSelection();
+        sel.collapse(sel.focusNode, sel.focusOffset);
+        window.setTimeout(() => {
+            CaretBrowsing.updateCaretOrSelection(true);
+        }, 0);
+    }
+}

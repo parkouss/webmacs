@@ -61,3 +61,8 @@ def right_char():
 @define_command("caret-browsing-right-word")
 def right_word():
     call_js("CaretBrowsing.moveRight(true);")
+
+
+@define_command("caret-browsing-toggle-mark")
+def toggle_mark():
+    call_js("CaretBrowsing.toggleMark();")
