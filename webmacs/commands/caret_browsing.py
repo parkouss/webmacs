@@ -16,7 +16,7 @@
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from . import define_command
-from .webbuffer import current_buffer
+from .webbuffer import current_buffer, WebBuffer
 
 
 def call_js(script):
@@ -66,3 +66,8 @@ def right_word():
 @define_command("caret-browsing-toggle-mark")
 def toggle_mark():
     call_js("CaretBrowsing.toggleMark();")
+
+
+@define_command("caret-browsing-cut")
+def copy():
+    call_js("CaretBrowsing.cutSelection();")

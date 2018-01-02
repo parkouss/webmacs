@@ -1547,3 +1547,9 @@ CaretBrowsing.toggleMark = function() {
         }, 0);
     }
 }
+
+CaretBrowsing.cutSelection = function() {
+    __webmacsHandler__.copyToClipboard(window.getSelection().toString());
+    // clear the current selection
+    if (CaretBrowsing.markEnabled) { CaretBrowsing.toggleMark(); }
+}
