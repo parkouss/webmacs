@@ -436,6 +436,91 @@ TraverseUtil.backwardsChar = function(cursor, nodesCrossed) {
     }
 };
 
+TraverseUtil.getNextWord = function(startCursor, endCursor,
+    nodesCrossed) {
+
+  // Find the first non-whitespace or non-skipped character.
+  var cursor = endCursor.clone();
+  var c = TraverseUtil.forwardsChar(cursor, nodesCrossed);
+  if (c == null)
+    return null;
+  while ((TraverseUtil.isWhitespace(c)) ||
+      (TraverseUtil.isSkipped(cursor.node))) {
+    c = TraverseUtil.forwardsChar(cursor, nodesCrossed);
+    if (c == null)
+      return null;
+  }
+
+  // Set startCursor to the position immediately before the first
+  // character in our word. It's safe to decrement |index| because
+  // forwardsChar guarantees that the cursor will be immediately to the
+  // right of the returned character on exit.
+  startCursor.copyFrom(cursor);
+  startCursor.index--;
+
+  // Keep building up our word until we reach a whitespace character or
+  // would cross a tag.  Don't actually return any tags crossed, because this
+  // word goes up until the tag boundary but not past it.
+  endCursor.copyFrom(cursor);
+  var word = c;
+  var newNodesCrossed = [];
+  c = TraverseUtil.forwardsChar(cursor, newNodesCrossed);
+  if (c == null) {
+    return word;
+  }
+  while (!TraverseUtil.isWhitespace(c) &&
+     newNodesCrossed.length == 0) {
+    word += c;
+    endCursor.copyFrom(cursor);
+    c = TraverseUtil.forwardsChar(cursor, newNodesCrossed);
+    if (c == null) {
+      return word;
+    }
+  }
+  return word;
+};
+
+TraverseUtil.getPreviousWord = function(startCursor, endCursor,
+    nodesCrossed) {
+  // Find the first non-whitespace or non-skipped character.
+  var cursor = startCursor.clone();
+  var c = TraverseUtil.backwardsChar(cursor, nodesCrossed);
+  if (c == null)
+    return null;
+  while ((TraverseUtil.isWhitespace(c) ||
+      (TraverseUtil.isSkipped(cursor.node)))) {
+    c = TraverseUtil.backwardsChar(cursor, nodesCrossed);
+    if (c == null)
+      return null;
+  }
+
+  // Set endCursor to the position immediately after the first
+  // character we've found (the last character of the word, since we're
+  // searching backwards).
+  endCursor.copyFrom(cursor);
+  endCursor.index++;
+
+  // Keep building up our word until we reach a whitespace character or
+  // would cross a tag.  Don't actually return any tags crossed, because this
+  // word goes up until the tag boundary but not past it.
+  startCursor.copyFrom(cursor);
+  var word = c;
+  var newNodesCrossed = [];
+  c = TraverseUtil.backwardsChar(cursor, newNodesCrossed);
+  if (c == null)
+    return word;
+  while (!TraverseUtil.isWhitespace(c) &&
+      newNodesCrossed.length == 0) {
+    word = c + word;
+    startCursor.copyFrom(cursor);
+    c = TraverseUtil.backwardsChar(cursor, newNodesCrossed);
+    if (c == null)
+      return word;
+  }
+
+  return word;
+};
+
 const CaretBrowsing = {};
 
 CaretBrowsing.isEnabled = false;
@@ -695,6 +780,15 @@ CaretBrowsing.setFocusToNode = function(nodeArg) {
         node = node.parentNode;
     }
 
+    return false;
+};
+
+CaretBrowsing.setFocusToFirstFocusable = function(nodeList) {
+    for (var i = 0; i < nodeList.length; i++) {
+        if (CaretBrowsing.setFocusToNode(nodeList[i])) {
+            return true;
+        }
+    }
     return false;
 };
 
@@ -1128,6 +1222,10 @@ CaretBrowsing.moveRight = function(by_word) {
         CaretBrowsing.setFocusToFirstFocusable(nodesCrossed);
     }
 
+    window.setTimeout(() => {
+        CaretBrowsing.updateCaretOrSelection(true);
+    }, 0);
+
     return false;
 };
 
@@ -1181,6 +1279,10 @@ CaretBrowsing.moveLeft = function(by_word) {
         nodesCrossed.push(start.node);
         CaretBrowsing.setFocusToFirstFocusable(nodesCrossed);
     }
+
+    window.setTimeout(() => {
+        CaretBrowsing.updateCaretOrSelection(true);
+    }, 0);
 
     return false;
 };

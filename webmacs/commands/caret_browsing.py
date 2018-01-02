@@ -41,3 +41,23 @@ def down():
 @define_command("caret-browsing-up")
 def up():
     call_js("CaretBrowsing.moveUp();")
+
+
+@define_command("caret-browsing-left-char")
+def left_char():
+    call_js("CaretBrowsing.moveLeft();")
+
+
+@define_command("caret-browsing-left-word")
+def left_word():
+    call_js("CaretBrowsing.moveLeft(true);")
+
+
+@define_command("caret-browsing-right-char")
+def right_char():
+    call_js("CaretBrowsing.moveRight();")
+
+
+@define_command("caret-browsing-right-word")
+def right_word():
+    call_js("CaretBrowsing.moveRight(true);")
