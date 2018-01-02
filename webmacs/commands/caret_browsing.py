@@ -71,3 +71,33 @@ def toggle_mark():
 @define_command("caret-browsing-cut")
 def copy():
     call_js("CaretBrowsing.cutSelection();")
+
+
+@define_command("caret-browsing-end-of-line")
+def end_of_line():
+    call_js("CaretBrowsing.move('forward', 'lineboundary');")
+
+
+@define_command("caret-browsing-beginning-of-line")
+def beginning_of_line():
+    call_js("CaretBrowsing.move('backward', 'lineboundary');")
+
+
+@define_command("caret-browsing-end-of-document")
+def end_of_document():
+    call_js("CaretBrowsing.move('forward', 'documentboundary');")
+
+
+@define_command("caret-browsing-beginning-of-document")
+def beginning_of_document():
+    call_js("CaretBrowsing.move('backward', 'documentboundary');")
+
+
+@define_command("caret-browsing-forward-paragraph")
+def forward_paragraph():
+    call_js("CaretBrowsing.move('forward', 'paragraphboundary');")
+
+
+@define_command("caret-browsing-backward-paragraph")
+def backward_paragraph():
+    call_js("CaretBrowsing.move('backward', 'paragraphboundary');")
