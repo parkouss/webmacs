@@ -35,32 +35,32 @@ def shutdown():
 
 @define_command("caret-browsing-down")
 def down():
-    call_js("CaretBrowsing.moveDown();")
+    call_js("CaretBrowsing.move('forward', 'line');")
 
 
 @define_command("caret-browsing-up")
 def up():
-    call_js("CaretBrowsing.moveUp();")
+    call_js("CaretBrowsing.move('backward', 'line');")
 
 
 @define_command("caret-browsing-left-char")
 def left_char():
-    call_js("CaretBrowsing.moveLeft();")
+    call_js("CaretBrowsing.move('backward', 'character');")
 
 
 @define_command("caret-browsing-left-word")
 def left_word():
-    call_js("CaretBrowsing.moveLeft(true);")
+    call_js("CaretBrowsing.move('backward', 'word');")
 
 
 @define_command("caret-browsing-right-char")
 def right_char():
-    call_js("CaretBrowsing.moveRight();")
+    call_js("CaretBrowsing.move('forward', 'character');")
 
 
 @define_command("caret-browsing-right-word")
 def right_word():
-    call_js("CaretBrowsing.moveRight(true);")
+    call_js("CaretBrowsing.move('forward', 'word');")
 
 
 @define_command("caret-browsing-toggle-mark")
