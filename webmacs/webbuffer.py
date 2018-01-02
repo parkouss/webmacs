@@ -30,6 +30,7 @@ from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import send_key_event
 from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP
+from .keymaps.caret_browsing import KEYMAP as CARET_BROWSING_KEYMAP
 
 
 # a tuple of QUrl, str to delay loading of a page.
@@ -130,6 +131,9 @@ class WebBuffer(QWebEnginePage):
 
     def content_edit_keymap(self):
         return CONTENT_EDIT_KEYMAP
+
+    def caret_browsing_keymap(self):
+        return CARET_BROWSING_KEYMAP
 
     def async_scroll_pos(self, func):
         self.runJavaScript("[window.pageXOffset, window.pageYOffset]", func)
@@ -308,6 +312,7 @@ KEYMAP.define_key("R", "reload-buffer-no-cache")
 KEYMAP.define_key("h", "visited-links-history")
 KEYMAP.define_key("q", "close-buffer")
 KEYMAP.define_key("C-x h", "select-buffer-content")
+KEYMAP.define_key("C", "caret-browsing-init")
 
 
 @KEYMAP.define_key("C-n")
@@ -330,24 +335,3 @@ def send_right():
 @KEYMAP.define_key("C-b")
 def send_left():
     send_key_event(KeyPress.from_str("Left"))
-
-@KEYMAP.define_key("C-c i")
-def doinit():
-    current_buffer().runJavaScript(
-        "CaretBrowsing.setInitialCursor();",
-        QWebEngineScript.ApplicationWorld
-    )
-
-@KEYMAP.define_key("C-c n")
-def doit():
-    current_buffer().runJavaScript(
-        "CaretBrowsing.moveDown();",
-        QWebEngineScript.ApplicationWorld
-    )
-
-@KEYMAP.define_key("C-c p")
-def doit2():
-    current_buffer().runJavaScript(
-        "CaretBrowsing.moveUp();",
-        QWebEngineScript.ApplicationWorld
-    )

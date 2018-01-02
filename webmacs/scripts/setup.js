@@ -54,12 +54,12 @@ function registerWebmacs(w) {
     document.addEventListener("selectionchange", function(e) {
         if (top.in_text_focus) { return; }
 
-        console.log(CaretBrowsing.isEnabled);
-        console.log("selection has changed!");
-        var sel = window.getSelection();
-        console.log(sel.type);
-        console.log(sel.rangeCount);
-        console.log(sel.anchorNode.nodeName);
+        // console.log(CaretBrowsing.isEnabled);
+        // console.log("selection has changed!");
+        // var sel = window.getSelection();
+        // console.log(sel.type);
+        // console.log(sel.rangeCount);
+        // console.log(sel.anchorNode.nodeName);
     }, true);
 
     var event = document.createEvent('Event');

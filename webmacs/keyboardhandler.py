@@ -78,6 +78,15 @@ class LocalKeymapSetter(QObject):
                 buff = window.current_web_view().buffer()
                 set_local_keymap(buff.keymap())
 
+    def caret_browsing_changed(self, window, enabled):
+        if enabled:
+            buff = window.current_web_view().buffer()
+            set_local_keymap(buff.caret_browsing_keymap())
+        else:
+            if not window.minibuffer().input().hasFocus():
+                buff = window.current_web_view().buffer()
+                set_local_keymap(buff.keymap())
+
 
 LOCAL_KEYMAP_SETTER = LocalKeymapSetter()
 hooks.webview_created.add(LOCAL_KEYMAP_SETTER.register_view)

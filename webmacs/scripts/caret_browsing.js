@@ -440,8 +440,6 @@ const CaretBrowsing = {};
 
 CaretBrowsing.isEnabled = false;
 
-CaretBrowsing.forceEnabled = false;
-
 CaretBrowsing.onEnable = undefined;
 
 CaretBrowsing.onJump = undefined;
@@ -612,9 +610,9 @@ CaretBrowsing.setInitialCursor = function() {
         return;
     }
 
-    if (!window.getSelection().toString()) {
-        CaretBrowsing.positionCaret();
-    }
+    // if (!window.getSelection().toString()) {
+    //     CaretBrowsing.positionCaret();
+    // }
     CaretBrowsing.toggle();
 };
 
@@ -947,55 +945,16 @@ CaretBrowsing.updateCaretOrSelection =
         }
     };
 
-CaretBrowsing.move = function(direction, granularity) {
-    let action = "move";
-    if (CaretBrowsing.selectionEnabled) {
-        action = "extend";
-    }
-    window.
-        getSelection().
-        modify(action, direction, granularity);
-
-    if (CaretBrowsing.isWindows &&
-        (direction === "forward" ||
-         direction === "right") &&
-        granularity === "word") {
-        CaretBrowsing.move("left", "character");
-    } else {
-        window.setTimeout(() => {
-            CaretBrowsing.updateCaretOrSelection(true);
-        }, 0);
-    }
-};
-
-CaretBrowsing.moveToBlock = function(paragraph, boundary) {
-    let action = "move";
-    if (CaretBrowsing.selectionEnabled) {
-        action = "extend";
-    }
-    window.
-        getSelection().
-        modify(action, paragraph, "paragraph");
-
-    window.
-        getSelection().
-        modify(action, boundary, "paragraphboundary");
-
-    window.setTimeout(() => {
-        CaretBrowsing.updateCaretOrSelection(true);
-    }, 0);
-};
-
-CaretBrowsing.toggle = function() {
-    if (CaretBrowsing.forceEnabled) {
-        CaretBrowsing.recreateCaretElement();
-        return;
+CaretBrowsing.toggle = function(enabled) {
+    if (enabled == undefined) {
+        enabled = !CaretBrowsing.isEnabled;
     }
 
-    CaretBrowsing.isEnabled = !CaretBrowsing.isEnabled;
+    CaretBrowsing.isEnabled = enabled;
     const obj = {};
     obj.enabled = CaretBrowsing.isEnabled;
     CaretBrowsing.updateIsCaretVisible();
+    __webmacsHandler__.onCaretBrowsing(obj.enabled);
 };
 
 CaretBrowsing.onClick = function() {
@@ -1068,13 +1027,6 @@ window.setTimeout(() => {
     if (!window.caretBrowsingLoaded) {
         window.caretBrowsingLoaded = true;
         CaretBrowsing.init();
-
-        if (document.body &&
-            document.body.getAttribute("caretbrowsing") === "on") {
-            CaretBrowsing.forceEnabled = true;
-            CaretBrowsing.isEnabled = true;
-            CaretBrowsing.updateIsCaretVisible();
-        }
     }
 }, 0);
 

@@ -40,6 +40,13 @@ class WebContentHandler(QObject):
         if win is not None:
             LOCAL_KEYMAP_SETTER.web_content_edit_focus_changed(win, enabled)
 
+    @Slot(bool)
+    def onCaretBrowsing(self, enabled):
+        print("oncaretbrowsing %s" % enabled)
+        win = current_window()
+        if win is not None:
+            LOCAL_KEYMAP_SETTER.caret_browsing_changed(win, enabled)
+
     @Slot(str)
     def _browserObjectActivated(self, obj):
         # It is hard to pass dict objects from javascript, so a string is used

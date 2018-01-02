@@ -69,12 +69,14 @@ def app():
 
 def _app_requires():
     require(".keymaps.global")
+    require(".keymaps.caret_browsing")
 
     require(".commands.follow")
     require(".commands.buffer_history")
     require(".commands.global")
     require(".commands.isearch")
     require(".commands.webbuffer")
+    require(".commands.caret_browsing")
 
     require(".default_webjumps")
 
