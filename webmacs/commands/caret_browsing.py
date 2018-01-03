@@ -16,7 +16,7 @@
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from . import define_command
-from .webbuffer import current_buffer, WebBuffer
+from .webbuffer import current_buffer
 
 
 def call_js(script):
@@ -25,79 +25,127 @@ def call_js(script):
 
 @define_command("caret-browsing-init")
 def init():
+    """
+    Init caret browsing in the current buffer.
+    """
     call_js("CaretBrowsing.setInitialCursor();")
 
 
 @define_command("caret-browsing-shutdown")
 def shutdown():
+    """
+    Shutdown caret browsing in current buffer.
+    """
     call_js("CaretBrowsing.toggle(false);")
 
 
 @define_command("caret-browsing-down")
 def down():
+    """
+    Move the caret down a line.
+    """
     call_js("CaretBrowsing.move('forward', 'line');")
 
 
 @define_command("caret-browsing-up")
 def up():
+    """
+    Move the caret up a line.
+    """
     call_js("CaretBrowsing.move('backward', 'line');")
 
 
-@define_command("caret-browsing-left-char")
+@define_command("caret-browsing-backward-char")
 def left_char():
+    """
+    Move the caret to one character backward.
+    """
     call_js("CaretBrowsing.move('backward', 'character');")
 
 
-@define_command("caret-browsing-left-word")
+@define_command("caret-browsing-backward-word")
 def left_word():
+    """
+    Move the caret to one word backward.
+    """
     call_js("CaretBrowsing.move('backward', 'word');")
 
 
-@define_command("caret-browsing-right-char")
+@define_command("caret-browsing-forward-char")
 def right_char():
+    """
+    Move the caret to one character forward.
+    """
     call_js("CaretBrowsing.move('forward', 'character');")
 
 
-@define_command("caret-browsing-right-word")
+@define_command("caret-browsing-forward-word")
 def right_word():
+    """
+    Move the caret to one word forward.
+    """
     call_js("CaretBrowsing.move('forward', 'word');")
 
 
 @define_command("caret-browsing-toggle-mark")
 def toggle_mark():
+    """
+    Set or unset (toggle) the mark where the point is.
+    """
     call_js("CaretBrowsing.toggleMark();")
 
 
 @define_command("caret-browsing-cut")
 def copy():
+    """
+    Cut the current caret selection.
+    """
     call_js("CaretBrowsing.cutSelection();")
 
 
 @define_command("caret-browsing-end-of-line")
 def end_of_line():
+    """
+    Move the caret to the end of the current line.
+    """
     call_js("CaretBrowsing.move('forward', 'lineboundary');")
 
 
 @define_command("caret-browsing-beginning-of-line")
 def beginning_of_line():
+    """
+    Move the caret to the beginning of the current line.
+    """
     call_js("CaretBrowsing.move('backward', 'lineboundary');")
 
 
 @define_command("caret-browsing-end-of-document")
 def end_of_document():
+    """
+    Move the caret to the end of the document.
+    """
     call_js("CaretBrowsing.move('forward', 'documentboundary');")
 
 
 @define_command("caret-browsing-beginning-of-document")
 def beginning_of_document():
+    """
+    Move the caret to the beginning of the document.
+    """
     call_js("CaretBrowsing.move('backward', 'documentboundary');")
 
 
 @define_command("caret-browsing-forward-paragraph")
 def forward_paragraph():
+    """
+    Move the caret to the next paragraph (TODO FIXME not working yet)
+    """
     call_js("CaretBrowsing.move('forward', 'paragraphboundary');")
 
 
 @define_command("caret-browsing-backward-paragraph")
 def backward_paragraph():
+    """
+    Move the caret to the previous paragraph (TODO FIXME not working yet)
+    """
     call_js("CaretBrowsing.move('backward', 'paragraphboundary');")
