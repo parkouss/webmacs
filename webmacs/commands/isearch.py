@@ -15,9 +15,12 @@
 
 from ..minibuffer import Prompt, KEYMAP as MKEYMAP
 from ..keymaps import Keymap
+from ..keyboardhandler import local_keymap
 from ..webbuffer import WebBuffer
 from ..commands import define_command
-from .. import current_window, current_minibuffer
+from ..commands import caret_browsing as caret_browsing_commands
+from ..keymaps.caret_browsing import KEYMAP as CARET_BROWSING_KEYMAP
+from .. import current_minibuffer, current_buffer, COMMANDS
 
 KEYMAP = Keymap("i-search", MKEYMAP)
 
@@ -38,7 +41,7 @@ def search_previous():
 
 @KEYMAP.define_key("Return")
 def validate():
-    buff = current_window().current_web_view().buffer()
+    buff = current_buffer()
     buff.findText("")  # to clear the highlight
     current_minibuffer().close_prompt()
 
@@ -59,9 +62,12 @@ class ISearchPrompt(Prompt):
     isearch_direction = 0  # forward
 
     def enable(self, minibuffer):
+        self._caret_browsing = local_keymap() == CARET_BROWSING_KEYMAP
+        if self._caret_browsing:
+            caret_browsing_commands.shutdown()
         Prompt.enable(self, minibuffer)
         self._update_label()
-        self.page = current_window().current_web_view().buffer()
+        self.page = current_buffer()
         self.page_scroll_pos = (0, 0)
         self.page.async_scroll_pos(
             lambda p: setattr(self, "page_scroll_pos", p))
@@ -93,6 +99,8 @@ class ISearchPrompt(Prompt):
     def close(self):
         self.minibuffer.input().textChanged.disconnect(self.on_text_edited)
         Prompt.close(self)
+        if self._caret_browsing:
+            caret_browsing_commands.init()
 
 
 @define_command("i-search-forward", prompt=ISearchPrompt)
