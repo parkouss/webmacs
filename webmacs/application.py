@@ -14,6 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 import logging
 
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
@@ -25,16 +26,13 @@ from .adblock import EASYLIST, Adblocker
 from .download_manager import DownloadManager
 from .profile import default_profile
 
-try:
-    # on some graphic cards (at least Intel HD Graphics 620 (Kabylake GT2))
-    # without this line trying to show a QWebEngineView does segfault.
-    # see https://github.com/spyder-ide/spyder/issues/4495
-    # for now I don't require that as an install dependencies (pip install
-    # pyopengl) but I let that code here to remember and to let the user a
-    # chance to fix the issue by just installing pyopengl.
-    from OpenGL import GL # noqa
-except ImportError:
-    pass
+
+if sys.platform.startswith("linux"):
+    # workaround for a nvidia issue
+    # see https://bugs.launchpad.net/ubuntu/+source/python-qt4/+bug/941826
+    import ctypes
+    import ctypes.util
+    ctypes.CDLL(ctypes.util.find_library("GL"), mode=ctypes.RTLD_GLOBAL)
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
