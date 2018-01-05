@@ -63,6 +63,10 @@ class WebBuffer(QWebEnginePage):
     Represent some web page content.
     """
 
+    KEYMAP_MODE_NORMAL = 1
+    KEYMAP_MODE_CONTENT_EDIT = 2
+    KEYMAP_MODE_CARET_BROWSING = 3
+
     LOGGER = logging.getLogger("webcontent")
     JSLEVEL2LOGGING = {
         QWebEnginePage.InfoMessageLevel: logging.INFO,
@@ -89,6 +93,7 @@ class WebBuffer(QWebEnginePage):
         self.titleChanged.connect(self.update_title)
         self.__authentication_data = None
         self.__delay_loading_url = None
+        self.__keymap_mode = self.KEYMAP_MODE_NORMAL
 
         if url:
             if isinstance(url, DelayedLoadingUrl):
@@ -134,6 +139,20 @@ class WebBuffer(QWebEnginePage):
 
     def caret_browsing_keymap(self):
         return CARET_BROWSING_KEYMAP
+
+    def active_keymap(self):
+        mode = self.__keymap_mode
+        if mode == self.KEYMAP_MODE_CONTENT_EDIT:
+            return self.content_edit_keymap()
+        elif mode == self.KEYMAP_MODE_CARET_BROWSING:
+            return self.caret_browsing_keymap()
+        return self.keymap()
+
+    def keymap_mode(self):
+        return self.__keymap_mode
+
+    def set_keymap_mode(self, enabled):
+        self.__keymap_mode = enabled
 
     def async_scroll_pos(self, func):
         self.runJavaScript("[window.pageXOffset, window.pageYOffset]", func)

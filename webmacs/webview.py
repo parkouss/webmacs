@@ -60,6 +60,7 @@ class WebView(QWebEngineView):
         url = buffer.delayed_loading_url()
         if url:
             buffer.load(url.url)
+        set_local_keymap(buffer.active_keymap())
         # move the buffer so it becomes the most recently opened
         if buffer != BUFFERS[0]:
             BUFFERS.remove(buffer)
