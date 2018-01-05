@@ -76,7 +76,7 @@ sudo pip3 install .
 - a simple download-manager (go to webmacs://downloads)
 - fuzzy matching an completion nearly everywhere (using *Tab* and *Enter* to
  validate)
-- emacs like search: starts with *C-s* or *C-r*
+- emacs like incremental search: starts with *C-s* or *C-r*
 - emacs-like navigation key bindings in the page (shortcuts: *C-n*, *C-p* to
   move up and down a little, *C-v*, *M-v* to move the page up and down a bit
   more, *M->* to scroll at the bottom and *M-<* to scroll at the top.
@@ -89,6 +89,12 @@ sudo pip3 install .
   customize webmacs.
 - copy link by hinting (shortcut *c*). Use the special number 0 to
   copy the current url.
+- caret navigation. (shortcut *C*) to initialize caret navigation, then navigate
+  using (*C-f*, *C-b*, *M-f*, *M-b*, *C-n*, *C-p*, ...) or the arrow keys. It is
+  possible to select some web content using *C-Space* to activate/deactivate the
+  mark. Once there is a selection, *M-w* will copy it. It is also possible to
+  navigate quickly using the incremental search, though this is working well
+  with Qt >= 5.10.
 
 
 * Documentation
@@ -103,7 +109,6 @@ A lot!
 
 - bugs fixes
 - help discovery, like C-h in emacs
-- caret navigation (navigation in web content for non-editable web elements)
 - more bindings
 
 I can't come up with more right now, but there are a lot more for sure.

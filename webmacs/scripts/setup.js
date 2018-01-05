@@ -42,9 +42,9 @@ function registerWebmacs(w) {
 
     // force the focus on the current web content
     if (document.activeElement && isTextInput(document.activeElement)) {
-	__webmacsHandler__.onTextFocus(true);
+	      __webmacsHandler__.onTextFocus(true);
     } else {
-	__webmacsHandler__.onTextFocus(false);
+	      __webmacsHandler__.onTextFocus(false);
     }
 
     var event = document.createEvent('Event');

@@ -87,6 +87,7 @@ class Profile(object):
         inject_js(os.path.join(THIS_DIR, "scripts", "hint.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "textedit.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "autofill.js"))
+        inject_js(os.path.join(THIS_DIR, "scripts", "caret_browsing.js"))
 
     def load_session(self):
         from .session import Session

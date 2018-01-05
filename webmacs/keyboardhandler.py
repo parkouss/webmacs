@@ -54,8 +54,8 @@ class LocalKeymapSetter(QObject):
         t = event.type()
         if t == QEvent.WindowActivate:
             if obj in self._views:
-                # enable the current view
-                set_local_keymap(obj.keymap())
+                # enable the current view's buffer
+                set_local_keymap(obj.buffer().active_keymap())
         elif t == QEvent.FocusIn:
             if obj in self._minibuffer_inputs:
                 # when the minibuffer input is shown, enable it
@@ -64,19 +64,32 @@ class LocalKeymapSetter(QObject):
             if obj in self._minibuffer_inputs:
                 # the focus is lost when the popup is active
                 if not obj.popup().isVisible():
-                    # when the minibuffer input is hidden, enable its view
-                    set_local_keymap(
-                        obj.parent().parent().current_web_view().keymap())
+                    # when the minibuffer input is hidden, enable its view's
+                    # buffer
+                    buff = obj.parent().parent().current_web_view().buffer()
+                    set_local_keymap(buff.active_keymap())
         return QObject.eventFilter(self, obj, event)
 
     def web_content_edit_focus_changed(self, window, enabled):
+        buff = window.current_web_view().buffer()
         if enabled:
-            buff = window.current_web_view().buffer()
-            set_local_keymap(buff.content_edit_keymap())
+            buff.set_keymap_mode(buff.KEYMAP_MODE_CONTENT_EDIT)
+            set_local_keymap(buff.active_keymap())
         else:
+            buff.set_keymap_mode(buff.KEYMAP_MODE_NORMAL)
             if not window.minibuffer().input().hasFocus():
                 buff = window.current_web_view().buffer()
-                set_local_keymap(buff.keymap())
+                set_local_keymap(buff.active_keymap())
+
+    def caret_browsing_changed(self, window, enabled):
+        buff = window.current_web_view().buffer()
+        if enabled:
+            buff.set_keymap_mode(buff.KEYMAP_MODE_CARET_BROWSING)
+            set_local_keymap(buff.active_keymap())
+        else:
+            buff.set_keymap_mode(buff.KEYMAP_MODE_NORMAL)
+            if not window.minibuffer().input().hasFocus():
+                set_local_keymap(buff.active_keymap())
 
 
 LOCAL_KEYMAP_SETTER = LocalKeymapSetter()
@@ -103,8 +116,9 @@ class KeyEater(object):
                 = lambda: self._num_update_prefix_arg(i)
 
     def set_local_key_map(self, keymap):
-        self._local_key_map = keymap
-        logging.debug("local keymap activated: %s", keymap)
+        if keymap != self._local_key_map:
+            self._local_key_map = keymap
+            logging.debug("local keymap activated: %s", keymap)
 
     def local_key_map(self):
         return self._local_key_map
