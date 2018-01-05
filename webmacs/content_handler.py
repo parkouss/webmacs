@@ -42,7 +42,6 @@ class WebContentHandler(QObject):
 
     @Slot(bool)
     def onCaretBrowsing(self, enabled):
-        print("oncaretbrowsing %s" % enabled)
         win = current_window()
         if win is not None:
             LOCAL_KEYMAP_SETTER.caret_browsing_changed(win, enabled)
