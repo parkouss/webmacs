@@ -974,11 +974,9 @@ CaretBrowsing.toggle = function(enabled) {
         var sel = window.getSelection();
         sel.collapse(sel.focusNode, sel.focusOffset);
     }
-    console.log("CaretBrowsing.isEnabled " + CaretBrowsing.isEnabled);
 };
 
 CaretBrowsing.onClick = function() {
-    console.log("onclick" + CaretBrowsing.isEnabled);
     if (!CaretBrowsing.isEnabled) {
         return true;
     }
