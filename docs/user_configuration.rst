@@ -77,6 +77,26 @@ For example:
    print("definition of my custom webjumps should go there.")
 
 
+Variables
+*********
+
+Some behaviors of *webmacs* can be customized using variables.
+
+It is possible to change a variable in the configuration using
+:func:`webmacs.variables.set`:
+
+.. code-block:: python
+
+   from webmacs import variables
+
+   variables.set("minibuffer-height", 30)
+
+
+Here is the list of the variables:
+
+.. webmacs-variables::
+
+
 Binding keys
 ************
 

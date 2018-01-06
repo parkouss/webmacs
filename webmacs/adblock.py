@@ -32,11 +32,10 @@ DEFAULT_EASYLIST = (
     "https://easylist.to/easylist/fanboy-annoyance.txt"
 )
 
-adblock_urls_rules = variables.Variable(
+adblock_urls_rules = variables.define_variable(
     "adblock_urls_rules",
     "A list of urls to get rules for ad-blocking (using the Adblock format)."
-    " The default is %s, coming from the easylist site https://easylist.to."
-    % (DEFAULT_EASYLIST,),
+    " The default urls are taken from the easylist site https://easylist.to.",
     DEFAULT_EASYLIST,
     conditions=(
         variables.condition(

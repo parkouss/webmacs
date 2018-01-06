@@ -2,7 +2,7 @@ VARIABLES = {}
 
 
 class VariableConditionError(Exception):
-    pass
+    "Raised when a variable condition is not fulfilled"
 
 
 def condition(func, doc):
@@ -62,8 +62,21 @@ def get_variable(name):
 
 
 def get(name):
+    """
+    Returns the variable value.
+
+    :param name: the name of the variable.
+    """
     return get_variable(name).value
 
 
 def set(name, value):
+    """
+    Set a value for a variable.
+
+    :param name: the name of the variable.
+    :param value: the new value.
+    :raises: KeyError if the variable does not exists, or
+             :class:`VariableConditionError` if the value is incorrect.
+    """
     get_variable(name).set_value(value)
