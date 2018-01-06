@@ -99,7 +99,7 @@ def init(opts):
     app = _app()
     window = current_window()
     if opts.url or not app.profile.load_session():
-        buffer = create_buffer(opts.url or "http://duckduckgo.com/?kae=t")
+        buffer = create_buffer(opts.url or "http://duckduckgo.com/")
         window.current_web_view().setBuffer(buffer)
 
     window.showMaximized()
