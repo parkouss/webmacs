@@ -29,7 +29,7 @@ from .minibuffer.prompt import YesNoPrompt
 from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import send_key_event
-from .webcontent_edit_keymap import KEYMAP as CONTENT_EDIT_KEYMAP
+from .keymaps.webcontent_edit import KEYMAP as CONTENT_EDIT_KEYMAP
 from .keymaps.caret_browsing import KEYMAP as CARET_BROWSING_KEYMAP
 
 
