@@ -23,12 +23,28 @@ import dateparser
 from _adblock import AdBlock
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import urllib.request
+from . import variables
 
 
-EASYLIST = (
+DEFAULT_EASYLIST = (
     "https://easylist.to/easylist/easylist.txt",
     "https://easylist.to/easylist/easyprivacy.txt",
     "https://easylist.to/easylist/fanboy-annoyance.txt"
+)
+
+adblock_urls_rules = variables.Variable(
+    "adblock_urls_rules",
+    "A list of urls to get rules for ad-blocking (using the Adblock format)."
+    " The default is %s, coming from the easylist site https://easylist.to."
+    % (DEFAULT_EASYLIST,),
+    DEFAULT_EASYLIST,
+    conditions=(
+        variables.condition(
+            lambda v: (isinstance(v, (tuple, list))
+                       and all(isinstance(s, str) for s in v)),
+            "must be a list of urls"
+        ),
+    ),
 )
 
 
@@ -38,6 +54,13 @@ class Adblocker(object):
             os.makedirs(cache_path)
         self._cache_path = cache_path
         self._urls = {}
+
+    def register_filter_urls(self):
+        """
+        Register urls from the adblock_rules variable.
+        """
+        for url in adblock_urls_rules.value:
+            self.register_filter_url(url)
 
     def register_filter_url(self, url, destfile=None):
         if destfile is None:

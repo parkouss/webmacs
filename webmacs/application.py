@@ -22,7 +22,7 @@ from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt5.QtWidgets import QApplication
 
 from . import require, GLOBAL_EVENT_FILTER
-from .adblock import EASYLIST, Adblocker
+from .adblock import Adblocker
 from .download_manager import DownloadManager
 from .profile import default_profile
 
@@ -43,8 +43,7 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
         QWebEngineUrlRequestInterceptor.__init__(self)
         self.app = app
         generator = Adblocker(app.adblock_path())
-        for url in EASYLIST:
-            generator.register_filter_url(url)
+        generator.register_filter_urls()
         self._adblock = generator.generate_rules()
         self._use_adblock = True
 
