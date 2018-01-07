@@ -17,7 +17,7 @@ import json
 
 from PyQt5.QtCore import QUrl
 
-from .commands.webjump import define_webjump, set_default
+from .commands.webjump import define_webjump, webjump_default
 from urllib.request import urlopen
 from .minibuffer.prompt import FSModel
 from .scheme_handlers.webmacs import PAGES as webmacs_pages
@@ -84,4 +84,4 @@ define_webjump("duckduckgo ",
                "Duckduckgo Search",
                complete_fn=complete_duckduckgo)
 
-set_default("duckduckgo ")
+webjump_default.set_value("duckduckgo ")

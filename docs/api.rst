@@ -24,8 +24,6 @@ Webjumps
 
 .. autofunction:: webmacs.commands.webjump.define_webjump
 
-.. autofunction:: webmacs.commands.webjump.set_default
-
 
 Variables
 *********

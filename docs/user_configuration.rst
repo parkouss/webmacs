@@ -89,7 +89,7 @@ It is possible to change a variable in the configuration using
 
    from webmacs import variables
 
-   variables.set("minibuffer-height", 30)
+   variables.set("webjump-default", "google ")
 
 
 Here is the list of the variables:
@@ -177,4 +177,4 @@ example above.
 
 By default in webmacs, pressing the ``s`` key will call the command
 ``search-default``, wich will use the duckduckgo webjump. To change
-that default, use :func:`webmacs.commands.webjump.set_default`.
+that default, change the value of the variable *webjump-default*.

@@ -26,12 +26,24 @@ from ..webbuffer import create_buffer
 from .. import current_window, current_buffer
 from ..application import app
 from .prompt_helper import PromptNewBuffer
+from .. import variables
 
 
 WebJump = namedtuple("WebJump", ("url", "doc", "allow_args", "complete_fn"))
 WEBJUMPS = {}
-DEFAULT_WEBJUMP_SEARCH = None
 
+
+webjump_default = variables.define_variable(
+    "webjump-default",
+    "The default webjump",
+    "",
+    conditions=(
+        variables.condition(
+            lambda v: not v or v in WEBJUMPS,
+            "Must be one of %s." % (tuple(WEBJUMPS),)
+        ),
+    ),
+)
 
 def define_webjump(name, url, doc="", complete_fn=None):
     """
@@ -59,10 +71,11 @@ def set_default(name):
     """
     Set the default webjump.
 
+    Deprecated: use the *webjump-default* variable instead.
+
     :param name: the name of the webjump.
     """
-    global DEFAULT_WEBJUMP_SEARCH
-    DEFAULT_WEBJUMP_SEARCH = name
+    webjump_default.set_value(name)
 
 
 class CompletionReceiver(QObject):
@@ -164,8 +177,8 @@ class WebJumpPromptCurrentUrl(WebJumpPrompt):
 class DefaultSearchPrompt(WebJumpPrompt):
     def enable(self, minibuffer):
         WebJumpPrompt.enable(self, minibuffer)
-        if DEFAULT_WEBJUMP_SEARCH:
-            minibuffer.input().setText(DEFAULT_WEBJUMP_SEARCH)
+        if webjump_default.value:
+            minibuffer.input().setText(webjump_default.value)
 
 
 def get_url(value):
