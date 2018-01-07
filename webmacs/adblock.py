@@ -33,7 +33,7 @@ DEFAULT_EASYLIST = (
 )
 
 adblock_urls_rules = variables.define_variable(
-    "adblock_urls_rules",
+    "adblock-urls-rules",
     "A list of urls to get rules for ad-blocking (using the Adblock format)."
     " The default urls are taken from the easylist site https://easylist.to.",
     DEFAULT_EASYLIST,
