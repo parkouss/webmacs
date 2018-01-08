@@ -216,9 +216,18 @@ _KeyPress = namedtuple("_KeyPress", ("key", "control_modifier", "alt_modifier",
 class KeyPress(_KeyPress):
     @classmethod
     def from_qevent(cls, event):
-        key = event.key()
-        if key not in KEY2CHAR:
-            return None
+        text = event.text()
+
+        # Try to get the key value depending on the text. Despite what the qt
+        # doc says, it seems more reliable to get the good value this way. For
+        # example, to match C-? on my french keyboard (using the bépo layout)
+        # this is required (Ctrl-Shift-'), else event.key() is equal to the key
+        # DOWN.
+        key = CHAR2KEY.get(text)
+        if key is None:
+            key = event.key()
+            if key not in KEY2CHAR:
+                return None
 
         modifiers = event.modifiers()
 
@@ -227,7 +236,7 @@ class KeyPress(_KeyPress):
             bool(modifiers & Qt.ControlModifier),
             bool(modifiers & Qt.AltModifier),
             bool(modifiers & Qt.MetaModifier),
-            is_one_letter_upcase(event.text())
+            is_one_letter_upcase(text)
         )
 
     @classmethod
