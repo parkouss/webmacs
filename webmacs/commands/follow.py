@@ -121,11 +121,10 @@ def follow(prompt):
     Hint links in the buffer and follow them on selection.
     """
     buff = prompt.page
+    buff.stop_select_browser_objects()
     if not prompt.new_buffer:
         buff.focus_active_browser_object()
-        buff.stop_select_browser_objects()
     elif "url" in prompt.browser_object_activated:
-        buff.stop_select_browser_objects()
         prompt.new_buffer.get_buffer().load(
             prompt.browser_object_activated["url"]
         )
