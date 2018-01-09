@@ -28,7 +28,8 @@ from . import variables
 
 DEFAULT_EASYLIST = (
     "https://easylist.to/easylist/easylist.txt",
-    "https://easylist.to/easylist/easyprivacy.txt",
+    # easyprivacy blocks too much right now
+    # "https://easylist.to/easylist/easyprivacy.txt",
     "https://easylist.to/easylist/fanboy-annoyance.txt"
 )
 
