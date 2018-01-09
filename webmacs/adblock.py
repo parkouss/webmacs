@@ -102,7 +102,7 @@ class Adblocker(object):
         # do not try to download if files are less than a day old
         to_download = [(url, path) for url, path in self._urls.items()
                        if not os.path.isfile(path)
-                       or os.path.getmtime(path) > (time.time() + 3600)]
+                       or (os.path.getmtime(path) + 3600) < time.time()]
         if to_download:
             with ThreadPoolExecutor(max_workers=5) as executor:
                 futures = [executor.submit(self._download_file, url, path)
