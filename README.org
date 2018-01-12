@@ -66,8 +66,7 @@ sudo pip3 install .
 - maximize view (shortcut *C-x 1*)
 - history access (shortcut *h*)
 - ad blocking using [[https://easylist.to/][easylist]]. Implemented in C for high
- performances. Note currently the first run of *webmacs* is slow because the
-  lists are downloaded and prepared for use.
+ performances.
 - for go-to and history command, the prefix *C-u* opens the url in a new
   buffer.
 - handle basic authentication
