@@ -20,6 +20,8 @@ import time
 from datetime import datetime, timezone
 import dateparser
 
+from PyQt5.QtCore import QThread, pyqtSignal as Signal
+
 from _adblock import AdBlock
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import urllib.request
@@ -54,6 +56,7 @@ class Adblocker(object):
             os.makedirs(cache_path)
         self._cache_path = cache_path
         self._urls = {}
+        self.register_filter_urls()
 
     def register_filter_urls(self):
         """
@@ -114,9 +117,20 @@ class Adblocker(object):
 
         return modified
 
-    def generate_rules(self):
+    def cache_file(self):
+        return os.path.join(self._cache_path, "cache.dat")
+
+    def local_adblock(self):
         adblock = AdBlock()
-        cache = os.path.join(self._cache_path, "cache.dat")
+        cache = self.cache_file()
+        if os.path.isfile(cache):
+            logging.info("loading adblock cached data: %s", cache)
+            adblock.load(cache)
+        return adblock
+
+    def maybe_update_adblock(self):
+        adblock = AdBlock()
+        cache = self.cache_file()
         modified = self._fetch_urls()
         if modified or not os.path.isfile(cache):
             for path in self._urls.values():
@@ -124,7 +138,22 @@ class Adblocker(object):
                 with open(path) as f:
                     adblock.parse(f.read())
             adblock.save(cache)
-        else:
-            logging.info("loading adblock cached data: %s", cache)
-            adblock.load(cache)
-        return adblock
+            return adblock
+
+
+class AdblockUpdaterThread(QThread):
+    adblock_updated = Signal(object)
+
+    def __init__(self, adblocker):
+        QThread.__init__(self)
+        self.moveToThread(self)
+        self.adblocker = adblocker
+
+    def run(self):
+        try:
+            adblock = self.adblocker.maybe_update_adblock()
+        except Exception:
+            logging.exception("Unable to update ad block data.")
+            return
+        if adblock is not None:
+            self.adblock_updated.emit(adblock)

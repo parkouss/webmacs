@@ -17,12 +17,14 @@ import os
 import sys
 import logging
 
+from PyQt5.QtCore import pyqtSlot as Slot
+
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt5.QtWidgets import QApplication
 
 from . import require, GLOBAL_EVENT_FILTER
-from .adblock import Adblocker
+from .adblock import Adblocker, AdblockUpdaterThread
 from .download_manager import DownloadManager
 from .profile import default_profile
 
@@ -41,11 +43,12 @@ THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 class UrlInterceptor(QWebEngineUrlRequestInterceptor):
     def __init__(self, app):
         QWebEngineUrlRequestInterceptor.__init__(self)
-        self.app = app
-        generator = Adblocker(app.adblock_path())
-        generator.register_filter_urls()
-        self._adblock = generator.generate_rules()
+        self._adblock = Adblocker(app.adblock_path()).local_adblock()
         self._use_adblock = True
+
+    @Slot(object)
+    def update_adblock(self, adblock):
+        self._adblock = adblock
 
     def toggle_use_adblock(self):
         self._use_adblock = not self._use_adblock
@@ -90,7 +93,10 @@ class Application(QApplication):
 
         self._setup_conf_paths()
 
+        self._adblock_thread = None
         self._interceptor = UrlInterceptor(self)
+        self.adblock_update()
+
         self._download_manager = DownloadManager(self)
 
         self.profile = default_profile()
@@ -149,3 +155,22 @@ class Application(QApplication):
 
     def ignored_certs(self):
         return self.profile.ignored_certs
+
+    def adblock_update(self):
+        if self._adblock_thread is not None:
+            return
+
+        generator = Adblocker(self.adblock_path())
+
+        def adblock_thread_finished():
+            self._adblock_thread.deleteLater()
+            self._adblock_thread = None
+            logging.debug("adblock update finished")
+
+        self._adblock_thread = AdblockUpdaterThread(generator)
+        self._adblock_thread.finished.connect(adblock_thread_finished)
+        self._adblock_thread.adblock_updated.connect(
+            self._interceptor.update_adblock
+        )
+        self._adblock_thread.start()
+        logging.debug("starting adblock update")

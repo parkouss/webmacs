@@ -65,7 +65,9 @@ AdBlock_parse(AdBlock* self, PyObject *args)
   if (!PyArg_ParseTuple(args, "s", &data))
     return NULL;
 
+  Py_BEGIN_ALLOW_THREADS
   self->client->parse(data);
+  Py_END_ALLOW_THREADS
 
   Py_RETURN_NONE;
 }
@@ -74,11 +76,16 @@ static PyObject *
 AdBlock_matches(AdBlock* self, PyObject *args)
 {
   const char *url, *domain;
+  bool result;
 
   if (!PyArg_ParseTuple(args, "ss", &url, &domain))
     return NULL;
 
-  if (self->client->matches(url, FONoFilterOption, domain)) {
+  Py_BEGIN_ALLOW_THREADS
+  result = self->client->matches(url, FONoFilterOption, domain);
+  Py_END_ALLOW_THREADS
+
+  if (result) {
     Py_RETURN_TRUE;
   } else {
     Py_RETURN_FALSE;
@@ -94,38 +101,51 @@ AdBlock_save(AdBlock* self, PyObject *args)
     return NULL;
 
   int size;
-  char * buffer = self->client->serialize(&size);
-
   ofstream outFile(path, ios::out | ios::binary);
-  if (outFile) {
-    outFile.write(buffer, size);
-    outFile.close();
-    Py_RETURN_TRUE;
+  if (!outFile) {
+    Py_RETURN_FALSE;
   }
-  Py_RETURN_FALSE;
+
+  Py_BEGIN_ALLOW_THREADS
+  char * buffer = self->client->serialize(&size);
+  outFile.write(buffer, size);
+  outFile.close();
+  Py_END_ALLOW_THREADS
+
+  Py_RETURN_TRUE;
 }
 
 static PyObject *
 AdBlock_load(AdBlock* self, PyObject *args)
 {
   const char *path;
+  bool result = false;
 
   if (!PyArg_ParseTuple(args, "s", &path))
     return NULL;
 
   ifstream file(path, ios::binary | ios::ate);
-  if (file) {
-    streamsize size = file.tellg();
-    file.seekg(0, ios::beg);
-
-    if (self->data) {delete[] self->data;}
-    self->data = new char[size];
-    if (file.read(self->data, size)) {
-      self->client->deserialize(self->data);
-      Py_RETURN_TRUE;
-    }
+  if (!file) {
+    Py_RETURN_FALSE;
   }
-  Py_RETURN_FALSE;
+
+  Py_BEGIN_ALLOW_THREADS
+  streamsize size = file.tellg();
+  file.seekg(0, ios::beg);
+
+  if (self->data) {delete[] self->data;}
+  self->data = new char[size];
+  if (file.read(self->data, size)) {
+    self->client->deserialize(self->data);
+    result = true;
+  }
+  Py_END_ALLOW_THREADS
+
+  if (result) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
 }
 
 
