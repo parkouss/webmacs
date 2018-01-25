@@ -282,6 +282,7 @@ class Minibuffer(QWidget):
         self.setLayout(layout)
 
         self.label = QLabel(self)
+        self.rlabel = QLabel(self)
         self.__default_label_policy = self.label.sizePolicy()
         # when input line edit is hidden, this size policy allow to not resize
         # the parent widget if the text in the label is too long.
@@ -290,6 +291,10 @@ class Minibuffer(QWidget):
 
         self._input = MinibufferInput(self, window)
         layout.addWidget(self._input)
+
+        self.rlabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.rlabel.setText("[0]")
+        layout.addWidget(self.rlabel)
 
         self.set_height(MINIBUFFER_HEIGHT.value)
 
@@ -335,3 +340,6 @@ class Minibuffer(QWidget):
 
     def _prompt_closed(self):
         self._prompt = None
+
+    def update_rlabel(self, text):
+        self.rlabel.setText(text)
