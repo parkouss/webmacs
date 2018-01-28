@@ -22,6 +22,7 @@ from PyQt5.QtCore import pyqtSignal as Signal, \
 from .keymap import KEYMAP
 from .prompt import Prompt
 from .. import variables
+from .. import windows, BUFFERS
 
 
 class Popup(QTableView):
@@ -354,10 +355,9 @@ class Minibuffer(QWidget):
 
     @classmethod
     def update_rlabel(cls):
-        from .. import windows, BUFFERS
         for window in windows():
             window.minibuffer().rlabel.setText(
-                variables.get_variable("minibuffer-right-label").value % dict(
+                MINIBUFFER_RIGHTLABEL.value % dict(
                     buffer_count=len(BUFFERS)
                 )
             )
