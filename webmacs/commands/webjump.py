@@ -187,6 +187,8 @@ def get_url(value):
     try:
         webjump = WEBJUMPS[command]
     except KeyError:
+        if '.' in value and value[0] != ' ':
+            return 'https://' + value
         return value
 
     if webjump.allow_args:
