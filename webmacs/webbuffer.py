@@ -21,12 +21,12 @@ from PyQt5.QtWebChannel import QWebChannel
 from collections import namedtuple
 
 from .keymaps import KeyPress, BUFFER_KEYMAP as KEYMAP
+from . import hooks
 from . import current_window, BUFFERS, current_minibuffer, \
     minibuffer_show_info, current_buffer
 from .content_handler import WebContentHandler
 from .application import app
 from .minibuffer.prompt import YesNoPrompt
-from .minibuffer import Minibuffer
 from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import send_key_event
@@ -56,7 +56,7 @@ def close_buffer(wb, keep_one=True):
     app().download_manager().detach_buffer(wb)
     BUFFERS.remove(wb)
     wb.deleteLater()
-    Minibuffer.update_rlabel()
+    hooks.webbuffer_closed(wb)
     return True
 
 
@@ -80,7 +80,7 @@ class WebBuffer(QWebEnginePage):
         QWebEnginePage.__init__(self)
         # put the most recent buffer at the beginning of the BUFFERS list
         BUFFERS.insert(0, self)
-        Minibuffer.update_rlabel()
+        hooks.webbuffer_created(self)
 
         self.fullScreenRequested.connect(self._on_full_screen_requested)
         self._content_handler = WebContentHandler(self)

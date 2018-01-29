@@ -275,17 +275,6 @@ MINIBUFFER_HEIGHT = variables.define_variable(
 )
 
 
-MINIBUFFER_RIGHTLABEL = variables.define_variable(
-    "minibuffer-right-label",
-    "Format for displaying some information in right label of minibuffer.",
-    "{buffer_count}",
-    conditions=(
-        variables.condition(lambda v: isinstance(v, str),
-                            "Must be an instance of string"),
-    ),
-)
-
-
 class Minibuffer(QWidget):
     def __init__(self, window):
         QWidget.__init__(self, window)
@@ -305,7 +294,6 @@ class Minibuffer(QWidget):
         layout.addWidget(self._input)
 
         self.rlabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        self.rlabel.setText("[0]")
         layout.addWidget(self.rlabel)
 
         self.set_height(MINIBUFFER_HEIGHT.value)
@@ -352,12 +340,3 @@ class Minibuffer(QWidget):
 
     def _prompt_closed(self):
         self._prompt = None
-
-    @classmethod
-    def update_rlabel(cls):
-        for window in windows():
-            window.minibuffer().rlabel.setText(
-                MINIBUFFER_RIGHTLABEL.value.format(
-                    buffer_count=len(BUFFERS)
-                )
-            )

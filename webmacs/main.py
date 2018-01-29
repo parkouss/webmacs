@@ -162,6 +162,7 @@ def main():
             _handle_user_init_error("Error executing user init function in %s."
                                     % user_init.__file__)
 
+    app.post_init()
     signal_wakeup(app)
     signal.signal(signal.SIGINT, lambda s, h: app.quit())
     try:

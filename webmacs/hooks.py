@@ -19,9 +19,15 @@ class Hook(list):
         for callback in self:
             callback(*arg, **kwargs)
 
+    __call__ = call
+
     add = list.append
 
 
 webview_created = Hook()
 
 webview_closed = Hook()
+
+webbuffer_created = Hook()
+
+webbuffer_closed = Hook()

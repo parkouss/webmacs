@@ -27,6 +27,7 @@ from . import require, GLOBAL_EVENT_FILTER
 from .adblock import Adblocker, AdblockUpdaterThread
 from .download_manager import DownloadManager
 from .profile import default_profile
+from .minibuffer.right_label import init_minibuffer_right_labels
 
 
 if sys.platform.startswith("linux"):
@@ -174,3 +175,6 @@ class Application(QApplication):
         )
         self._adblock_thread.start()
         logging.debug("starting adblock update")
+
+    def post_init(self):
+        init_minibuffer_right_labels()
