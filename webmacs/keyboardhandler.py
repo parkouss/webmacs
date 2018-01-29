@@ -118,6 +118,7 @@ class KeyEater(object):
     def set_local_key_map(self, keymap):
         if keymap != self._local_key_map:
             self._local_key_map = keymap
+            hooks.local_mode_changed(keymap)
             logging.debug("local keymap activated: %s", keymap)
 
     def local_key_map(self):
