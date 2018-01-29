@@ -278,7 +278,7 @@ MINIBUFFER_HEIGHT = variables.define_variable(
 MINIBUFFER_RIGHTLABEL = variables.define_variable(
     "minibuffer-right-label",
     "Format for displaying some information in right label of minibuffer.",
-    "%(buffer_count)s",
+    "{buffer_count}",
     conditions=(
         variables.condition(lambda v: isinstance(v, str),
                             "Must be an instance of string"),
@@ -357,7 +357,7 @@ class Minibuffer(QWidget):
     def update_rlabel(cls):
         for window in windows():
             window.minibuffer().rlabel.setText(
-                MINIBUFFER_RIGHTLABEL.value % dict(
+                MINIBUFFER_RIGHTLABEL.value.format(
                     buffer_count=len(BUFFERS)
                 )
             )
