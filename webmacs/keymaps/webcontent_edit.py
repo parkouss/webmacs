@@ -19,6 +19,7 @@ from . import Keymap, KeyPress
 from .. import current_buffer
 from ..keyboardhandler import send_key_event
 
+
 KEYMAP = Keymap("webcontent-edit")
 
 
@@ -148,6 +149,7 @@ def cut():
 
 KEYMAP.define_key("C-y", "webcontent-paste")
 
+
 @KEYMAP.define_key("M-u")
 def upcase_word():
     current_buffer().runJavaScript(
@@ -163,10 +165,10 @@ def downcase_word():
         QWebEngineScript.ApplicationWorld
     )
 
+
 @KEYMAP.define_key("M-c")
 def capitalize_word():
     current_buffer().runJavaScript(
         "capitalize_word(getActiveElement());",
         QWebEngineScript.ApplicationWorld
     )
-

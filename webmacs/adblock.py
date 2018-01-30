@@ -87,7 +87,6 @@ class Adblocker(object):
                         "Unable to parse the last-modified header for %s",
                         url)
                 else:
-                    print(last_modified, file_time)
                     if last_modified < file_time:
                         logging.info("no need to download adblock rule: %s",
                                      url)

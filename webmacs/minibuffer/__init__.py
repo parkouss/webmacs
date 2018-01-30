@@ -22,7 +22,7 @@ from PyQt5.QtCore import pyqtSignal as Signal, \
 from .keymap import KEYMAP
 from .prompt import Prompt
 from .. import variables
-from .. import windows, BUFFERS
+from .. import windows
 
 
 class Popup(QTableView):
@@ -256,7 +256,6 @@ class MinibufferInput(QLineEdit):
 
 
 def _update_minibuffer_height(var):
-    from .. import windows
     for window in windows():
         window.minibuffer().set_height(var.value)
 

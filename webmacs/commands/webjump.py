@@ -23,8 +23,7 @@ from PyQt5.QtCore import QUrl, QThread, pyqtSlot as Slot, \
 
 from ..minibuffer.prompt import Prompt, PromptTableModel, PromptHistory
 from ..commands import define_command
-from ..webbuffer import create_buffer
-from .. import current_window, current_buffer
+from .. import current_buffer
 from ..application import app
 from .prompt_helper import PromptNewBuffer
 from .. import variables
@@ -45,6 +44,7 @@ webjump_default = variables.define_variable(
         ),
     ),
 )
+
 
 def define_webjump(name, url, doc="", complete_fn=None):
     """

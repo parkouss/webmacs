@@ -20,7 +20,7 @@ from ..webbuffer import WebBuffer
 from ..commands import define_command
 from ..commands import caret_browsing as caret_browsing_commands
 from ..keymaps.caret_browsing import KEYMAP as CARET_BROWSING_KEYMAP
-from .. import current_minibuffer, current_buffer, COMMANDS
+from .. import current_minibuffer, current_buffer
 
 KEYMAP = Keymap("i-search", MKEYMAP)
 
