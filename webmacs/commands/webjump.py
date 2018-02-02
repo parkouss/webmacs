@@ -15,7 +15,6 @@
 
 import logging
 from collections import namedtuple
-from urllib.parse import urlparse
 
 from PyQt5.QtCore import QUrl, QThread, pyqtSlot as Slot, \
     pyqtSignal as Signal, QStringListModel, QObject
@@ -188,8 +187,8 @@ def get_url(value):
     try:
         webjump = WEBJUMPS[command]
     except KeyError:
-        url = urlparse(value)
-        if '.' in url.path and value[0] != ' ' and not url.scheme:
+        url = QUrl(value)
+        if url.topLevelDomain() and not url.scheme():
             return 'https://' + value
         return value
 
