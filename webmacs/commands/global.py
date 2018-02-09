@@ -23,7 +23,8 @@ from ..application import app
 from ..webbuffer import create_buffer
 from ..keymaps import Keymap
 from ..keyboardhandler import current_prefix_arg
-from .. import current_minibuffer, BUFFERS, current_window, current_buffer
+from .. import current_minibuffer, BUFFERS, current_window, \
+    current_buffer, windows
 
 
 class CommandsListPrompt(Prompt):
@@ -92,14 +93,25 @@ def toggle_maximised():
 
 
 def _get_or_create_buffer(win):
+    visible_buffers = []
+    for awin in windows():
+        for view in awin.webviews():
+            visible_buffers.append(view.buffer())
     current_buffer = win.current_web_view().buffer()
+    buffers = [b for b in BUFFERS
+               if b not in visible_buffers
+               or b == current_buffer]
 
-    if len(BUFFERS) >= len(win.webviews()) and current_buffer in BUFFERS:
-        buffers = itertools.cycle(BUFFERS)
+    # if there is at least one buffer not visible, use the one just
+    # after the current one in the list
+    if len(buffers) > 1:
+        ibuffers = itertools.cycle(buffers)
         while True:
-            if next(buffers) == current_buffer:
-                return next(buffers)
+            buff = next(ibuffers)
+            if buff == current_buffer:
+                return next(ibuffers)
 
+    # else create a new buffer, reusing the current buffer's url
     return create_buffer(url=current_buffer.url())
 
 
