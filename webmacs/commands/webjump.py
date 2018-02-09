@@ -187,9 +187,13 @@ def get_url(value):
     try:
         webjump = WEBJUMPS[command]
     except KeyError:
-        url = QUrl(value)
-        if url.topLevelDomain() and not url.scheme():
-            return 'https://' + value
+        if "://" not in value:
+            url = QUrl.fromUserInput(value)
+            if url.isValid():
+                # default scheme is https for us
+                if url.scheme() == "http":
+                    url.setScheme("https")
+                return url
         return value
 
     if webjump.allow_args:
