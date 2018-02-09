@@ -44,10 +44,17 @@ class LayoutEntry(object):
         assert self.parent
         parent = self.parent
         parent.children.remove(self)
+        # if there is only one sibling left, replace the parent by
+        # this sibling.
         if len(parent.children) == 1:
-            other = parent.children.pop(0)
+            other = parent.children[0]
             parent.item = other.item
-            parent.split = None
+            parent.split = other.split
+            parent.children = other.children
+            parent.parent = other.parent
+            for child in parent.children:
+                child.parent = parent
+
 
     def set_geometry(self, rect):
         if self.item:

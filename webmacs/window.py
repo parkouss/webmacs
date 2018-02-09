@@ -133,7 +133,9 @@ class Window(QWidget):
     def close_other_views(self):
         """close all views but the current one"""
         view = self.current_web_view()
-        for other in self.webviews():
+        # to remove more than one item correctly, the iteration must
+        # be done on a shallow copy of the list
+        for other in list(self.webviews()):
             if view != other:
                 self._delete_webview(other)
 
