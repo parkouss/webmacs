@@ -23,6 +23,7 @@ from .visited_links import VisitedLinks
 from .autofill import Autofill
 from .autofill.db import PasswordDb
 from .ignore_certificates import IgnoredCertificates
+from .bookmarks import Bookmarks
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -62,6 +63,8 @@ class Profile(object):
             = Autofill(PasswordDb(os.path.join(path, "autofill.db")))
         self.ignored_certs \
             = IgnoredCertificates(os.path.join(path, "ignoredcerts.db"))
+        self.bookmarks \
+            = Bookmarks(os.path.join(path, "bookmarks.db"))
 
         self.q_profile.setCachePath(os.path.join(path, "cache"))
         self.q_profile.downloadRequested.connect(

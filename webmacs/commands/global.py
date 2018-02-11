@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtCore import QStringListModel, QModelIndex
+from PyQt5.QtCore import QStringListModel, QModelIndex, \
+    QEventLoop, QTimer
 import itertools
 
 from . import define_command, COMMANDS
@@ -238,3 +239,69 @@ def visited_links_history(prompt):
     if index.isValid():
         url = index.internalPointer()
         prompt.get_buffer().load(url)
+
+
+class BookmarksModel(VisitedLinksModel):
+    def __init__(self, parent):
+        bookmarks = app().bookmarks()
+        PromptTableModel.__init__(self, bookmarks.list())
+        # this makes the remove_history_entry method works
+        self.visitedlinks = bookmarks
+
+
+BOOKMARKS_KEYMAP = Keymap("visited-links-list", parent=KEYMAP)
+# so removing a bookmark is like removing a visited link
+BOOKMARKS_KEYMAP.define_key("C-k", visited_links_remove_entry)
+
+
+class BookmarksPrompt(VisitedLinksPrompt):
+    label = "Open bookmark:"
+    keymap = BOOKMARKS_KEYMAP
+    history = PromptHistory()
+
+    def completer_model(self):
+        return BookmarksModel(self)
+
+
+@define_command("bookmark-open", prompt=BookmarksPrompt)
+def open_bookmark(prompt):
+    """
+    Prompt to open a bookmark.
+    """
+    visited_links_history(prompt)
+
+
+class BookmarkAddPrompt(Prompt):
+    label = "Create a bookmark for: "
+    def enable(self, minibuffer):
+        Prompt.enable(self, minibuffer)
+        url = current_buffer().url().toString()
+        input = minibuffer.input()
+        input.setText(url)
+        input.setSelection(0, len(url))
+
+
+
+@define_command("bookmark-add", prompt=BookmarkAddPrompt)
+def bookmark_add(prompt):
+    """
+    Create or rename a bookmark for the current url.
+    """
+    minibuff = current_minibuffer()
+    url = prompt.value()
+
+    def doit():
+        loop = QEventLoop()
+        otherprompt = Prompt()
+        otherprompt.label = "bookmark's name: "
+        minibuff.do_prompt(otherprompt)
+        otherprompt.closed.connect(loop.quit)
+        loop.exec_()
+
+        name = otherprompt.value()
+        if name:
+            app().bookmarks().set(url, name)
+            minibuff.show_info("Bookmark {} created."
+                               .format(name))
+
+    QTimer.singleShot(0, doit)

@@ -158,6 +158,9 @@ class Application(QApplication):
     def visitedlinks(self):
         return self.profile.visitedlinks
 
+    def bookmarks(self):
+        return self.profile.bookmarks
+
     def autofill(self):
         return self.profile.autofill
 
