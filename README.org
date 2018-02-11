@@ -94,6 +94,7 @@ sudo pip3 install .
   mark. Once there is a selection, *M-w* will copy it. It is also possible to
   navigate quickly using the incremental search, though this is working well
   with Qt >= 5.10.
+- bookmarks (*M* to add a bookmark, *m* to open the bookmark list)
 
 
 * Documentation

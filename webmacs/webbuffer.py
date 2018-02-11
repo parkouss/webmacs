@@ -335,6 +335,8 @@ KEYMAP.define_key("h", "visited-links-history")
 KEYMAP.define_key("q", "close-buffer")
 KEYMAP.define_key("C-x h", "select-buffer-content")
 KEYMAP.define_key("C", "caret-browsing-init")
+KEYMAP.define_key("m", "bookmark-open")
+KEYMAP.define_key("M", "bookmark-add")
 
 
 @KEYMAP.define_key("C-n")
