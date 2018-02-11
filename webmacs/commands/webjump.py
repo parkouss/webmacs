@@ -104,12 +104,15 @@ class WebJumpPrompt(Prompt):
     def completer_model(self):
         data = []
         for name, w in WEBJUMPS.items():
-            if w.allow_args:
-                name = name
             data.append((name, w.doc))
+
+        for url, name in self.bookmarks:
+            data.append((name, url))
+
         return PromptTableModel(data)
 
     def enable(self, minibuffer):
+        self.bookmarks = app().bookmarks().list()
         Prompt.enable(self, minibuffer)
         self.new_buffer = PromptNewBuffer(self.force_new_buffer)
         self.new_buffer.enable(minibuffer)
@@ -181,12 +184,21 @@ class DefaultSearchPrompt(WebJumpPrompt):
             minibuffer.input().setText(webjump_default.value)
 
 
-def get_url(value):
+def get_url(prompt):
+    value = prompt.value()
+
     args = value.split(" ", 1)
     command = args[0] + " "
     try:
         webjump = WEBJUMPS[command]
     except KeyError:
+        bookmarks = {name: url
+                     for url, name in prompt.bookmarks}
+        try:
+            return bookmarks[value]
+        except KeyError:
+            pass
+
         if "://" not in value:
             url = QUrl.fromUserInput(value)
             if url.isValid():
@@ -208,7 +220,7 @@ def go_to(prompt):
     """
     Prompt to open an url or a webjump.
     """
-    url = get_url(prompt.value())
+    url = get_url(prompt)
     if url:
         prompt.get_buffer().load(url)
 
