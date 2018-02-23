@@ -309,6 +309,39 @@ class WebBuffer(QWebEnginePage):
                 title if title is not None else self.title()
             )
 
+    ZOOM_LEVELS = (
+        0.25, 0.50, 0.75, 1.0,
+        1.25, 1.50, 1.75, 2.0,
+        2.25, 2.50, 2.75, 3.0,
+        3.25, 3.50, 3.75, 4.0,
+        4.25, 4.50, 4.75, 5.0,
+    )
+
+    def _incr_zoom(self, forward):
+        zoom = self.zoomFactor()
+
+        def _next_zoom(cmp, levels):
+            for lvl in levels:
+                if cmp(lvl):
+                    return lvl
+            return None
+
+        if forward:
+            next_zoom = _next_zoom(zoom.__lt__, self.ZOOM_LEVELS)
+        else:
+            next_zoom = _next_zoom(zoom.__gt__, reversed(self.ZOOM_LEVELS))
+
+        if next_zoom is not None:
+            zoom = next_zoom
+            self.setZoomFactor(zoom)
+        minibuffer_show_info("Zoom level: %d%%" % (zoom * 100))
+
+    def zoom_in(self):
+        self._incr_zoom(True)
+
+    def zoom_out(self):
+        self._incr_zoom(False)
+
 
 # alias to create a web buffer
 create_buffer = WebBuffer
@@ -337,6 +370,8 @@ KEYMAP.define_key("C-x h", "select-buffer-content")
 KEYMAP.define_key("C", "caret-browsing-init")
 KEYMAP.define_key("m", "bookmark-open")
 KEYMAP.define_key("M", "bookmark-add")
+KEYMAP.define_key("+", "zoom-in")
+KEYMAP.define_key("-", "zoom-out")
 
 
 @KEYMAP.define_key("C-n")

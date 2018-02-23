@@ -242,7 +242,10 @@ class KeyPress(_KeyPress):
     @classmethod
     def from_str(cls, string):
         ctrl, alt, super = False, False, False
-        parts = string.split("-")
+        if string == "-":
+            parts = ["-"]
+        else:
+            parts = string.split("-", 1)
         for p in parts[:-1]:
             if p == "C":
                 ctrl = True

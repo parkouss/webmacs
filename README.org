@@ -66,7 +66,7 @@ sudo pip3 install .
 - maximize view (shortcut *C-x 1*)
 - history access (shortcut *h*)
 - ad blocking using [[https://easylist.to/][easylist]]. Implemented in C for high
- performances.
+  performances.
 - for go-to and history command, the prefix *C-u* opens the url in a new
   buffer.
 - handle basic authentication
@@ -95,6 +95,7 @@ sudo pip3 install .
   navigate quickly using the incremental search, though this is working well
   with Qt >= 5.10.
 - bookmarks (*M* to add a bookmark, *m* to open the bookmark list)
+- zoom in and out, using *+* and *-*.
 
 
 * Documentation

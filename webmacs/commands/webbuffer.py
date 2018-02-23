@@ -231,3 +231,19 @@ def buffer_select_content():
     Select all content in the buffer.
     """
     current_buffer().triggerAction(WebBuffer.SelectAll)
+
+
+@define_command("zoom-in")
+def zoom_in():
+    """
+    Zoom-in in the buffer.
+    """
+    current_buffer().zoom_in()
+
+
+@define_command("zoom-out")
+def zoom_out():
+    """
+    Zoom-out in the buffer.
+    """
+    current_buffer().zoom_out()
