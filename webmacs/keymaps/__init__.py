@@ -312,7 +312,7 @@ class KeyPress(_KeyPress):
 
 
 KeymapLookupResult = namedtuple("KeymapLookupResult",
-                                ("complete", "command"))
+                                ("complete", "command", "keymap"))
 
 
 class Keymap(object):
@@ -358,6 +358,21 @@ class Keymap(object):
         else:
             self._define_key(key, binding)
 
+    def undefine_key(self, key):
+        """
+        Undefine the binding under a key chord.
+
+        :param key: a string representing the key chord, such as "C-c x".
+        """
+        keys = [KeyPress.from_str(k) for k in key.split()]
+        if not keys:
+            return None
+        res = self.lookup(keys)
+        if res is not None and res.complete:
+            del res.keymap.bindings[keys[-1]]
+            return res.keymap
+        return None
+
     def _look_up(self, keypress):
         keymap = self
         while keymap:
@@ -378,13 +393,13 @@ class Keymap(object):
                         partial_match = True
                         break
                     else:
-                        return KeymapLookupResult(True, entry)
+                        return KeymapLookupResult(True, entry, keymap)
                 keymap = keymap.parent
 
         if keymap is None:
             return None
         elif partial_match:
-            return KeymapLookupResult(False, None)
+            return KeymapLookupResult(False, None, keymap)
         else:
             return None
 

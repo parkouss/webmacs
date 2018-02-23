@@ -1,4 +1,4 @@
-from sphinx.util.compat import Directive
+from docutils.parsers.rst import Directive
 from docutils.statemachine import ViewList
 from docutils import nodes
 

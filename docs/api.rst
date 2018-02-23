@@ -16,7 +16,7 @@ Keymaps
 .. autofunction:: webmacs.keymaps.webbuffer_keymap
 
 .. autoclass:: webmacs.keymaps.Keymap
-   :members: define_key
+   :members: define_key, undefine_key
 
 
 Webjumps
