@@ -34,7 +34,7 @@ def google_complete(text):
         return json.loads(str(conn.read(), "latin1"))[1]
 
 
-define_webjump("google ",
+define_webjump("google",
                "https://www.google.com/search?q=%s&ie=utf-8&oe=utf-8",
                "Google Search",
                complete_fn=google_complete)
@@ -79,9 +79,9 @@ def complete_duckduckgo(text):
         return json.loads(str(conn.read(), "utf-8"))[1]
 
 
-define_webjump("duckduckgo ",
+define_webjump("duckduckgo",
                "https://www.duckduckgo.com/?q=%s",
                "Duckduckgo Search",
                complete_fn=complete_duckduckgo)
 
-webjump_default.set_value("duckduckgo ")
+webjump_default.set_value("duckduckgo")

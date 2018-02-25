@@ -64,7 +64,7 @@ def define_webjump(name, url, doc="", complete_fn=None):
 
     """
     allow_args = "%s" in url
-    WEBJUMPS[name] = WebJump(url, doc, allow_args, complete_fn)
+    WEBJUMPS[name.strip()] = WebJump(url, doc, allow_args, complete_fn)
 
 
 def set_default(name):
@@ -188,7 +188,7 @@ def get_url(prompt):
     value = prompt.value()
 
     args = value.split(" ", 1)
-    command = args[0] + " "
+    command = args[0]
     try:
         webjump = WEBJUMPS[command]
     except KeyError:
