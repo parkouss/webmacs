@@ -84,7 +84,7 @@ class CompletionReceiver(QObject):
     @Slot(object, str, str)
     def get_completions(self, w, name, text):
         try:
-            completions = [name + d for d in w.complete_fn(text)]
+            completions = w.complete_fn(text)
         except Exception:
             logging.exception("Can not autocomplete for the webjump.")
         else:
@@ -95,6 +95,7 @@ class WebJumpPrompt(Prompt):
     label = "url/webjump:"
     complete_options = {
         "autocomplete": True,
+        "match": None
     }
     history = PromptHistory()
 
@@ -167,7 +168,10 @@ class WebJumpPrompt(Prompt):
     def get_buffer(self):
         return self.new_buffer.get_buffer()
 
-
+    def _on_completion_activated(self, index):
+        self.__index = index
+        self.minibuffer.input().setText(self._active_webjump[1] + " " + self.minibuffer.input().text())
+        
 class WebJumpPromptCurrentUrl(WebJumpPrompt):
     def enable(self, minibuffer):
         WebJumpPrompt.enable(self, minibuffer)

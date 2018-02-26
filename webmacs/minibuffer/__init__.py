@@ -161,12 +161,14 @@ class MinibufferInput(QLineEdit):
 
     def _show_completions(self, txt, force=False):
         force = force or self._complete_empty
-        if self._match == self.SimpleMatch:
-            pattern = "^" + QRegExp.escape(txt)
-        else:
-            pattern = ".*".join(QRegExp.escape(t) for t in txt.split())
 
-        self._proxy_model.setFilterRegExp(QRegExp(pattern, Qt.CaseInsensitive))
+        if self._match is not None:
+            if self._match == self.SimpleMatch:
+                pattern = "^" + QRegExp.escape(txt)
+            elif self._match == self.FuzzyMatch:
+                pattern = ".*".join(QRegExp.escape(t) for t in txt.split())
+            self._proxy_model.setFilterRegExp(QRegExp(pattern, Qt.CaseInsensitive))
+
         if self._proxy_model.rowCount() == 0:
             self._popup.hide()
         elif not txt and not force:
