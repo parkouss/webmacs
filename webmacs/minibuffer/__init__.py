@@ -153,7 +153,7 @@ class MinibufferInput(QLineEdit):
     def set_match(self, type):
         self._match = type
         if self._popup.isVisible():
-            self._show_completions(self.text)
+            self._show_completions(self.text())
 
     def _on_row_changed(self, current, old):
         if self._autocomplete:
@@ -161,13 +161,14 @@ class MinibufferInput(QLineEdit):
 
     def _show_completions(self, txt, force=False):
         force = force or self._complete_empty
-
         if self._match is not None:
             if self._match == self.SimpleMatch:
                 pattern = "^" + QRegExp.escape(txt)
             elif self._match == self.FuzzyMatch:
                 pattern = ".*".join(QRegExp.escape(t) for t in txt.split())
             self._proxy_model.setFilterRegExp(QRegExp(pattern, Qt.CaseInsensitive))
+        else:
+            self._proxy_model.setFilterRegExp(None)
 
         if self._proxy_model.rowCount() == 0:
             self._popup.hide()

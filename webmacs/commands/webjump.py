@@ -95,7 +95,7 @@ class WebJumpPrompt(Prompt):
     label = "url/webjump:"
     complete_options = {
         "autocomplete": True,
-        "match": None
+        "match": Prompt.SimpleMatch
     }
     history = PromptHistory()
 
@@ -131,13 +131,17 @@ class WebJumpPrompt(Prompt):
         self._cthread.start()
 
     def _text_edited(self, text):
+        if text=="" : return
+        
+        self.minibuffer.input().set_match(Prompt.SimpleMatch)
         model = self._wb_model
         for name, w in WEBJUMPS.items():
             if w.allow_args and w.complete_fn:
                 name = name
-                if text.startswith(name):
+                if text.startswith(name+" "):
                     model = self._wc_model
                     self._active_webjump = (w, name)
+                    self.minibuffer.input().set_match(None)
                     if self._completion_timer != 0:
                         self.killTimer(self._completion_timer)
                     self._completion_timer = self.startTimer(10)
@@ -145,7 +149,7 @@ class WebJumpPrompt(Prompt):
         if self.minibuffer.input().completer_model() != model:
             self.minibuffer.input().popup().hide()
             self.minibuffer.input().set_completer_model(model)
-
+            
     def timerEvent(self, _):
         text = self.minibuffer.input().text()
         w, name = self._active_webjump
@@ -170,7 +174,8 @@ class WebJumpPrompt(Prompt):
 
     def _on_completion_activated(self, index):
         self.__index = index
-        self.minibuffer.input().setText(self._active_webjump[1] + " " + self.minibuffer.input().text())
+        if self._active_webjump :
+            self.minibuffer.input().setText(self._active_webjump[1] + " " + self.minibuffer.input().text())
         
 class WebJumpPromptCurrentUrl(WebJumpPrompt):
     def enable(self, minibuffer):
