@@ -25,7 +25,7 @@ from .scheme_handlers.webmacs import PAGES as webmacs_pages
 
 # ----------- doc example
 
-def google_complete(text):
+def complete_google(text):
     if not text:
         return []
     url = ("https://www.google.com/complete/search?client=firefox&q="
@@ -37,7 +37,7 @@ def google_complete(text):
 define_webjump("google",
                "https://www.google.com/search?q=%s&ie=utf-8&oe=utf-8",
                "Google Search",
-               complete_fn=google_complete)
+               complete_fn=complete_google)
 
 # ----------- end of doc example
 
