@@ -131,31 +131,34 @@ class WebJumpPrompt(Prompt):
         self._cthread.start()
 
     def _text_edited(self, text):
-        #the text was deleted, nothing to do
-        if text=="" : return
+        # the text was deleted, nothing to do
+        if text == "":
+            return
 
-        #search for a matching webjump
+        # search for a matching webjump
         for name, w in WEBJUMPS.items():
             if w.allow_args and w.complete_fn:
                 name = name
                 if text.startswith(name+" "):
                     model = self._wc_model
                     self._active_webjump = (w, name)
-                    #disable matching, we want all completions from complete_fn
+                    # disable matching, we want all completions from
+                    # complete_fn
                     self.minibuffer.input().set_match(None)
                     if self._completion_timer != 0:
                         self.killTimer(self._completion_timer)
                     self._completion_timer = self.startTimer(10)
                     break
-        else :
-            #didn't find a webjump, go back to matching webjump/bookmark/history
+        else:
+            # didn't find a webjump, go back to matching
+            # webjump/bookmark/history
             self.minibuffer.input().set_match(Prompt.SimpleMatch)
             model = self._wb_model
-            
+
         if self.minibuffer.input().completer_model() != model:
             self.minibuffer.input().popup().hide()
             self.minibuffer.input().set_completer_model(model)
-            
+
     def timerEvent(self, _):
         text = self.minibuffer.input().text()
         w, name = self._active_webjump
@@ -181,10 +184,12 @@ class WebJumpPrompt(Prompt):
     def _on_completion_activated(self, index):
         super()._on_completion_activated(index)
 
-        #if there is an active webjump, we add the selected completion after it
-        if self._active_webjump :
-            self.minibuffer.input().setText(self._active_webjump[1] + " " + self.minibuffer.input().text())
-        
+        # if there is an active webjump, add the selected completion after it
+        if self._active_webjump:
+            self.minibuffer.input().setText(self._active_webjump[1] + " " +
+                                            self.minibuffer.input().text())
+
+
 class WebJumpPromptCurrentUrl(WebJumpPrompt):
     def enable(self, minibuffer):
         WebJumpPrompt.enable(self, minibuffer)
@@ -207,36 +212,38 @@ def get_url(prompt):
     args = value.split(" ", 1)
     command = args[0]
 
-    #Look for webjumps
-    webjump=None
-    if command in WEBJUMPS :
+    # Look for webjumps
+    webjump = None
+    if command in WEBJUMPS:
         webjump = WEBJUMPS[command]
     else:
-        #Look for a incomplete webjump, accepting a candidate if there is a single option
-        candidates = [ wj for wj in WEBJUMPS if wj.startswith(command) ]
-        if len(candidates)==1 :
+        # Look for a incomplete webjump, accepting a candidate
+        # if there is a single option
+        candidates = [wj for wj in WEBJUMPS if wj.startswith(command)]
+        if len(candidates) == 1:
             webjump = WEBJUMPS[candidates[0]]
 
-    if webjump :
-        #found
+    if webjump:
+        # found
         if webjump.allow_args:
             args = args[1] if len(args) > 1 else ""
             return webjump.url % str(QUrl.toPercentEncoding(args), "utf-8")
         else:
             return webjump.url
-            
-    #Look for a bookmark
+
+    # Look for a bookmark
     bookmarks = {name: url
                  for url, name in prompt.bookmarks}
-    if value in bookmarks :
+    if value in bookmarks:
         return bookmarks[value]
 
-    #Look for a incomplete bookmarks, accepting a candidate if there is a single option
-    candidates = [ bm for bm in bookmarks if bm.startswith(command) ]
-    if len(candidates)==1 :
+    # Look for a incomplete bookmarks, accepting a candidate
+    # if there is a single option
+    candidates = [bm for bm in bookmarks if bm.startswith(command)]
+    if len(candidates) == 1:
         return bookmarks[candidates[0]]
-    
-    #No webjump, no bookmark, look for a url
+
+    # No webjump, no bookmark, look for a url
     if "://" not in value:
         url = QUrl.fromUserInput(value)
         if url.isValid():
@@ -245,7 +252,6 @@ def get_url(prompt):
                 url.setScheme("https")
             return url
     return value
-    
 
 
 @define_command("go-to", prompt=WebJumpPrompt)

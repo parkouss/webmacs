@@ -166,7 +166,8 @@ class MinibufferInput(QLineEdit):
                 pattern = "^" + QRegExp.escape(txt)
             elif self._match == self.FuzzyMatch:
                 pattern = ".*".join(QRegExp.escape(t) for t in txt.split())
-            self._proxy_model.setFilterRegExp(QRegExp(pattern, Qt.CaseInsensitive))
+            self._proxy_model.setFilterRegExp(QRegExp(pattern,
+                                                      Qt.CaseInsensitive))
         else:
             self._proxy_model.setFilterRegExp(None)
 
