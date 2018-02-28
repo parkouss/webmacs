@@ -136,15 +136,18 @@ class WebJumpPrompt(Prompt):
             return
 
         # search for a matching webjump
+        self._active_webjump = None
         for name, w in WEBJUMPS.items():
             if w.allow_args and w.complete_fn:
-                name = name
-                if text.startswith(name+" "):
+                # get the first word entered, up and including a space or ://
+                first_word = "".join(text.split(" ")[0].partition("://")[:2])
+                if first_word == name:
                     model = self._wc_model
                     self._active_webjump = (w, name)
                     # disable matching, we want all completions from
                     # complete_fn
-                    self.minibuffer.input().set_match(None)
+                    self.minibuffer.input().set_match(
+                        Prompt.SimpleMatch if "://" in text else None)
                     if self._completion_timer != 0:
                         self.killTimer(self._completion_timer)
                     self._completion_timer = self.startTimer(10)
@@ -169,7 +172,9 @@ class WebJumpPrompt(Prompt):
     @Slot(list)
     def _got_completions(self, data):
         self._wc_model.setStringList(data)
-        self.minibuffer.input().show_completions()
+        text = self.minibuffer.input().text()
+        w, name = self._active_webjump
+        self.minibuffer.input().show_completions(text[len(name):])
 
     def close(self):
         Prompt.close(self)
@@ -184,10 +189,19 @@ class WebJumpPrompt(Prompt):
     def _on_completion_activated(self, index):
         super()._on_completion_activated(index)
 
-        # if there is an active webjump, add the selected completion after it
+        chosen_text = self.minibuffer.input().text()
+        # if there is already an active webjump,
         if self._active_webjump:
-            self.minibuffer.input().setText(self._active_webjump[1] + " " +
-                                            self.minibuffer.input().text())
+            # add the selected completion after it
+            self.minibuffer.input().setText(
+                self._active_webjump[1] +
+                ("" if "://" in self._active_webjump[1] else " ") +
+                chosen_text)
+
+        # if we just chose a webjump not ending in ://
+        elif chosen_text in WEBJUMPS and chosen_text[-3:] != '://':
+            # add a space after the selection
+            self.minibuffer.input().setText(chosen_text + " ")
 
 
 class WebJumpPromptCurrentUrl(WebJumpPrompt):
