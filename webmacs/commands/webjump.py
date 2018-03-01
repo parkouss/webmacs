@@ -235,7 +235,11 @@ class DefaultSearchPrompt(WebJumpPrompt):
 def get_url(prompt):
     value = prompt.value()
 
-    args = value.split(" ", 1)
+    # split webjumps and protocols between command and argument
+    if "://" in value:
+        args = value.split("://", 1)
+    else:
+        args = value.split(" ", 1)
     command = args[0]
 
     # Look for webjumps
@@ -250,11 +254,16 @@ def get_url(prompt):
             webjump = WEBJUMPS[candidates[0]]
 
     if webjump:
-        # found
-        if webjump.allow_args:
-            args = args[1] if len(args) > 1 else ""
-            return webjump.url % str(QUrl.toPercentEncoding(args), "utf-8")
+        if len(args) > 1:
+            # we found a webjump, now look for a single completion
+            completions = [c for c in webjump.complete_fn(args[1])
+                           if c.startswith(args[1])]
+            if webjump.protocol and len(completions) == 1:
+                return webjump.url % completions[0]
+            else:
+                return webjump.url % str(QUrl.toPercentEncoding(args[1]), "utf-8")
         else:
+            # complete with the text as is
             return webjump.url
 
     # Look for a bookmark
