@@ -17,7 +17,7 @@ import logging
 from collections import namedtuple
 
 from PyQt5.QtCore import QUrl, QThread, pyqtSlot as Slot, \
-    pyqtSignal as Signal, QStringListModel, QObject
+    pyqtSignal as Signal, QStringListModel, QObject, QEvent, Qt
 
 
 from ..minibuffer.prompt import Prompt, PromptTableModel, PromptHistory
@@ -126,6 +126,7 @@ class WebJumpPrompt(Prompt):
         self.new_buffer = PromptNewBuffer(self.force_new_buffer)
         self.new_buffer.enable(minibuffer)
         minibuffer.input().textEdited.connect(self._text_edited)
+        minibuffer.input().installEventFilter(self)
         self._wc_model = QStringListModel()
         self._wb_model = minibuffer.input().completer_model()
         self._cthread = QThread(app())
@@ -137,6 +138,14 @@ class WebJumpPrompt(Prompt):
         self.ask_completions.connect(self._creceiver.get_completions)
         self._creceiver.got_completions.connect(self._got_completions)
         self._cthread.start()
+
+    def eventFilter(self, obj, event):
+        # call _text_edited on backspace release, as this is not reported by
+        # the textEdited slot.
+        if event.type() == QEvent.KeyRelease:
+            if event.key() == Qt.Key_Backspace:
+                self._text_edited(self.minibuffer.input().text())
+        return Prompt.eventFilter(self, obj, event)
 
     def _text_edited(self, text):
         # reset the active webjump
@@ -188,6 +197,7 @@ class WebJumpPrompt(Prompt):
 
     def close(self):
         Prompt.close(self)
+        self.minibuffer.input().removeEventFilter(self)
         self._cthread.quit()
         # not sure if those are required;
         self._wb_model.deleteLater()
