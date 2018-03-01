@@ -151,10 +151,6 @@ class WebJumpPrompt(Prompt):
         # reset the active webjump
         self._active_webjump = None
 
-        # the text was deleted, nothing to do
-        if text == "":
-            return
-
         # search for a matching webjump
         first_word = text.split(" ")[0].split("://")[0]
         if first_word in [w for w in WEBJUMPS if len(w) < len(text)]:
