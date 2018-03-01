@@ -28,7 +28,8 @@ from .prompt_helper import PromptNewBuffer
 from .. import variables
 
 
-WebJump = namedtuple("WebJump", ("url", "doc", "allow_args", "complete_fn"))
+WebJump = namedtuple(
+    "WebJump", ("name", "url", "doc", "allow_args", "complete_fn", "protocol"))
 WEBJUMPS = {}
 
 
@@ -45,7 +46,7 @@ webjump_default = variables.define_variable(
 )
 
 
-def define_webjump(name, url, doc="", complete_fn=None):
+def define_webjump(name, url, doc="", complete_fn=None, protocol=False):
     """
     Define a webjump.
 
@@ -61,10 +62,17 @@ def define_webjump(name, url, doc="", complete_fn=None):
                         function takes one parameter, the current
                         text, and must returns a list of strings (the
                         possible completions)
+    :param protocol: True if the webjump should be treated as the protocol
+                     part of a URI (eg: file://)
 
     """
     allow_args = "%s" in url
-    WEBJUMPS[name.strip()] = WebJump(url, doc, allow_args, complete_fn)
+    WEBJUMPS[name.strip()] = WebJump(name.strip(), url,
+                                     doc, allow_args, complete_fn, protocol)
+
+
+def define_protocol(name, doc="", complete_fn=None):
+    define_webjump(name, name+"://%s", doc, complete_fn, True)
 
 
 def set_default(name):
@@ -131,27 +139,25 @@ class WebJumpPrompt(Prompt):
         self._cthread.start()
 
     def _text_edited(self, text):
+        # reset the active webjump
+        self._active_webjump = None
+
         # the text was deleted, nothing to do
         if text == "":
             return
 
         # search for a matching webjump
-        self._active_webjump = None
-        for name, w in WEBJUMPS.items():
-            if w.allow_args and w.complete_fn:
-                # get the first word entered, up and including a space or ://
-                first_word = "".join(text.split(" ")[0].partition("://")[:2])
-                if first_word == name:
-                    model = self._wc_model
-                    self._active_webjump = (w, name)
-                    # disable matching, we want all completions from
-                    # complete_fn
-                    self.minibuffer.input().set_match(
-                        Prompt.SimpleMatch if "://" in text else None)
-                    if self._completion_timer != 0:
-                        self.killTimer(self._completion_timer)
-                    self._completion_timer = self.startTimer(10)
-                    break
+        first_word = text.split(" ")[0].split("://")[0]
+        if first_word in [w for w in WEBJUMPS if len(w) < len(text)]:
+            model = self._wc_model
+            self._active_webjump = WEBJUMPS[first_word]
+            # disable matching, we want all completions from
+            # complete_fn
+            self.minibuffer.input().set_match(
+                Prompt.SimpleMatch if self._active_webjump.protocol else None)
+            if self._completion_timer != 0:
+                self.killTimer(self._completion_timer)
+            self._completion_timer = self.startTimer(10)
         else:
             # didn't find a webjump, go back to matching
             # webjump/bookmark/history
@@ -164,8 +170,10 @@ class WebJumpPrompt(Prompt):
 
     def timerEvent(self, _):
         text = self.minibuffer.input().text()
-        w, name = self._active_webjump
-        self.ask_completions.emit(w, name, text[len(name):])
+        prefix = self._active_webjump.name + \
+            ("://" if self._active_webjump.protocol else " ")
+        self.ask_completions.emit(
+            self._active_webjump, prefix, text[len(prefix):])
         self.killTimer(self._completion_timer)
         self._completion_timer = 0
 
@@ -173,8 +181,9 @@ class WebJumpPrompt(Prompt):
     def _got_completions(self, data):
         self._wc_model.setStringList(data)
         text = self.minibuffer.input().text()
-        w, name = self._active_webjump
-        self.minibuffer.input().show_completions(text[len(name):])
+        prefix = self._active_webjump.name + \
+            ("://" if self._active_webjump.protocol else " ")
+        self.minibuffer.input().show_completions(text[len(prefix):])
 
     def close(self):
         Prompt.close(self)
@@ -193,15 +202,17 @@ class WebJumpPrompt(Prompt):
         # if there is already an active webjump,
         if self._active_webjump:
             # add the selected completion after it
-            self.minibuffer.input().setText(
-                self._active_webjump[1] +
-                ("" if "://" in self._active_webjump[1] else " ") +
-                chosen_text)
+            if self._active_webjump.protocol:
+                self.minibuffer.input().setText(self._active_webjump.name + "://" + chosen_text)
+            else:
+                self.minibuffer.input().setText(self._active_webjump.name + " " + chosen_text)
 
-        # if we just chose a webjump not ending in ://
-        elif chosen_text in WEBJUMPS and chosen_text[-3:] != '://':
+        # if we just chose a webjump
+        # and not WEBJUMPS[chosen_text].protocol:
+        elif chosen_text in WEBJUMPS:
             # add a space after the selection
-            self.minibuffer.input().setText(chosen_text + " ")
+            self.minibuffer.input().setText(
+                chosen_text + (" " if not WEBJUMPS[chosen_text].protocol else "://"))
 
 
 class WebJumpPromptCurrentUrl(WebJumpPrompt):
