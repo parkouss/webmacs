@@ -67,6 +67,27 @@ define_protocol("webmacs",
                 complete_fn=complete_pages)
 
 
+def complete_http(text):
+    s = [r[7:] for r in complete_google(
+        "http://"+text) if r.startswith("http://"+text)]
+    return s
+
+
+def complete_https(text):
+    s = [r[8:] for r in complete_google(
+        "https://"+text) if r.startswith("https://"+text)]
+    return s
+
+
+define_protocol("http",
+                "web sites",
+                complete_fn=complete_http)
+
+define_protocol("https",
+                "secure web sites",
+                complete_fn=complete_https)
+
+
 def complete_duckduckgo(text):
     if not text:
         return []

@@ -151,8 +151,7 @@ class WebJumpPrompt(Prompt):
         if first_word in [w for w in WEBJUMPS if len(w) < len(text)]:
             model = self._wc_model
             self._active_webjump = WEBJUMPS[first_word]
-            # disable matching, we want all completions from
-            # complete_fn
+            # set matching strategy
             self.minibuffer.input().set_match(
                 Prompt.SimpleMatch if self._active_webjump.protocol else None)
             if self._completion_timer != 0:
@@ -169,21 +168,23 @@ class WebJumpPrompt(Prompt):
             self.minibuffer.input().set_completer_model(model)
 
     def timerEvent(self, _):
-        text = self.minibuffer.input().text()
-        prefix = self._active_webjump.name + \
-            ("://" if self._active_webjump.protocol else " ")
-        self.ask_completions.emit(
-            self._active_webjump, prefix, text[len(prefix):])
-        self.killTimer(self._completion_timer)
-        self._completion_timer = 0
+        if self._active_webjump:
+            text = self.minibuffer.input().text()
+            prefix = self._active_webjump.name + \
+                ("://" if self._active_webjump.protocol else " ")
+            self.ask_completions.emit(
+                self._active_webjump, prefix, text[len(prefix):])
+            self.killTimer(self._completion_timer)
+            self._completion_timer = 0
 
     @Slot(list)
     def _got_completions(self, data):
-        self._wc_model.setStringList(data)
-        text = self.minibuffer.input().text()
-        prefix = self._active_webjump.name + \
-            ("://" if self._active_webjump.protocol else " ")
-        self.minibuffer.input().show_completions(text[len(prefix):])
+        if self._active_webjump:
+            self._wc_model.setStringList(data)
+            text = self.minibuffer.input().text()
+            prefix = self._active_webjump.name + \
+                ("://" if self._active_webjump.protocol else " ")
+            self.minibuffer.input().show_completions(text[len(prefix):])
 
     def close(self):
         Prompt.close(self)
