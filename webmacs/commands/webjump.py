@@ -70,7 +70,8 @@ def define_webjump(name, url, doc="", complete_fn=None, protocol=False):
     WEBJUMPS[name.strip()] = WebJump(name.strip(), url,
                                      doc,
                                      allow_args,
-                                     complete_fn if complete_fn else lambda x: [],
+                                     complete_fn if complete_fn else
+                                     lambda x: [],
                                      protocol)
 
 
@@ -213,16 +214,19 @@ class WebJumpPrompt(Prompt):
         if self._active_webjump:
             # add the selected completion after it
             if self._active_webjump.protocol:
-                self.minibuffer.input().setText(self._active_webjump.name + "://" + chosen_text)
+                self.minibuffer.input().setText(
+                    self._active_webjump.name + "://" + chosen_text)
             else:
-                self.minibuffer.input().setText(self._active_webjump.name + " " + chosen_text)
+                self.minibuffer.input().setText(
+                    self._active_webjump.name + " " + chosen_text)
 
         # if we just chose a webjump
         # and not WEBJUMPS[chosen_text].protocol:
         elif chosen_text in WEBJUMPS:
             # add a space after the selection
             self.minibuffer.input().setText(
-                chosen_text + (" " if not WEBJUMPS[chosen_text].protocol else "://"))
+                chosen_text + (" " if not WEBJUMPS[chosen_text].protocol
+                               else "://"))
 
 
 class WebJumpPromptCurrentUrl(WebJumpPrompt):
@@ -268,12 +272,13 @@ def get_url(prompt):
             try:
                 completions = [c for c in webjump.complete_fn(
                     args[1]) if c.startswith(args[1])]
-            except:
+            except Exception:
                 completions = []
             if webjump.protocol and len(completions) == 1:
                 return webjump.url % completions[0]
             else:
-                return webjump.url % str(QUrl.toPercentEncoding(args[1]), "utf-8")
+                return webjump.url % str(QUrl.toPercentEncoding(args[1]),
+                                         "utf-8")
         else:
             # complete with the text as is
             return webjump.url
