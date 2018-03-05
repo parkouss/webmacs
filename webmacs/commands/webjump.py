@@ -68,7 +68,10 @@ def define_webjump(name, url, doc="", complete_fn=None, protocol=False):
     """
     allow_args = "%s" in url
     WEBJUMPS[name.strip()] = WebJump(name.strip(), url,
-                                     doc, allow_args, complete_fn, protocol)
+                                     doc,
+                                     allow_args,
+                                     complete_fn if complete_fn else lambda x: [],
+                                     protocol)
 
 
 def define_protocol(name, doc="", complete_fn=None):
@@ -262,8 +265,11 @@ def get_url(prompt):
     if webjump and not webjump.protocol:
         if len(args) > 1:
             # we found a webjump, now look for a single completion
-            completions = [c for c in webjump.complete_fn(args[1])
-                           if c.startswith(args[1])]
+            try:
+                completions = [c for c in webjump.complete_fn(
+                    args[1]) if c.startswith(args[1])]
+            except:
+                completions = []
             if webjump.protocol and len(completions) == 1:
                 return webjump.url % completions[0]
             else:
