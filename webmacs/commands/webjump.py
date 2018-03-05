@@ -262,7 +262,7 @@ def get_url(prompt):
         if len(candidates) == 1:
             webjump = WEBJUMPS[candidates[0]]
 
-    if webjump and not webjump.protocol:
+    if webjump:
         if len(args) > 1:
             # we found a webjump, now look for a single completion
             try:
