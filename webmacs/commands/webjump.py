@@ -99,6 +99,7 @@ class CompletionReceiver(QObject):
             completions = w.complete_fn(text)
         except Exception:
             logging.exception("Can not autocomplete for the webjump.")
+            completions = []
         else:
             self.got_completions.emit(completions)
 
@@ -273,14 +274,21 @@ def get_url(prompt):
                 completions = [c for c in webjump.complete_fn(
                     args[1]) if c.startswith(args[1])]
             except Exception:
+                logging.exception("Can not autocomplete for the webjump.")
                 completions = []
-            if webjump.protocol and len(completions) == 1:
+
+            # found a single completion
+            if len(completions) == 1:
                 return webjump.url % completions[0]
             else:
-                return webjump.url % str(QUrl.toPercentEncoding(args[1]),
-                                         "utf-8")
+                # not using the completions, format the url as entered
+                if webjump.protocol:
+                    return value
+                else:
+                    return webjump.url % str(QUrl.toPercentEncoding(args[1]),
+                                             "utf-8")
         else:
-            # complete with the text as is
+            # send the url as is
             return webjump.url
 
     # Look for a bookmark
