@@ -247,3 +247,11 @@ def zoom_out():
     Zoom-out in the buffer.
     """
     current_buffer().zoom_out()
+
+
+@define_command("zoom-normal")
+def zoom_normal():
+    """
+    Zoom-normal in the buffer.
+    """
+    current_buffer().zoom_normal()
