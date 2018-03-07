@@ -249,9 +249,9 @@ def zoom_out():
     current_buffer().zoom_out()
 
 
-@define_command("zoom-normal")
-def zoom_normal():
+@define_command("zoom-reset")
+def zoom_reset():
     """
-    Zoom-normal in the buffer.
+    Reset the buffer zoom factor to 100%.
     """
-    current_buffer().zoom_normal()
+    current_buffer().zoom_reset()
