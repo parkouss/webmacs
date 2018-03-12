@@ -332,7 +332,7 @@ class WebBuffer(QWebEnginePage):
     def zoom_out(self):
         self._incr_zoom(False)
 
-    def zoom_normal(self):
+    def zoom_reset(self):
         self.set_zoom(100)
 
 
@@ -365,7 +365,7 @@ KEYMAP.define_key("m", "bookmark-open")
 KEYMAP.define_key("M", "bookmark-add")
 KEYMAP.define_key("+", "zoom-in")
 KEYMAP.define_key("-", "zoom-out")
-KEYMAP.define_key("0", "zoom-normal")
+KEYMAP.define_key("=", "zoom-reset")
 
 
 @KEYMAP.define_key("C-n")
