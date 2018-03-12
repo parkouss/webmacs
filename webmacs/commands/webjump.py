@@ -68,7 +68,11 @@ def define_webjump(name, url, doc="", complete_fn=None, protocol=False):
     """
     allow_args = "%s" in url
     WEBJUMPS[name.strip()] = WebJump(name.strip(), url,
-                                     doc, allow_args, complete_fn, protocol)
+                                     doc,
+                                     allow_args,
+                                     complete_fn if complete_fn else
+                                     lambda x: [],
+                                     protocol)
 
 
 def define_protocol(name, doc="", complete_fn=None):
@@ -95,6 +99,7 @@ class CompletionReceiver(QObject):
             completions = w.complete_fn(text)
         except Exception:
             logging.exception("Can not autocomplete for the webjump.")
+            completions = []
         else:
             self.got_completions.emit(completions)
 
@@ -210,16 +215,19 @@ class WebJumpPrompt(Prompt):
         if self._active_webjump:
             # add the selected completion after it
             if self._active_webjump.protocol:
-                self.minibuffer.input().setText(self._active_webjump.name + "://" + chosen_text)
+                self.minibuffer.input().setText(
+                    self._active_webjump.name + "://" + chosen_text)
             else:
-                self.minibuffer.input().setText(self._active_webjump.name + " " + chosen_text)
+                self.minibuffer.input().setText(
+                    self._active_webjump.name + " " + chosen_text)
 
         # if we just chose a webjump
         # and not WEBJUMPS[chosen_text].protocol:
         elif chosen_text in WEBJUMPS:
             # add a space after the selection
             self.minibuffer.input().setText(
-                chosen_text + (" " if not WEBJUMPS[chosen_text].protocol else "://"))
+                chosen_text + (" " if not WEBJUMPS[chosen_text].protocol
+                               else "://"))
 
 
 class WebJumpPromptCurrentUrl(WebJumpPrompt):
@@ -239,7 +247,7 @@ class DefaultSearchPrompt(WebJumpPrompt):
 
 
 def get_url(prompt):
-    value = prompt.value()
+    value = prompt.value().strip()
 
     # split webjumps and protocols between command and argument
     if "://" in value:
@@ -259,18 +267,33 @@ def get_url(prompt):
         if len(candidates) == 1:
             webjump = WEBJUMPS[candidates[0]]
 
-    if webjump and not webjump.protocol:
-        if len(args) > 1:
+    if webjump:
+        if '%s' not in webjump.url:
+            # send the url as is
+            return webjump.url
+        elif len(args) < 2:
+                # send the url without a search string
+            return webjump.url % ''
+
+        else:
             # we found a webjump, now look for a single completion
-            completions = [c for c in webjump.complete_fn(args[1])
-                           if c.startswith(args[1])]
-            if webjump.protocol and len(completions) == 1:
+            try:
+                completions = [c for c in webjump.complete_fn(
+                    args[1]) if c.startswith(args[1])]
+            except Exception:
+                logging.exception("Can not autocomplete for the webjump.")
+                completions = []
+
+            # found a single completion
+            if len(completions) == 1:
                 return webjump.url % completions[0]
             else:
-                return webjump.url % str(QUrl.toPercentEncoding(args[1]), "utf-8")
-        else:
-            # complete with the text as is
-            return webjump.url
+                # not using the completions, format the url as entered
+                if webjump.protocol:
+                    return value
+                else:
+                    return webjump.url % str(QUrl.toPercentEncoding(args[1]),
+                                             "utf-8")
 
     # Look for a bookmark
     bookmarks = {name: url

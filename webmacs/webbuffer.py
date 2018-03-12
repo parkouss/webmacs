@@ -309,38 +309,31 @@ class WebBuffer(QWebEnginePage):
                 title if title is not None else self.title()
             )
 
-    ZOOM_LEVELS = (
-        0.25, 0.50, 0.75, 1.0,
-        1.25, 1.50, 1.75, 2.0,
-        2.25, 2.50, 2.75, 3.0,
-        3.25, 3.50, 3.75, 4.0,
-        4.25, 4.50, 4.75, 5.0,
-    )
-
     def _incr_zoom(self, forward):
-        zoom = self.zoomFactor()
+        # Zooming constants
+        ZOOM_MIN = 25
+        ZOOM_MAX = 500
+        ZOOM_INC = 25
 
-        def _next_zoom(cmp, levels):
-            for lvl in levels:
-                if cmp(lvl):
-                    return lvl
-            return None
+        zoom = self.zoomFactor()*100
+        # We need to round up because the zoom factor is stored as a float
+        self.set_zoom(round(min(ZOOM_MAX, max(ZOOM_MIN, zoom +
+                                              (ZOOM_INC if forward else -ZOOM_INC)))))
 
-        if forward:
-            next_zoom = _next_zoom(zoom.__lt__, self.ZOOM_LEVELS)
-        else:
-            next_zoom = _next_zoom(zoom.__gt__, reversed(self.ZOOM_LEVELS))
+    def set_zoom(self, zoom_factor):
 
-        if next_zoom is not None:
-            zoom = next_zoom
-            self.setZoomFactor(zoom)
-        minibuffer_show_info("Zoom level: %d%%" % (zoom * 100))
+        if zoom_factor is not None:
+            self.setZoomFactor(zoom_factor/100)
+            minibuffer_show_info("Zoom level: %d%%" % (zoom_factor))
 
     def zoom_in(self):
         self._incr_zoom(True)
 
     def zoom_out(self):
         self._incr_zoom(False)
+
+    def zoom_normal(self):
+        self.set_zoom(100)
 
 
 # alias to create a web buffer
@@ -372,6 +365,7 @@ KEYMAP.define_key("m", "bookmark-open")
 KEYMAP.define_key("M", "bookmark-add")
 KEYMAP.define_key("+", "zoom-in")
 KEYMAP.define_key("-", "zoom-out")
+KEYMAP.define_key("0", "zoom-normal")
 
 
 @KEYMAP.define_key("C-n")
