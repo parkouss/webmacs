@@ -261,6 +261,19 @@ def close_other_buffers(ctx):
             close_buffer(wb, False)
 
 
+@define_command("close-other-buffers", prompt=BufferKillListPrompt)
+def close_other_buffers(prompt):
+    """
+    Close all but one buffer.
+    """
+    # Select a buffer
+    selected = prompt.index()
+    if selected.row() >= 0:
+        # Get all other buffers and kill them
+        for wb in [b for b in BUFFERS if b != selected.internalPointer()]:
+            close_buffer(wb, False)
+
+
 @define_command("select-buffer-content")
 def buffer_select_content(ctx):
     """
