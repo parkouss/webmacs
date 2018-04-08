@@ -82,7 +82,7 @@ def close_buffer_in_prompt_selection():
 
 
 class BufferListPrompt(Prompt):
-    label = "switch buffer:"
+    label = "select buffer:"
     complete_options = {
         "match": Prompt.FuzzyMatch,
         "complete-empty": True,
@@ -101,7 +101,20 @@ class BufferListPrompt(Prompt):
                 break
 
 
-@define_command("switch-buffer", prompt=BufferListPrompt)
+class BufferSwitchListPrompt(BufferListPrompt):
+    label = "switch to buffer:"
+
+
+class BufferKillListPrompt(BufferListPrompt):
+    label = "kill all buffers except:"
+
+    def enable(self, minibuffer):
+        Prompt.enable(self, minibuffer)
+        # auto-select the currently visible buffer
+        minibuffer.input().popup().selectRow(0)
+
+
+@define_command("switch-buffer", prompt=BufferSwitchListPrompt)
 def switch_buffer(prompt):
     """
     Prompt to select a buffer to display in the current view.
@@ -223,6 +236,19 @@ def buffer_close():
     """
     current = current_buffer()
     close_buffer(current)
+
+
+@define_command("close-other-buffers", prompt=BufferKillListPrompt)
+def close_other_buffers(prompt):
+    """
+    Close all but one buffer.
+    """
+    # Select a buffer
+    selected = prompt.index()
+    if selected.row() >= 0:
+        # Get all other buffers and kill them
+        for wb in [b for b in BUFFERS if b != selected.internalPointer()]:
+            close_buffer(wb, False)
 
 
 @define_command("select-buffer-content")
