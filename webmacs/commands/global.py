@@ -273,13 +273,13 @@ def open_bookmark(prompt):
 
 class BookmarkAddPrompt(Prompt):
     label = "Create a bookmark for: "
+
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
         url = current_buffer().url().toString()
         input = minibuffer.input()
         input.setText(url)
         input.setSelection(0, len(url))
-
 
 
 @define_command("bookmark-add", prompt=BookmarkAddPrompt)

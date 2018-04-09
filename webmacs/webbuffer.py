@@ -22,8 +22,7 @@ from collections import namedtuple
 
 from .keymaps import KeyPress, BUFFER_KEYMAP as KEYMAP
 from . import hooks
-from . import current_window, BUFFERS, current_minibuffer, \
-    minibuffer_show_info, current_buffer
+from . import BUFFERS, current_minibuffer, minibuffer_show_info, current_buffer
 from .content_handler import WebContentHandler
 from .application import app
 from .minibuffer.prompt import YesNoPrompt
@@ -42,16 +41,17 @@ def close_buffer(wb, keep_one=True):
     if keep_one and len(BUFFERS) < 2:
         return  # can't close if there is only one buffer left
 
-    if wb.view():
+    view = wb.view()
+    if view:
         # buffer is currently visible, search for a buffer that is not visible
         # yet to put it in the view
         invisibles = [b for b in BUFFERS if not b.view()]
         if not invisibles:
             # all buffers have views, so close the view of our buffer first
-            current_window().close_view(wb.view())
+            view.window.close_view(view)
         else:
             # associate the first buffer that does not have any view yet
-            wb.view().setBuffer(invisibles[0])
+            view.setBuffer(invisibles[0])
 
     app().download_manager().detach_buffer(wb)
     BUFFERS.remove(wb)
@@ -303,9 +303,14 @@ class WebBuffer(QWebEnginePage):
     def on_url_hovered(self, url):
         minibuffer_show_info(url)
 
+    def main_window(self):
+        view = self.view()
+        if view:
+            return view.window
+
     def update_title(self, title=None):
         if self == current_buffer():
-            current_window().update_title(
+            self.main_window().update_title(
                 title if title is not None else self.title()
             )
 
@@ -318,7 +323,8 @@ class WebBuffer(QWebEnginePage):
         zoom = self.zoomFactor()*100
         # We need to round up because the zoom factor is stored as a float
         self.set_zoom(round(min(ZOOM_MAX, max(ZOOM_MIN, zoom +
-                                              (ZOOM_INC if forward else -ZOOM_INC)))))
+                                              (ZOOM_INC if forward
+                                               else -ZOOM_INC)))))
 
     def set_zoom(self, zoom_factor):
 

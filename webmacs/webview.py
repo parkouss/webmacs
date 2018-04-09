@@ -14,10 +14,12 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
-from PyQt5.QtWidgets import QFrame, QVBoxLayout
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget
+from PyQt5.QtCore import QEvent
 
 from .keymaps import Keymap
-from .keyboardhandler import local_keymap, set_local_keymap
+from .keyboardhandler import local_keymap, set_local_keymap, KEY_EATER, \
+    LOCAL_KEYMAP_SETTER
 from . import BUFFERS
 from .application import app
 
@@ -50,6 +52,29 @@ class WebView(QWebEngineView):
             self._container = WebViewContainer(self)
         else:
             self._container = None
+
+    def event(self, evt):
+        if evt.type() == QEvent.ChildAdded:
+            obj = evt.child()
+            if isinstance(obj, QWidget):
+                obj.installEventFilter(self)
+        return QWebEngineView.event(self, evt)
+
+    def eventFilter(self, obj, evt):
+        t = evt.type()
+        if t == QEvent.KeyPress:
+            return KEY_EATER.event_filter(obj, evt)
+        elif t == QEvent.ShortcutOverride:
+            # disable automatic shortcuts in browser, like C-a
+            return True
+        elif t == QEvent.MouseButtonPress:
+            if self != self.window.current_web_view():
+                self.set_current()
+        elif t == QEvent.FocusIn:
+            LOCAL_KEYMAP_SETTER.view_focus_changed(self, True)
+        elif t == QEvent.FocusOut:
+            LOCAL_KEYMAP_SETTER.view_focus_changed(self, False)
+        return False
 
     def container(self):
         return self._container

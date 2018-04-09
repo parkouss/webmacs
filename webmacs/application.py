@@ -23,12 +23,13 @@ from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt5.QtWidgets import QApplication
 
-from . import require, GLOBAL_EVENT_FILTER
+from . import require
 from .version import opengl_vendor
 from .adblock import Adblocker, AdblockUpdaterThread
 from .download_manager import DownloadManager
 from .profile import default_profile
 from .minibuffer.right_label import init_minibuffer_right_labels
+from .keyboardhandler import LOCAL_KEYMAP_SETTER
 
 
 if sys.platform.startswith("linux"):
@@ -118,8 +119,6 @@ class Application(QApplication):
 
         self.aboutToQuit.connect(self.profile.save_session)
 
-        self.installEventFilter(GLOBAL_EVENT_FILTER)
-
         settings = QWebEngineSettings.globalSettings()
         settings.setAttribute(
             QWebEngineSettings.LinksIncludedInFocusChain, False,
@@ -133,6 +132,8 @@ class Application(QApplication):
         settings.setAttribute(
             QWebEngineSettings.JavascriptCanOpenWindows, True,
         )
+
+        self.installEventFilter(LOCAL_KEYMAP_SETTER)
 
         _app_requires()
 

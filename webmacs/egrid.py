@@ -55,7 +55,6 @@ class LayoutEntry(object):
             for child in parent.children:
                 child.parent = parent
 
-
     def set_geometry(self, rect):
         if self.item:
             self.item.setGeometry(rect)
