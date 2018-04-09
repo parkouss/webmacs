@@ -64,6 +64,9 @@ class WebView(QWebEngineView):
         t = evt.type()
         if t == QEvent.KeyPress:
             return KEY_EATER.event_filter(obj, evt)
+        elif t == QEvent.ShortcutOverride:
+            # disable automatic shortcuts in browser, like C-a
+            return True
         elif t == QEvent.MouseButtonPress:
             if self != self.window.current_web_view():
                 self.set_current()
