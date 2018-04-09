@@ -18,7 +18,8 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget
 from PyQt5.QtCore import QEvent
 
 from .keymaps import Keymap
-from .keyboardhandler import local_keymap, set_local_keymap, KEY_EATER
+from .keyboardhandler import local_keymap, set_local_keymap, KEY_EATER, \
+    LOCAL_KEYMAP_SETTER
 from . import BUFFERS
 from .application import app
 
@@ -66,6 +67,10 @@ class WebView(QWebEngineView):
         elif t == QEvent.MouseButtonPress:
             if self != self.window.current_web_view():
                 self.set_current()
+        elif t == QEvent.FocusIn:
+            LOCAL_KEYMAP_SETTER.view_focus_changed(self, True)
+        elif t == QEvent.FocusOut:
+            LOCAL_KEYMAP_SETTER.view_focus_changed(self, False)
         return False
 
     def container(self):

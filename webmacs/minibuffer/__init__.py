@@ -23,7 +23,7 @@ from .keymap import KEYMAP
 from .prompt import Prompt
 from .. import variables
 from .. import windows
-from ..keyboardhandler import KEY_EATER
+from ..keyboardhandler import KEY_EATER, LOCAL_KEYMAP_SETTER
 
 
 class Popup(QTableView):
@@ -98,9 +98,6 @@ class MinibufferInput(QLineEdit):
         self._mark = False
         self.configure_completer({})
 
-        from ..keyboardhandler import LOCAL_KEYMAP_SETTER
-        LOCAL_KEYMAP_SETTER.register_minibuffer_input(self)
-
     def configure_completer(self, opts):
         self._popup._max_visible_items = opts.get("max-visible-items", 10)
         self._match = opts.get("match", self.SimpleMatch)
@@ -146,9 +143,14 @@ class MinibufferInput(QLineEdit):
         return QLineEdit.eventFilter(self, obj, event)
 
     def event(self, evt):
-        if evt.type() == QEvent.KeyPress:
+        t = evt.type()
+        if t == QEvent.KeyPress:
             if KEY_EATER.event_filter(self, evt):
                 return True
+        elif t == QEvent.FocusIn:
+            LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, True)
+        elif t == QEvent.FocusOut:
+            LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, False)
         return QLineEdit.event(self, evt)
 
     def set_completer_model(self, completer_model):

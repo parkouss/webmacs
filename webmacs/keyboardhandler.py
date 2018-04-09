@@ -23,52 +23,20 @@ from . import hooks
 from . import COMMANDS, minibuffer_show_info
 
 
-class LocalKeymapSetter(QObject):
-    def __init__(self):
-        QObject.__init__(self)
-        self._views = []
-        self._minibuffer_inputs = []
-        self._current_obj = None
+class LocalKeymapSetter(object):
+    def minibuffer_input_focus_changed(self, mb, enabled):
+        if enabled:
+            set_local_keymap(mb.keymap())
+        else:
+            if not mb.popup().isVisible():
+                # when the minibuffer input is hidden, enable its view's
+                # buffer
+                buff = mb.parent().parent().current_web_view().buffer()
+                set_local_keymap(buff.active_keymap())
 
-    def register_view(self, view):
-        view.installEventFilter(self)
-        self._views.append(view)
-
-    def view_destroyed(self, view):
-        self._views.remove(view)
-
-    def register_minibuffer_input(self, minibuffer_input):
-        minibuffer_input.installEventFilter(self)
-        minibuffer_input.destroyed.connect(self._minibuffer_input_destroyed)
-        self._minibuffer_inputs.append(minibuffer_input)
-
-    @Slot(QObject)
-    def _minibuffer_input_destroyed(self, minibuffer_input):
-        # TODO FIXME this fails under integration testing.
-        try:
-            self._minibuffer_inputs.remove(minibuffer_input)
-        except ValueError:
-            pass
-
-    def eventFilter(self, obj, event):
-        t = event.type()
-        if t == QEvent.WindowActivate:
-            if obj in self._views:
-                # enable the current view's buffer
-                set_local_keymap(obj.buffer().active_keymap())
-        elif t == QEvent.FocusIn:
-            if obj in self._minibuffer_inputs:
-                # when the minibuffer input is shown, enable it
-                set_local_keymap(obj.keymap())
-        elif t == QEvent.FocusOut:
-            if obj in self._minibuffer_inputs:
-                # the focus is lost when the popup is active
-                if not obj.popup().isVisible():
-                    # when the minibuffer input is hidden, enable its view's
-                    # buffer
-                    buff = obj.parent().parent().current_web_view().buffer()
-                    set_local_keymap(buff.active_keymap())
-        return QObject.eventFilter(self, obj, event)
+    def view_focus_changed(self, view, enabled):
+        if enabled:
+            set_local_keymap(view.buffer().active_keymap())
 
     def web_content_edit_focus_changed(self, buff, enabled):
         if enabled:
@@ -92,8 +60,6 @@ class LocalKeymapSetter(QObject):
 
 
 LOCAL_KEYMAP_SETTER = LocalKeymapSetter()
-hooks.webview_created.add(LOCAL_KEYMAP_SETTER.register_view)
-hooks.webview_closed.add(LOCAL_KEYMAP_SETTER.view_destroyed)
 
 
 class KeyEater(object):
