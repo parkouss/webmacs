@@ -134,6 +134,7 @@ class KeyEater(object):
         self.current_obj = weakref.ref(obj)
         if self._handle_keypress(key):
             return True
+        return False
 
     def active_keymaps(self):
         if self._local_key_map:
@@ -214,7 +215,7 @@ class KeyEater(object):
 
 
 KEY_EATER = KeyEater()
-register_global_event_callback(QEvent.KeyPress, KEY_EATER.event_filter)
+# register_global_event_callback(QEvent.KeyPress, KEY_EATER.event_filter)
 
 
 def send_key_event(keypress):

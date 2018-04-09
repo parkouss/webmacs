@@ -23,6 +23,7 @@ from .keymap import KEYMAP
 from .prompt import Prompt
 from .. import variables
 from .. import windows
+from ..keyboardhandler import KEY_EATER
 
 
 class Popup(QTableView):
@@ -143,6 +144,12 @@ class MinibufferInput(QLineEdit):
             return True
 
         return QLineEdit.eventFilter(self, obj, event)
+
+    def event(self, evt):
+        if evt.type() == QEvent.KeyPress:
+            if KEY_EATER.event_filter(self, evt):
+                return True
+        return QLineEdit.event(self, evt)
 
     def set_completer_model(self, completer_model):
         self._proxy_model.setSourceModel(completer_model)
