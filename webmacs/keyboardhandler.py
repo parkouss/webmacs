@@ -147,7 +147,6 @@ class KeyEater(object):
             else:
                 self._prefix_arg = (4,)
                 self._keypresses = []
-            self._add_keypress(keypress)
             return True
         if self._prefix_arg is not None:
             try:
