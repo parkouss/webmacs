@@ -124,9 +124,6 @@ class KeyEater(object):
 
     def _add_keypress(self, keypress):
         self._keypresses.append(keypress)
-        minibuffer_show_info(
-            " ".join((str(k) for k in self._keypresses))
-        )
         logging.debug("keychord: %s" % self._keypresses)
 
     def _num_update_prefix_arg(self, numstr):
@@ -134,6 +131,11 @@ class KeyEater(object):
             self._prefix_arg = int(numstr)
         else:
             self._prefix_arg = int(str(self._prefix_arg) + numstr)
+
+    def _show_info_kbd(self, extra=""):
+        minibuffer_show_info(
+            " ".join((str(k) for k in self._keypresses)) + extra
+        )
 
     def _handle_keypress(self, keypress):
         if self._reset_prefix_arg:
@@ -167,6 +169,8 @@ class KeyEater(object):
                 break
 
         if not result:
+            if len(self._keypresses) > 1:
+                self._show_info_kbd(" is undefined.")
             self._keypresses = []
             return False
 
@@ -175,8 +179,11 @@ class KeyEater(object):
                 self._call_command(result.command)
             except Exception:
                 logging.exception("Error calling command:")
+            self._show_info_kbd()
             self._keypresses = []
             self._reset_prefix_arg = True
+        else:
+            self._show_info_kbd(" -")
 
         return result is not None
 
