@@ -16,14 +16,31 @@
 import logging
 import weakref
 
-from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot
+from PyQt5.QtCore import QObject, QEvent
 
 from .keymaps import KeyPress, global_keymap, CHAR2KEY
 from . import hooks
 from . import COMMANDS, minibuffer_show_info
 
 
-class LocalKeymapSetter(object):
+class LocalKeymapSetter(QObject):
+    def __init__(self):
+        QObject.__init__(self)
+        self.enabled_minibuffer = False
+
+    def eventFilter(self, obj, evt):
+        # event filter on the global app is required to avoid click on webviews
+        if self.enabled_minibuffer and evt.type() in (
+                QEvent.MouseButtonPress,
+                QEvent.MouseButtonDblClick,
+                QEvent.MouseButtonRelease,
+                QEvent.MouseMove):
+            return True
+        return False
+
+    def set_enabled_minibuffer(self, enabled):
+        self.enabled_minibuffer = enabled
+
     def minibuffer_input_focus_changed(self, mb, enabled):
         if enabled:
             set_local_keymap(mb.keymap())
@@ -44,8 +61,7 @@ class LocalKeymapSetter(object):
             set_local_keymap(buff.active_keymap())
         else:
             buff.set_keymap_mode(buff.KEYMAP_MODE_NORMAL)
-            window = buff.main_window()
-            if window and not window.minibuffer().input().hasFocus():
+            if not self.enabled_minibuffer:
                 set_local_keymap(buff.active_keymap())
 
     def caret_browsing_changed(self, buff, enabled):
@@ -54,8 +70,7 @@ class LocalKeymapSetter(object):
             set_local_keymap(buff.active_keymap())
         else:
             buff.set_keymap_mode(buff.KEYMAP_MODE_NORMAL)
-            window = buff.main_window()
-            if window and not window.minibuffer().input().hasFocus():
+            if not self.enabled_minibuffer:
                 set_local_keymap(buff.active_keymap())
 
 

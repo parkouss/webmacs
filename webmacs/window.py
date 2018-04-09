@@ -100,19 +100,14 @@ class Window(QWidget):
     def other_view(self):
         """switch to the next view"""
         minibuffer_input = self.minibuffer().input()
-        views = self.webviews()
         if minibuffer_input.hasFocus():
-            # if the minibuffer input has the focus, move to the first view
+            return
+
+        views = self.webviews()
+        index = views.index(self.current_web_view())
+        index = index + 1
+        if index >= len(views):
             index = 0
-        else:
-            index = views.index(self.current_web_view())
-            index = index + 1
-            if index >= len(views):
-                # switch to the minibuffer input if there is one
-                if minibuffer_input.isVisible():
-                    minibuffer_input.setFocus()
-                    return
-                index = 0
         views[index].set_current()
 
     def close_view(self, view):

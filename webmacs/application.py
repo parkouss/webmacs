@@ -17,7 +17,7 @@ import os
 import sys
 import logging
 
-from PyQt5.QtCore import pyqtSlot as Slot
+from PyQt5.QtCore import pyqtSlot as Slot, QEvent
 
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
@@ -29,6 +29,7 @@ from .adblock import Adblocker, AdblockUpdaterThread
 from .download_manager import DownloadManager
 from .profile import default_profile
 from .minibuffer.right_label import init_minibuffer_right_labels
+from .keyboardhandler import LOCAL_KEYMAP_SETTER
 
 
 if sys.platform.startswith("linux"):
@@ -131,6 +132,8 @@ class Application(QApplication):
         settings.setAttribute(
             QWebEngineSettings.JavascriptCanOpenWindows, True,
         )
+
+        self.installEventFilter(LOCAL_KEYMAP_SETTER)
 
         _app_requires()
 
