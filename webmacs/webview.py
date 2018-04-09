@@ -60,8 +60,12 @@ class WebView(QWebEngineView):
         return QWebEngineView.event(self, evt)
 
     def eventFilter(self, obj, evt):
-        if evt.type() == QEvent.KeyPress:
+        t = evt.type()
+        if t == QEvent.KeyPress:
             return KEY_EATER.event_filter(obj, evt)
+        elif t == QEvent.MouseButtonPress:
+            if self != self.window.current_web_view():
+                self.set_current()
         return False
 
     def container(self):

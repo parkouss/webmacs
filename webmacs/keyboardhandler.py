@@ -20,7 +20,7 @@ from PyQt5.QtCore import QObject, QEvent, pyqtSlot as Slot
 
 from .keymaps import KeyPress, global_keymap, CHAR2KEY
 from . import hooks
-from . import register_global_event_callback, COMMANDS, minibuffer_show_info
+from . import COMMANDS, minibuffer_show_info
 
 
 class LocalKeymapSetter(QObject):
@@ -214,7 +214,6 @@ class KeyEater(object):
 
 
 KEY_EATER = KeyEater()
-# register_global_event_callback(QEvent.KeyPress, KEY_EATER.event_filter)
 
 
 def send_key_event(keypress):

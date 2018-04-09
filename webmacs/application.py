@@ -23,7 +23,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt5.QtWidgets import QApplication
 
-from . import require, GLOBAL_EVENT_FILTER
+from . import require
 from .version import opengl_vendor
 from .adblock import Adblocker, AdblockUpdaterThread
 from .download_manager import DownloadManager
@@ -117,8 +117,6 @@ class Application(QApplication):
         self.profile.enable(self)
 
         self.aboutToQuit.connect(self.profile.save_session)
-
-        self.installEventFilter(GLOBAL_EVENT_FILTER)
 
         settings = QWebEngineSettings.globalSettings()
         settings.setAttribute(

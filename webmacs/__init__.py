@@ -33,33 +33,6 @@ def require(module, package=__package__):
         return importlib.import_module(module, package)
 
 
-# application level event filter. It will be set on the QApplication instance.
-class _GlobalEventFilter(QObject):
-    def __init__(self):
-        QObject.__init__(self)
-        self._events = {}
-
-    def register(self, event_type, callback):
-        self._events[event_type] = callback
-
-    def eventFilter(self, obj, event):
-        try:
-            cb = self._events[event.type()]
-        except KeyError:
-            return QObject.eventFilter(self, obj, event)
-        result = cb(obj, event)
-        if result is None:
-            return QObject.eventFilter(self, obj, event)
-        return result
-
-
-GLOBAL_EVENT_FILTER = _GlobalEventFilter()
-
-
-def register_global_event_callback(event_type, callback):
-    GLOBAL_EVENT_FILTER.register(event_type, callback)
-
-
 # handler for windows, to be able to list them and determine the one currently
 # active.
 class WindowsHandler(QObject):
@@ -85,21 +58,6 @@ class WindowsHandler(QObject):
 
 
 WINDOWS_HANDLER = WindowsHandler()
-
-
-def _handle_app_click(obj, evt):
-    if not isinstance(obj, QWindow):
-        return
-
-    for win in windows():
-        for view in win.webviews():
-            if view.underMouse():
-                if view != win.current_web_view():
-                    view.set_current()
-                break
-
-
-register_global_event_callback(QEvent.MouseButtonPress, _handle_app_click)
 
 
 def windows():
