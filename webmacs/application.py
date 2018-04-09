@@ -17,7 +17,7 @@ import os
 import sys
 import logging
 
-from PyQt5.QtCore import pyqtSlot as Slot, QEvent
+from PyQt5.QtCore import pyqtSlot as Slot
 
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor

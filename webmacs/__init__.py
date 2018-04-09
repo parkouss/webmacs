@@ -16,7 +16,6 @@
 import importlib
 
 from PyQt5.QtCore import QObject, QEvent
-from PyQt5.QtGui import QWindow
 
 
 __version__ = '0.1'

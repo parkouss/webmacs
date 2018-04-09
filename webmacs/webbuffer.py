@@ -323,7 +323,8 @@ class WebBuffer(QWebEnginePage):
         zoom = self.zoomFactor()*100
         # We need to round up because the zoom factor is stored as a float
         self.set_zoom(round(min(ZOOM_MAX, max(ZOOM_MIN, zoom +
-                                              (ZOOM_INC if forward else -ZOOM_INC)))))
+                                              (ZOOM_INC if forward
+                                               else -ZOOM_INC)))))
 
     def set_zoom(self, zoom_factor):
 
