@@ -158,31 +158,27 @@ class KeyEater(object):
                     self._add_keypress(keypress)
                     return True
 
-        incomplete_keychord = False
-        command_called = False
+        result = None
         self._add_keypress(keypress)
 
         for keymap in self.active_keymaps():
             result = keymap.lookup(self._keypresses)
+            if result:
+                break
 
-            if result is None:
-                pass
-            elif not result.complete:
-                incomplete_keychord = True
-            else:
-                try:
-                    self._call_command(result.command)
-                except Exception:
-                    logging.exception("Error calling command:")
-                command_called = True
-
-        if command_called or not incomplete_keychord:
+        if not result:
             self._keypresses = []
+            return False
 
-        if command_called:
+        if result.complete:
+            try:
+                self._call_command(result.command)
+            except Exception:
+                logging.exception("Error calling command:")
+            self._keypresses = []
             self._reset_prefix_arg = True
 
-        return command_called or incomplete_keychord
+        return result is not None
 
     def _call_command(self, command):
         if isinstance(command, str):
