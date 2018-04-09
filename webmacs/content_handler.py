@@ -18,7 +18,6 @@ import json
 from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
     QUrl
 
-from . import current_window
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .autofill import FormData
 from .application import app
@@ -36,15 +35,12 @@ class WebContentHandler(QObject):
 
     @Slot(bool)
     def onTextFocus(self, enabled):
-        win = current_window()
-        if win is not None:
-            LOCAL_KEYMAP_SETTER.web_content_edit_focus_changed(win, enabled)
+        LOCAL_KEYMAP_SETTER.web_content_edit_focus_changed(self.buffer,
+                                                           enabled)
 
     @Slot(bool)
     def onCaretBrowsing(self, enabled):
-        win = current_window()
-        if win is not None:
-            LOCAL_KEYMAP_SETTER.caret_browsing_changed(win, enabled)
+        LOCAL_KEYMAP_SETTER.caret_browsing_changed(self.buffer, enabled)
 
     @Slot(str)
     def _browserObjectActivated(self, obj):

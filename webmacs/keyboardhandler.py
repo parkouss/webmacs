@@ -70,25 +70,24 @@ class LocalKeymapSetter(QObject):
                     set_local_keymap(buff.active_keymap())
         return QObject.eventFilter(self, obj, event)
 
-    def web_content_edit_focus_changed(self, window, enabled):
-        buff = window.current_web_view().buffer()
+    def web_content_edit_focus_changed(self, buff, enabled):
         if enabled:
             buff.set_keymap_mode(buff.KEYMAP_MODE_CONTENT_EDIT)
             set_local_keymap(buff.active_keymap())
         else:
             buff.set_keymap_mode(buff.KEYMAP_MODE_NORMAL)
-            if not window.minibuffer().input().hasFocus():
-                buff = window.current_web_view().buffer()
+            window = buff.main_window()
+            if window and not window.minibuffer().input().hasFocus():
                 set_local_keymap(buff.active_keymap())
 
-    def caret_browsing_changed(self, window, enabled):
-        buff = window.current_web_view().buffer()
+    def caret_browsing_changed(self, buff, enabled):
         if enabled:
             buff.set_keymap_mode(buff.KEYMAP_MODE_CARET_BROWSING)
             set_local_keymap(buff.active_keymap())
         else:
             buff.set_keymap_mode(buff.KEYMAP_MODE_NORMAL)
-            if not window.minibuffer().input().hasFocus():
+            window = buff.main_window()
+            if window and not window.minibuffer().input().hasFocus():
                 set_local_keymap(buff.active_keymap())
 
 
