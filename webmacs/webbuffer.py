@@ -28,8 +28,8 @@ from .application import app
 from .minibuffer.prompt import YesNoPrompt
 from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
-from .keyboardhandler import send_key_event
-from .mode import get_mode, Mode
+from .keyboardhandler import send_key_event, LOCAL_KEYMAP_SETTER
+from .mode import get_mode, Mode, get_auto_modename_for_url
 
 
 # a tuple of QUrl, str to delay loading of a page.
@@ -92,8 +92,7 @@ class WebBuffer(QWebEnginePage):
         self.__authentication_data = None
         self.__delay_loading_url = None
         self.__keymap_mode = Mode.KEYMAP_NORMAL
-        self.__mode = None
-        self.set_mode("standard-mode")
+        self.__mode = get_mode("standard-mode")
 
         if url:
             if isinstance(url, DelayedLoadingUrl):
@@ -106,7 +105,11 @@ class WebBuffer(QWebEnginePage):
         return self.__mode
 
     def set_mode(self, modename):
+        if self.__mode.name == modename:
+            return
+        old_mode = self.__mode
         self.__mode = get_mode(modename)
+        LOCAL_KEYMAP_SETTER.buffer_mode_changed(self, old_mode)
 
     def load(self, url):
         if not isinstance(url, QUrl):
@@ -141,6 +144,7 @@ class WebBuffer(QWebEnginePage):
     def active_keymap(self):
         return self.mode.keymap_for_mode(self.__keymap_mode)
 
+    @property
     def keymap_mode(self):
         return self.__keymap_mode
 
@@ -234,6 +238,8 @@ class WebBuffer(QWebEnginePage):
             app().download_manager().attach_buffer(self)
         else:
             app().download_manager().detach_buffer(self)
+
+        self.set_mode(get_auto_modename_for_url(self.url().toString()))
 
     def handle_authentication(self, url, authenticator):
         autofill = app().autofill()

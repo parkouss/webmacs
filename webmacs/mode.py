@@ -13,8 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
+
 from .keymaps import BUFFER_KEYMAP, CONTENT_EDIT_KEYMAP, \
     CARET_BROWSING_KEYMAP, EMPTY_KEYMAP, FULLSCREEN_KEYMAP
+
+from . import variables
 
 
 MODES = {}
@@ -78,3 +82,41 @@ class EmptyMode(Mode):
 
 
 define_mode(EmptyMode("no-keybindings", "no-keybindings navigation mode"))
+
+
+AUTO_MODES = []
+
+
+def get_auto_modename_for_url(url, default="standard-mode"):
+    for reg, mode in AUTO_MODES:
+        if reg.match(url):
+            return mode
+
+    return default
+
+
+def _set_auto_buffer_modes(modes):
+    global AUTO_MODES
+    AUTO_MODES = [((
+        re.compile(reg) if isinstance(reg, str) else reg),
+        mode
+    ) for reg, mode in modes.value]
+
+
+auto_buffer_modes = variables.define_variable(
+    "auto-buffer-modes",
+    "List of tuple of regexes and mode name to automatically associate"
+    " web pages to some mode.",
+    (),
+    conditions=(
+        variables.condition(
+            lambda v: isinstance(v, (tuple, list))
+            and all(isinstance(e, tuple) for e in v)
+            and all((isinstance(e[0], str) or hasattr(e[0], "match"))
+                    and e[1] in MODES for e in v),
+            "Must be a list of tuple (regexes, modename)."),
+    ),
+    callbacks=(
+        _set_auto_buffer_modes,
+    ),
+)
