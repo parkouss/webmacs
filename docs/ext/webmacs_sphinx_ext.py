@@ -7,6 +7,7 @@ from webmacs.commands import InteractiveCommand
 from webmacs.commands.webjump import WEBJUMPS
 from webmacs.application import _app_requires
 from webmacs.variables import VARIABLES
+from webmacs.mode import MODES
 
 
 # to include all commands, etc.
@@ -88,7 +89,21 @@ class WebmacsVariables(SimpleAutoDirective):
             result.append(line, "")
 
 
+class WebmacsModes(SimpleAutoDirective):
+    def _run(self):
+        result = self._result
+
+        table = [("Name", "Description")]
+        for name in sorted(MODES):
+            mode = MODES[name]
+            table.append((name, mode.description))
+
+        for line in as_rest_table(table):
+            result.append(line, "")
+
+
 def setup(app):
     app.add_directive("webmacs-commands", WebmacsCommands)
     app.add_directive("webmacs-webjumps", WebmacsWebjumps)
     app.add_directive("webmacs-variables", WebmacsVariables)
+    app.add_directive("webmacs-modes", WebmacsModes)

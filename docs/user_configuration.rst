@@ -97,6 +97,33 @@ Here is the list of the variables:
 .. webmacs-variables::
 
 
+Modes
+*****
+
+Modes are used to bind keymaps to a web buffer, by assigning the buffer a given
+mode. By default all buffers are using the "standard-mode".
+
+Here is the list of the pre-defined modes:
+
+.. webmacs-modes::
+
+Automatically assign modes depending on the url
+-----------------------------------------------
+
+You can use the `auto-buffer-modes` variable.
+
+Example:
+
+.. code-block:: python
+
+   import re
+   from webmacs import variables
+
+   variables.set("auto-buffer-modes", [
+      (".*www.gnu.org.*", "no-keybindings"),
+      (re.compile("https://mail.google.com/.*"), "no-keybindings")
+  ])
+
 Binding keys
 ************
 

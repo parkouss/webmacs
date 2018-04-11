@@ -106,7 +106,8 @@ def _set_auto_buffer_modes(modes):
 auto_buffer_modes = variables.define_variable(
     "auto-buffer-modes",
     "List of tuple of regexes and mode name to automatically associate"
-    " web pages to some mode.",
+    " web pages to some mode. If nothing matches the url, standard-mode is"
+    " used.",
     (),
     conditions=(
         variables.condition(
