@@ -26,6 +26,7 @@ from ..keymaps import Keymap
 from ..keyboardhandler import current_prefix_arg
 from .. import current_minibuffer, BUFFERS, current_window, \
     current_buffer, windows
+from ..mode import MODES
 
 
 class CommandsListPrompt(Prompt):
@@ -305,3 +306,26 @@ def bookmark_add(prompt):
                                .format(name))
 
     QTimer.singleShot(0, doit)
+
+
+class ModesPrompt(Prompt):
+    label = "switch to mode:"
+    complete_options = {
+        "match": Prompt.FuzzyMatch,
+        "complete-empty": True,
+    }
+
+    def completer_model(self):
+        return PromptTableModel([
+            (name, MODES[name].description) for name in sorted(MODES)
+        ])
+
+
+@define_command("buffer-set-mode", prompt=ModesPrompt)
+def buffer_set_mode(prompt):
+    """
+    Change the mode of the current buffer.
+    """
+    index = prompt.index()
+    if index.isValid():
+        current_buffer().set_mode(index.internalPointer())
