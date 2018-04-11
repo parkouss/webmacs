@@ -13,9 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import Keymap
-
-KEYMAP = Keymap("Caret Browsing")
+from . import CARET_BROWSING_KEYMAP as KEYMAP
 
 
 KEYMAP.define_key("C-n", "caret-browsing-down")

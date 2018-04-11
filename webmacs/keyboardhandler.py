@@ -21,6 +21,7 @@ from PyQt5.QtCore import QObject, QEvent
 from .keymaps import KeyPress, global_keymap, CHAR2KEY
 from . import hooks
 from . import COMMANDS, minibuffer_show_info
+from .mode import Mode
 
 
 class LocalKeymapSetter(QObject):
@@ -57,19 +58,19 @@ class LocalKeymapSetter(QObject):
 
     def web_content_edit_focus_changed(self, buff, enabled):
         if enabled:
-            buff.set_keymap_mode(buff.KEYMAP_MODE_CONTENT_EDIT)
+            buff.set_keymap_mode(Mode.KEYMAP_CONTENT_EDIT)
             set_local_keymap(buff.active_keymap())
         else:
-            buff.set_keymap_mode(buff.KEYMAP_MODE_NORMAL)
+            buff.set_keymap_mode(Mode.KEYMAP_NORMAL)
             if not self.enabled_minibuffer:
                 set_local_keymap(buff.active_keymap())
 
     def caret_browsing_changed(self, buff, enabled):
         if enabled:
-            buff.set_keymap_mode(buff.KEYMAP_MODE_CARET_BROWSING)
+            buff.set_keymap_mode(Mode.KEYMAP_CARET_BROWSING)
             set_local_keymap(buff.active_keymap())
         else:
-            buff.set_keymap_mode(buff.KEYMAP_MODE_NORMAL)
+            buff.set_keymap_mode(Mode.KEYMAP_NORMAL)
             if not self.enabled_minibuffer:
                 set_local_keymap(buff.active_keymap())
 

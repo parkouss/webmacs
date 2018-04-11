@@ -15,12 +15,9 @@
 
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
-from . import Keymap, KeyPress
+from . import KeyPress, CONTENT_EDIT_KEYMAP as KEYMAP
 from .. import current_buffer
 from ..keyboardhandler import send_key_event
-
-
-KEYMAP = Keymap("webcontent-edit")
 
 
 @KEYMAP.define_key("C-g")

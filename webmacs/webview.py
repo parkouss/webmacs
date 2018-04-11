@@ -13,14 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget
 from PyQt5.QtCore import QEvent
 
-from .keymaps import Keymap
 from .keyboardhandler import local_keymap, set_local_keymap, KEY_EATER, \
     LOCAL_KEYMAP_SETTER
-from . import BUFFERS, current_window
+from . import BUFFERS
 from .application import app
 
 
@@ -96,9 +95,6 @@ class WebView(QWebEngineView):
     def buffer(self):
         return self.page()
 
-    def keymap(self):
-        return self.buffer().keymap()
-
     def set_current(self):
         self.window._change_current_webview(self)
         self.setFocus()
@@ -121,18 +117,6 @@ class WebView(QWebEngineView):
             return True
 
 
-FULLSCREEN_KEYMAP = Keymap("fullscreen")
-
-
-@FULLSCREEN_KEYMAP.define_key("q")
-@FULLSCREEN_KEYMAP.define_key("C-g")
-@FULLSCREEN_KEYMAP.define_key("Esc")
-def exit_full_screen():
-    fw = current_window().fullscreen_window
-    if fw:
-        fw.triggerPageAction(QWebEnginePage.ExitFullScreen)
-
-
 class FullScreenWindow(WebView):
     def __init__(self, window):
         WebView.__init__(self, window, with_container=False)
@@ -151,9 +135,10 @@ class FullScreenWindow(WebView):
     def enable(self, webview):
         self._other_view = webview
         webview.setEnabled(False)
-        self.setBuffer(webview.buffer())
+        buff = webview.buffer()
+        self.setBuffer(buff)
         self._other_keymap = local_keymap()
-        set_local_keymap(self.keymap())
+        set_local_keymap(buff.mode.fullscreen_keymap())
         # show fullscreen on the right place.
         screen = app().screens()[app().desktop().screenNumber(webview)]
         self.showFullScreen()
@@ -166,9 +151,6 @@ class FullScreenWindow(WebView):
         self.deleteLater()
         set_local_keymap(self._other_keymap)
         self._other_keymap = None
-
-    def keymap(self):
-        return FULLSCREEN_KEYMAP
 
     def set_current(self):
         pass

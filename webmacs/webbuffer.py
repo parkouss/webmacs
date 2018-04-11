@@ -29,8 +29,7 @@ from .minibuffer.prompt import YesNoPrompt
 from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import send_key_event
-from .keymaps.webcontent_edit import KEYMAP as CONTENT_EDIT_KEYMAP
-from .keymaps.caret_browsing import KEYMAP as CARET_BROWSING_KEYMAP
+from .mode import get_mode, Mode
 
 
 # a tuple of QUrl, str to delay loading of a page.
@@ -65,10 +64,6 @@ class WebBuffer(QWebEnginePage):
     Represent some web page content.
     """
 
-    KEYMAP_MODE_NORMAL = 1
-    KEYMAP_MODE_CONTENT_EDIT = 2
-    KEYMAP_MODE_CARET_BROWSING = 3
-
     LOGGER = logging.getLogger("webcontent")
     JSLEVEL2LOGGING = {
         QWebEnginePage.InfoMessageLevel: logging.INFO,
@@ -96,13 +91,22 @@ class WebBuffer(QWebEnginePage):
         self.titleChanged.connect(self.update_title)
         self.__authentication_data = None
         self.__delay_loading_url = None
-        self.__keymap_mode = self.KEYMAP_MODE_NORMAL
+        self.__keymap_mode = Mode.KEYMAP_NORMAL
+        self.__mode = None
+        self.set_mode("standard-mode")
 
         if url:
             if isinstance(url, DelayedLoadingUrl):
                 self.__delay_loading_url = url
             else:
                 self.load(url)
+
+    @property
+    def mode(self):
+        return self.__mode
+
+    def set_mode(self, modename):
+        self.__mode = get_mode(modename)
 
     def load(self, url):
         if not isinstance(url, QUrl):
@@ -134,22 +138,8 @@ class WebBuffer(QWebEnginePage):
             level = self.JSLEVEL2LOGGING.get(level, logging.ERROR)
             logger.log(level, message, extra={"url": self.url().toString()})
 
-    def keymap(self):
-        return KEYMAP
-
-    def content_edit_keymap(self):
-        return CONTENT_EDIT_KEYMAP
-
-    def caret_browsing_keymap(self):
-        return CARET_BROWSING_KEYMAP
-
     def active_keymap(self):
-        mode = self.__keymap_mode
-        if mode == self.KEYMAP_MODE_CONTENT_EDIT:
-            return self.content_edit_keymap()
-        elif mode == self.KEYMAP_MODE_CARET_BROWSING:
-            return self.caret_browsing_keymap()
-        return self.keymap()
+        return self.mode.keymap_for_mode(self.__keymap_mode)
 
     def keymap_mode(self):
         return self.__keymap_mode
