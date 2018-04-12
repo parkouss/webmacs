@@ -73,6 +73,8 @@ def app():
 def _app_requires():
     require(".keymaps.global")
     require(".keymaps.caret_browsing")
+    require(".keymaps.webcontent_edit")
+    require(".keymaps.fullscreen")
 
     require(".commands.follow")
     require(".commands.buffer_history")

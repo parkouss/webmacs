@@ -18,7 +18,6 @@ from PyQt5.QtCore import QEvent, Qt
 from ..minibuffer import Prompt, KEYMAP as MKEYMAP
 from ..keymaps import Keymap
 from ..commands import define_command
-from .. import current_minibuffer, current_buffer
 from ..application import app
 from .prompt_helper import PromptNewBuffer
 
@@ -49,7 +48,7 @@ class HintPrompt(Prompt):
 
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
-        self.page = current_buffer()
+        self.page = self.ctx.buffer
         self.page.start_select_browser_objects(self.hint_selector)
         self.numbers = ""
         minibuffer.input().textChanged.connect(self.on_text_edited)
@@ -116,10 +115,11 @@ class CopyLinkPrompt(HintPrompt):
 
 
 @define_command("follow", prompt=FollowPrompt)
-def follow(prompt):
+def follow(ctx):
     """
     Hint links in the buffer and follow them on selection.
     """
+    prompt = ctx.prompt
     buff = prompt.page
     buff.stop_select_browser_objects()
     if not prompt.new_buffer:
@@ -131,10 +131,11 @@ def follow(prompt):
 
 
 @define_command("copy-link", prompt=CopyLinkPrompt)
-def copy_link(prompt):
+def copy_link(ctx):
     """
     Hint links in the buffer to copy them.
     """
+    prompt = ctx.prompt
     buff = prompt.page
     url = None
     buff.stop_select_browser_objects()
@@ -154,18 +155,18 @@ def copy_link(prompt):
 
 @KEYMAP.define_key("C-g")
 @KEYMAP.define_key("Esc")
-def cancel():
-    current_buffer().stop_select_browser_objects()
-    current_minibuffer().close_prompt()
+def cancel(ctx):
+    ctx.buffer.stop_select_browser_objects()
+    ctx.minibuffer.close_prompt()
 
 
 @KEYMAP.define_key("C-n")
 @KEYMAP.define_key("Down")
-def next_completion():
-    current_buffer().select_nex_browser_object()
+def next_completion(ctx):
+    ctx.buffer.select_nex_browser_object()
 
 
 @KEYMAP.define_key("C-p")
 @KEYMAP.define_key("Up")
-def previous_completion():
-    current_buffer().select_nex_browser_object(False)
+def previous_completion(ctx):
+    ctx.buffer.select_nex_browser_object(False)

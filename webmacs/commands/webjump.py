@@ -319,21 +319,21 @@ def get_url(prompt):
 
 
 @define_command("go-to", prompt=WebJumpPrompt)
-def go_to(prompt):
+def go_to(ctx):
     """
     Prompt to open an url or a webjump.
     """
-    url = get_url(prompt)
+    url = get_url(ctx.prompt)
     if url:
-        prompt.get_buffer().load(url)
+        ctx.prompt.get_buffer().load(url)
 
 
 @define_command("go-to-selected-url", prompt=WebJumpPromptCurrentUrl)
-def go_to_selected_url(prompt):
+def go_to_selected_url(ctx):
     """
     Prompt (defaulting to current selection) to open an url or a webjump.
     """
-    go_to(prompt)
+    go_to(ctx)
 
 
 class WebJumpPromptNewUrl(WebJumpPrompt):
@@ -341,11 +341,11 @@ class WebJumpPromptNewUrl(WebJumpPrompt):
 
 
 @define_command("go-to-new-buffer", prompt=WebJumpPromptNewUrl)
-def go_to_new_buffer(prompt):
+def go_to_new_buffer(ctx):
     """
     Prompt to open an url or webjump in a new buffer.
     """
-    go_to(prompt)
+    go_to(ctx)
 
 
 class WebJumpPromptCurrentUrlNewBuffer(WebJumpPromptCurrentUrl):
@@ -356,19 +356,19 @@ class WebJumpPromptCurrentUrlNewBuffer(WebJumpPromptCurrentUrl):
     "go-to-selected-url-new-buffer",
     prompt=WebJumpPromptCurrentUrlNewBuffer
 )
-def go_to_selected_url_new_buffer(prompt):
+def go_to_selected_url_new_buffer(ctx):
     """
     Prompt (defaulting to current selection) to open an url or a webjump.
     """
-    go_to(prompt)
+    go_to(ctx)
 
 
 @define_command("search-default", prompt=DefaultSearchPrompt)
-def search_default(prompt):
+def search_default(ctx):
     """
     Prompt to open an url with the default webjump.
     """
-    go_to(prompt)
+    go_to(ctx)
 
 
 class DefaultSearchPromptNewBuffer(DefaultSearchPrompt):
@@ -377,8 +377,8 @@ class DefaultSearchPromptNewBuffer(DefaultSearchPrompt):
 
 @define_command(
     "search-default-new-buffer", prompt=DefaultSearchPromptNewBuffer)
-def search_default_new_buffer(prompt):
+def search_default_new_buffer(ctx):
     """
     Prompt to open an url with the default webjump.
     """
-    go_to_new_buffer(prompt)
+    go_to_new_buffer(ctx)

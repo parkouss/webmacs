@@ -14,13 +14,13 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 from .. import hooks, variables, keyboardhandler
-from .. import windows, BUFFERS
+from .. import windows, BUFFERS, current_buffer
 
 
 MINIBUFFER_RIGHTLABEL = variables.define_variable(
     "minibuffer-right-label",
     "Format for displaying some information in right label of minibuffer.",
-    "{local_keymap} [{buffer_count}]",
+    "{mode}: {local_keymap} [{buffer_count}]",
     conditions=(
         variables.condition(lambda v: isinstance(v, str),
                             "Must be an instance of string"),
@@ -29,11 +29,13 @@ MINIBUFFER_RIGHTLABEL = variables.define_variable(
 
 
 def update_minibuffer_right_labels():
+    buff = current_buffer()
     for window in windows():
         window.minibuffer().rlabel.setText(
             MINIBUFFER_RIGHTLABEL.value.format(
                 buffer_count=len(BUFFERS),
                 local_keymap=keyboardhandler.local_keymap(),
+                mode=getattr(buff, "mode", "unknown"),
             )
         )
 

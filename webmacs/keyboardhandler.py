@@ -14,13 +14,13 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import weakref
 
 from PyQt5.QtCore import QObject, QEvent
 
 from .keymaps import KeyPress, global_keymap, CHAR2KEY
 from . import hooks
-from . import COMMANDS, minibuffer_show_info
+from . import COMMANDS, minibuffer_show_info, CommandContext
+from .mode import Mode
 
 
 class LocalKeymapSetter(QObject):
@@ -57,21 +57,27 @@ class LocalKeymapSetter(QObject):
 
     def web_content_edit_focus_changed(self, buff, enabled):
         if enabled:
-            buff.set_keymap_mode(buff.KEYMAP_MODE_CONTENT_EDIT)
+            buff.set_keymap_mode(Mode.KEYMAP_CONTENT_EDIT)
             set_local_keymap(buff.active_keymap())
         else:
-            buff.set_keymap_mode(buff.KEYMAP_MODE_NORMAL)
+            buff.set_keymap_mode(Mode.KEYMAP_NORMAL)
             if not self.enabled_minibuffer:
                 set_local_keymap(buff.active_keymap())
 
     def caret_browsing_changed(self, buff, enabled):
         if enabled:
-            buff.set_keymap_mode(buff.KEYMAP_MODE_CARET_BROWSING)
+            buff.set_keymap_mode(Mode.KEYMAP_CARET_BROWSING)
             set_local_keymap(buff.active_keymap())
         else:
-            buff.set_keymap_mode(buff.KEYMAP_MODE_NORMAL)
+            buff.set_keymap_mode(Mode.KEYMAP_NORMAL)
             if not self.enabled_minibuffer:
                 set_local_keymap(buff.active_keymap())
+
+    def buffer_mode_changed(self, buffer, old_mode):
+        # check that the previous keymap was the one corresponding to the mode
+        old_km = old_mode.keymap_for_mode(buffer.keymap_mode)
+        if old_km == local_keymap():
+            set_local_keymap(buffer.active_keymap())
 
 
 LOCAL_KEYMAP_SETTER = LocalKeymapSetter()
@@ -85,7 +91,6 @@ class KeyEater(object):
         self._keypresses = []
         self._commands = COMMANDS
         self._local_key_map = None
-        self.current_obj = None
         self._use_global_keymap = True
         self.universal_key = KeyPress.from_str("C-u")
         self._prefix_arg = None
@@ -111,8 +116,7 @@ class KeyEater(object):
         key = KeyPress.from_qevent(event)
         if key is None:
             return False
-        self.current_obj = weakref.ref(obj)
-        if self._handle_keypress(key):
+        if self._handle_keypress(obj, key):
             return True
         return False
 
@@ -137,7 +141,7 @@ class KeyEater(object):
             " ".join((str(k) for k in self._keypresses)) + extra
         )
 
-    def _handle_keypress(self, keypress):
+    def _handle_keypress(self, sender, keypress):
         if self._reset_prefix_arg:
             self._reset_prefix_arg = False
             self._prefix_arg = None
@@ -175,7 +179,7 @@ class KeyEater(object):
 
         if result.complete:
             try:
-                self._call_command(result.command)
+                self._call_command(sender, keypress, result.command)
             except Exception:
                 logging.exception("Error calling command:")
             self._show_info_kbd()
@@ -186,28 +190,24 @@ class KeyEater(object):
 
         return result is not None
 
-    def _call_command(self, command):
+    def _call_command(self, sender, keypress, command):
         if isinstance(command, str):
             try:
                 command = self._commands[command]
             except KeyError:
                 raise KeyError("No such command: %s" % command)
 
-        command()
+        command(CommandContext(sender, keypress))
 
 
 KEY_EATER = KeyEater()
 
 
-def send_key_event(keypress):
-    obj = KEY_EATER.current_obj
-    if obj:
-        obj = obj()
-        if obj:
-            from .application import app as _app
-            app = _app()
-            app.postEvent(obj, keypress.to_qevent(QEvent.KeyPress))
-            app.postEvent(obj, keypress.to_qevent(QEvent.KeyRelease))
+def send_key_event(obj, keypress):
+    from .application import app as _app
+    app = _app()
+    app.postEvent(obj, keypress.to_qevent(QEvent.KeyPress))
+    app.postEvent(obj, keypress.to_qevent(QEvent.KeyRelease))
 
 
 def local_keymap():

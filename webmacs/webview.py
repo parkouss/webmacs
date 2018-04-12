@@ -13,11 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget
 from PyQt5.QtCore import QEvent
 
-from .keymaps import Keymap
 from .keyboardhandler import local_keymap, set_local_keymap, KEY_EATER, \
     LOCAL_KEYMAP_SETTER
 from . import BUFFERS
@@ -71,9 +70,11 @@ class WebView(QWebEngineView):
             if self != self.window.current_web_view():
                 self.set_current()
         elif t == QEvent.FocusIn:
-            LOCAL_KEYMAP_SETTER.view_focus_changed(self, True)
+            if self.isEnabled():  # disabled when there is a full-screen window
+                LOCAL_KEYMAP_SETTER.view_focus_changed(self, True)
         elif t == QEvent.FocusOut:
-            LOCAL_KEYMAP_SETTER.view_focus_changed(self, False)
+            if self.isEnabled():  # disabled when there is a full-screen window
+                LOCAL_KEYMAP_SETTER.view_focus_changed(self, False)
         return False
 
     def container(self):
@@ -93,9 +94,6 @@ class WebView(QWebEngineView):
 
     def buffer(self):
         return self.page()
-
-    def keymap(self):
-        return self.buffer().keymap()
 
     def set_current(self):
         self.window._change_current_webview(self)
@@ -119,43 +117,40 @@ class WebView(QWebEngineView):
             return True
 
 
-FULLSCREEN_KEYMAP = Keymap("fullscreen")
-
-
-@FULLSCREEN_KEYMAP.define_key("C-g")
-@FULLSCREEN_KEYMAP.define_key("Esc")
-def exit_full_screen():
-    from .window import current_window
-    fw = current_window().fullscreen_window
-    if fw:
-        fw.triggerPageAction(QWebEnginePage.ExitFullScreen)
-
-
 class FullScreenWindow(WebView):
     def __init__(self, window):
         WebView.__init__(self, window, with_container=False)
         self._other_view = None
         self._other_keymap = None
 
+    def eventFilter(self, obj, evt):
+        t = evt.type()
+        if t == QEvent.KeyPress:
+            return KEY_EATER.event_filter(obj, evt)
+        elif t == QEvent.ShortcutOverride:
+            # disable automatic shortcuts in browser, like C-a
+            return True
+        return False
+
     def enable(self, webview):
         self._other_view = webview
-        self.setPage(webview.page())
+        webview.setEnabled(False)
+        buff = webview.buffer()
+        self.setBuffer(buff)
         self._other_keymap = local_keymap()
-        set_local_keymap(self.keymap())
+        set_local_keymap(buff.mode.fullscreen_keymap())
         # show fullscreen on the right place.
         screen = app().screens()[app().desktop().screenNumber(webview)]
         self.showFullScreen()
         self.setGeometry(screen.geometry())
 
     def disable(self):
-        self._other_view.setPage(self.page())
+        self._other_view.setEnabled(True)
+        self._other_view.setBuffer(self.buffer())
         self.close()
         self.deleteLater()
         set_local_keymap(self._other_keymap)
         self._other_keymap = None
-
-    def keymap(self):
-        return FULLSCREEN_KEYMAP
 
     def set_current(self):
         pass

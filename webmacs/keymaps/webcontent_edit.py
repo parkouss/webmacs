@@ -15,19 +15,18 @@
 
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
-from . import Keymap, KeyPress
-from .. import current_buffer
-from ..keyboardhandler import send_key_event
+from . import CONTENT_EDIT_KEYMAP as KEYMAP
 
 
-KEYMAP = Keymap("webcontent-edit")
+def run_js(ctx, cmd):
+    ctx.buffer.runJavaScript(cmd, QWebEngineScript.ApplicationWorld)
 
 
 @KEYMAP.define_key("C-g")
-def cancel():
+def cancel(ctx):
     # if a mark is active, clear that but keep the focus. If there is no mark
     # active, then just unfocus the editable js object.
-    current_buffer().runJavaScript("""
+    run_js(ctx, """
     var e = getActiveElement();
     if (has_any_mark(e)) {
         // be sure that we have a mark, then unset it.
@@ -36,139 +35,86 @@ def cancel():
     } else {
         e.blur();
     }
-    """, QWebEngineScript.ApplicationWorld)
+    """)
 
 
-@KEYMAP.define_key("C-n")
-def next():
-    key = KeyPress.from_str("Down")
-    send_key_event(key)
-
-
-@KEYMAP.define_key("C-p")
-def prev():
-    key = KeyPress.from_str("Up")
-    send_key_event(key)
+KEYMAP.define_key("C-n", "send-key-down")
+KEYMAP.define_key("C-p", "send-key-up")
 
 
 @KEYMAP.define_key("C-Space")
-def set_mark():
-    current_buffer().runJavaScript(
-        "set_or_unset_mark(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def set_mark(ctx):
+    run_js(ctx, "set_or_unset_mark(getActiveElement());")
 
 
 @KEYMAP.define_key("C-f")
-def forward_char():
-    current_buffer().runJavaScript(
-        "forward_char(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def forward_char(ctx):
+    run_js(ctx, "forward_char(getActiveElement());")
 
 
 @KEYMAP.define_key("C-b")
-def backward_char():
-    current_buffer().runJavaScript(
-        "backward_char(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def backward_char(ctx):
+    run_js(ctx, "backward_char(getActiveElement());")
 
 
 @KEYMAP.define_key("M-f")
-def forward_word():
-    current_buffer().runJavaScript(
-        "forward_word(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def forward_word(ctx):
+    run_js(ctx, "forward_word(getActiveElement());")
 
 
 @KEYMAP.define_key("M-b")
-def backward_word():
-    current_buffer().runJavaScript(
-        "backward_word(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def backward_word(ctx):
+    run_js(ctx, "backward_word(getActiveElement());")
 
 
 @KEYMAP.define_key("C-a")
-def move_beginning_of_line():
-    current_buffer().runJavaScript(
-        "move_beginning_of_line(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def move_beginning_of_line(ctx):
+    run_js(ctx, "move_beginning_of_line(getActiveElement());")
 
 
 @KEYMAP.define_key("C-e")
-def move_end_of_line():
-    current_buffer().runJavaScript(
-        "move_end_of_line(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def move_end_of_line(ctx):
+    run_js(ctx, "move_end_of_line(getActiveElement());")
 
 
 @KEYMAP.define_key("C-d")
-def delete_char():
-    current_buffer().runJavaScript(
-        "delete_char(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def delete_char(ctx):
+    run_js(ctx, "delete_char(getActiveElement());")
 
 
 @KEYMAP.define_key("M-d")
-def delete_word():
-    current_buffer().runJavaScript(
-        "delete_word(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def delete_word(ctx):
+    run_js(ctx, "delete_word(getActiveElement());")
 
 
 @KEYMAP.define_key("M-Backspace")
-def delete_word_backward():
-    current_buffer().runJavaScript(
-        "delete_word_backward(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def delete_word_backward(ctx):
+    run_js(ctx, "delete_word_backward(getActiveElement());")
 
 
 @KEYMAP.define_key("M-w")
-def copy():
-    current_buffer().runJavaScript(
-        "copy_text(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def copy(ctx):
+    run_js(ctx, "copy_text(getActiveElement());")
 
 
 @KEYMAP.define_key("C-w")
-def cut():
-    current_buffer().runJavaScript(
-        "copy_text(getActiveElement(), true);",
-        QWebEngineScript.ApplicationWorld
-    )
+def cut(ctx):
+    run_js(ctx, "copy_text(getActiveElement(), true);")
 
 
 KEYMAP.define_key("C-y", "webcontent-paste")
 
 
 @KEYMAP.define_key("M-u")
-def upcase_word():
-    current_buffer().runJavaScript(
-        "upcase_word(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def upcase_word(ctx):
+    run_js(ctx, "upcase_word(getActiveElement());")
 
 
 @KEYMAP.define_key("M-l")
-def downcase_word():
-    current_buffer().runJavaScript(
-        "downcase_word(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def downcase_word(ctx):
+    run_js(ctx, "downcase_word(getActiveElement());")
 
 
 @KEYMAP.define_key("M-c")
-def capitalize_word():
-    current_buffer().runJavaScript(
-        "capitalize_word(getActiveElement());",
-        QWebEngineScript.ApplicationWorld
-    )
+def capitalize_word(ctx):
+    run_js(ctx, "capitalize_word(getActiveElement());")

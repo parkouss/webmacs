@@ -99,3 +99,27 @@ def minibuffer_show_info(text):
     Display text information in the current minibuffer.
     """
     current_minibuffer().show_info(text)
+
+
+class CommandContext(object):
+    def __init__(self, sender, keypress, buffer=None):
+        self.sender = sender
+        self.keypress = keypress
+        self.buffer = buffer or current_buffer()
+        self.prompt = None
+
+    @property
+    def view(self):
+        return self.buffer.view()
+
+    @property
+    def window(self):
+        view = self.view
+        if view:
+            return view.window
+
+    @property
+    def minibuffer(self):
+        win = self.window
+        if win:
+            return win.minibuffer()

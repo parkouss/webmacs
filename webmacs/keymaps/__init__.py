@@ -407,8 +407,12 @@ class Keymap(object):
         return self.name
 
 
+EMPTY_KEYMAP = Keymap("empty")
 GLOBAL_KEYMAP = Keymap("global")
 BUFFER_KEYMAP = Keymap("webbuffer")
+CONTENT_EDIT_KEYMAP = Keymap("webcontent-edit")
+CARET_BROWSING_KEYMAP = Keymap("Caret Browsing")
+FULLSCREEN_KEYMAP = Keymap("video-fullscreen")
 
 
 def global_keymap():

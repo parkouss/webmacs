@@ -20,7 +20,7 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 from PyQt5.QtWebChannel import QWebChannel
 from collections import namedtuple
 
-from .keymaps import KeyPress, BUFFER_KEYMAP as KEYMAP
+from .keymaps import BUFFER_KEYMAP as KEYMAP
 from . import hooks
 from . import BUFFERS, current_minibuffer, minibuffer_show_info, current_buffer
 from .content_handler import WebContentHandler
@@ -28,9 +28,8 @@ from .application import app
 from .minibuffer.prompt import YesNoPrompt
 from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
-from .keyboardhandler import send_key_event
-from .keymaps.webcontent_edit import KEYMAP as CONTENT_EDIT_KEYMAP
-from .keymaps.caret_browsing import KEYMAP as CARET_BROWSING_KEYMAP
+from .keyboardhandler import LOCAL_KEYMAP_SETTER
+from .mode import get_mode, Mode, get_auto_modename_for_url
 
 
 # a tuple of QUrl, str to delay loading of a page.
@@ -65,10 +64,6 @@ class WebBuffer(QWebEnginePage):
     Represent some web page content.
     """
 
-    KEYMAP_MODE_NORMAL = 1
-    KEYMAP_MODE_CONTENT_EDIT = 2
-    KEYMAP_MODE_CARET_BROWSING = 3
-
     LOGGER = logging.getLogger("webcontent")
     JSLEVEL2LOGGING = {
         QWebEnginePage.InfoMessageLevel: logging.INFO,
@@ -96,13 +91,25 @@ class WebBuffer(QWebEnginePage):
         self.titleChanged.connect(self.update_title)
         self.__authentication_data = None
         self.__delay_loading_url = None
-        self.__keymap_mode = self.KEYMAP_MODE_NORMAL
+        self.__keymap_mode = Mode.KEYMAP_NORMAL
+        self.__mode = get_mode("standard-mode")
 
         if url:
             if isinstance(url, DelayedLoadingUrl):
                 self.__delay_loading_url = url
             else:
                 self.load(url)
+
+    @property
+    def mode(self):
+        return self.__mode
+
+    def set_mode(self, modename):
+        if self.__mode.name == modename:
+            return
+        old_mode = self.__mode
+        self.__mode = get_mode(modename)
+        LOCAL_KEYMAP_SETTER.buffer_mode_changed(self, old_mode)
 
     def load(self, url):
         if not isinstance(url, QUrl):
@@ -134,23 +141,10 @@ class WebBuffer(QWebEnginePage):
             level = self.JSLEVEL2LOGGING.get(level, logging.ERROR)
             logger.log(level, message, extra={"url": self.url().toString()})
 
-    def keymap(self):
-        return KEYMAP
-
-    def content_edit_keymap(self):
-        return CONTENT_EDIT_KEYMAP
-
-    def caret_browsing_keymap(self):
-        return CARET_BROWSING_KEYMAP
-
     def active_keymap(self):
-        mode = self.__keymap_mode
-        if mode == self.KEYMAP_MODE_CONTENT_EDIT:
-            return self.content_edit_keymap()
-        elif mode == self.KEYMAP_MODE_CARET_BROWSING:
-            return self.caret_browsing_keymap()
-        return self.keymap()
+        return self.mode.keymap_for_mode(self.__keymap_mode)
 
+    @property
     def keymap_mode(self):
         return self.__keymap_mode
 
@@ -244,6 +238,8 @@ class WebBuffer(QWebEnginePage):
             app().download_manager().attach_buffer(self)
         else:
             app().download_manager().detach_buffer(self)
+
+        self.set_mode(get_auto_modename_for_url(self.url().toString()))
 
     def handle_authentication(self, url, authenticator):
         autofill = app().autofill()
@@ -372,25 +368,9 @@ KEYMAP.define_key("M", "bookmark-add")
 KEYMAP.define_key("+", "zoom-in")
 KEYMAP.define_key("-", "zoom-out")
 KEYMAP.define_key("0", "zoom-normal")
-
-
-@KEYMAP.define_key("C-n")
-@KEYMAP.define_key("n")
-def send_down():
-    send_key_event(KeyPress.from_str("Down"))
-
-
-@KEYMAP.define_key("C-p")
-@KEYMAP.define_key("p")
-def send_up():
-    send_key_event(KeyPress.from_str("Up"))
-
-
-@KEYMAP.define_key("C-f")
-def send_right():
-    send_key_event(KeyPress.from_str("Right"))
-
-
-@KEYMAP.define_key("C-b")
-def send_left():
-    send_key_event(KeyPress.from_str("Left"))
+KEYMAP.define_key("C-n", "send-key-down")
+KEYMAP.define_key("n", "send-key-down")
+KEYMAP.define_key("C-p", "send-key-up")
+KEYMAP.define_key("p", "send-key-up")
+KEYMAP.define_key("C-f", "send-key-right")
+KEYMAP.define_key("C-b", "send-key-left")
