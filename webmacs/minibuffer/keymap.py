@@ -122,7 +122,7 @@ def forward_word(ctx):
 @KEYMAP.define_key("M-Left")
 def backward_word(ctx):
     edit = ctx.minibuffer.input()
-    edit.cursorWordForward(edit.mark())
+    edit.cursorWordBackward(edit.mark())
 
 
 @KEYMAP.define_key("M-w")
