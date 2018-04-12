@@ -41,10 +41,10 @@ def state_str(state):
 
 
 @DL_PROMPT_KEYMAP.define_key("C-g")
-def cancel_dl():
-    prompt = current_minibuffer().prompt()
+def cancel_dl(ctx):
+    prompt = ctx.minibuffer.prompt()
     prompt._dl.cancel()
-    cancel()
+    cancel(ctx)
     prompt.finished.emit()  # to end the event loop
 
 

@@ -15,7 +15,7 @@
 
 from PyQt5.QtCore import QObject, pyqtSlot as Slot
 from ..minibuffer import Prompt
-from .. import COMMANDS, current_minibuffer
+from .. import COMMANDS
 
 
 class CommandExecutor(QObject):
@@ -29,7 +29,13 @@ class CommandExecutor(QObject):
 
     @Slot()
     def call(self):
-        self.cmd(self.prompt)
+        ctx = self.prompt.ctx
+        ctx.prompt = self.prompt
+        try:
+            self.cmd(ctx)
+        finally:
+            # to avoid reference cycle
+            ctx.prompt = None
 
 
 class InteractiveCommand(object):
@@ -52,13 +58,13 @@ class InteractiveCommand(object):
             assert issubclass(prompt, Prompt), \
                 "prompt should be a Prompt subclass"
 
-    def __call__(self):
+    def __call__(self, ctx):
         if self.prompt:
-            prompt = self.prompt()
+            prompt = self.prompt(ctx)
             # executor will be destroyed with its parent, the prompt
             executor = CommandExecutor(self.binding, prompt)
             prompt.finished.connect(executor.call)
-            current_minibuffer().do_prompt(prompt)
+            ctx.minibuffer.do_prompt(prompt)
         else:
             self.binding()
 

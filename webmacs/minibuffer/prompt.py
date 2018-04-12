@@ -107,6 +107,10 @@ class Prompt(QObject):
     finished = Signal()
     closed = Signal()
 
+    def __init__(self, ctx):
+        QObject.__init__(self)
+        self.ctx = ctx
+
     def completer_model(self):
         return None
 

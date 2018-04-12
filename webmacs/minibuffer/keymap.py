@@ -16,14 +16,13 @@
 import re
 
 from ..keymaps import Keymap
-from .. import current_minibuffer
 
 KEYMAP = Keymap("minibuffer")
 
 
 @KEYMAP.define_key("Tab")
-def complete():
-    input = current_minibuffer().input()
+def complete(ctx):
+    input = ctx.minibuffer.input()
 
     if not input.popup().isVisible():
         input.show_completions()
@@ -33,18 +32,18 @@ def complete():
 
 @KEYMAP.define_key("C-n")
 @KEYMAP.define_key("Down")
-def next_completion():
-    current_minibuffer().input().select_next_completion()
+def next_completion(ctx):
+    ctx.minibuffer.input().select_next_completion()
 
 
 @KEYMAP.define_key("C-p")
 @KEYMAP.define_key("Up")
-def previous_completion():
-    current_minibuffer().input().select_next_completion(False)
+def previous_completion(ctx):
+    ctx.minibuffer.input().select_next_completion(False)
 
 
-def _prompt_history(func):
-    minibuff = current_minibuffer()
+def _prompt_history(ctx, func):
+    minibuff = ctx.minibuffer
     history = minibuff.prompt().history
     if history:
         if history.in_user_value():
@@ -55,26 +54,27 @@ def _prompt_history(func):
 
 
 @KEYMAP.define_key("M-n")
-def prompt_history_next():
-    _prompt_history(lambda h: h.get_next())
+def prompt_history_next(ctx):
+    _prompt_history(ctx, lambda h: h.get_next())
 
 
 @KEYMAP.define_key("M-p")
-def prompt_history_previous():
-    _prompt_history(lambda h: h.get_previous())
+def prompt_history_previous(ctx):
+    _prompt_history(ctx, lambda h: h.get_previous())
 
 
 @KEYMAP.define_key("Return")
-def edition_finished():
-    current_minibuffer().input().complete()
-    current_minibuffer().input().popup().hide()
-    current_minibuffer().input().returnPressed.emit()
+def edition_finished(ctx):
+    minibuffer_input = ctx.minibuffer.input()
+    minibuffer_input.complete()
+    minibuffer_input.popup().hide()
+    minibuffer_input.returnPressed.emit()
 
 
 @KEYMAP.define_key("C-g")
 @KEYMAP.define_key("Esc")
-def cancel():
-    minibuffer = current_minibuffer()
+def cancel(ctx):
+    minibuffer = ctx.minibuffer
     input = minibuffer.input()
     if input.popup().isVisible():
         input.popup().hide()
@@ -82,8 +82,8 @@ def cancel():
 
 
 @KEYMAP.define_key("M-Backspace")
-def clean_aindent_bsunindent():
-    input = current_minibuffer().input()
+def clean_aindent_bsunindent(ctx):
+    input = ctx.minibuffer.input()
 
     parts = re.split(r"([-_ /])", input.text())
     while parts:
@@ -95,63 +95,65 @@ def clean_aindent_bsunindent():
 
 
 @KEYMAP.define_key("C-Space")
-def set_mark():
-    if not current_minibuffer().input().set_mark():
-        current_minibuffer().input().deselect()
+def set_mark(ctx):
+    minibuffer_input = ctx.minibuffer.input()
+    if not minibuffer_input.set_mark():
+        minibuffer_input.deselect()
 
 
 @KEYMAP.define_key("C-f")
 @KEYMAP.define_key("Right")
-def forward_char():
-    edit = current_minibuffer().input()
+def forward_char(ctx):
+    edit = ctx.minibuffer.input()
     edit.cursorForward(edit.mark(), 1)
 
 
 @KEYMAP.define_key("C-b")
 @KEYMAP.define_key("Left")
-def backward_char():
-    edit = current_minibuffer().input()
+def backward_char(ctx):
+    edit = ctx.minibuffer.input()
     edit.cursorBackward(edit.mark(), 1)
 
 
 @KEYMAP.define_key("M-f")
 @KEYMAP.define_key("M-Right")
-def forward_word():
-    edit = current_minibuffer().input()
+def forward_word(ctx):
+    edit = ctx.minibuffer.input()
     edit.cursorWordForward(edit.mark())
 
 
 @KEYMAP.define_key("M-b")
 @KEYMAP.define_key("M-Left")
-def backward_word():
-    edit = current_minibuffer().input()
+def backward_word(ctx):
+    edit = ctx.minibuffer.input()
     edit.cursorWordBackward(edit.mark())
 
 
 @KEYMAP.define_key("M-w")
-def copy():
-    current_minibuffer().input().copy()
-    current_minibuffer().input().deselect()
+def copy(ctx):
+    edit = ctx.minibuffer.input()
+    edit.copy()
+    edit.deselect()
 
 
 @KEYMAP.define_key("C-w")
-def cut():
-    current_minibuffer().input().cut()
+def cut(ctx):
+    ctx.minibuffer.input().cut()
 
 
 @KEYMAP.define_key("C-y")
-def paste():
-    current_minibuffer().input().paste()
+def paste(ctx):
+    ctx.minibuffer.input().paste()
 
 
 @KEYMAP.define_key("C-d")
-def delete_char():
-    current_minibuffer().input().del_()
+def delete_char(ctx):
+    ctx.minibuffer.input().del_()
 
 
 @KEYMAP.define_key("M-d")
-def delete_word():
-    edit = current_minibuffer().input()
+def delete_word(ctx):
+    edit = ctx.minibuffer.input()
     if edit.hasSelectedText():
         edit.del_()
     else:
@@ -170,12 +172,12 @@ def delete_word():
 
 
 @KEYMAP.define_key("C-a")
-def beginning_of_line():
-    edit = current_minibuffer().input()
+def beginning_of_line(ctx):
+    edit = ctx.minibuffer.input()
     edit.home(edit.mark())
 
 
 @KEYMAP.define_key("C-e")
-def end_of_line():
-    edit = current_minibuffer().input()
+def end_of_line(ctx):
+    edit = ctx.minibuffer.input()
     edit.end(edit.mark())

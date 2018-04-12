@@ -20,7 +20,7 @@ from PyQt5.QtCore import QObject, QEvent
 
 from .keymaps import KeyPress, global_keymap, CHAR2KEY
 from . import hooks
-from . import COMMANDS, minibuffer_show_info
+from . import COMMANDS, minibuffer_show_info, CommandContext
 from .mode import Mode
 
 
@@ -79,8 +79,6 @@ class LocalKeymapSetter(QObject):
         old_km = old_mode.keymap_for_mode(buffer.keymap_mode)
         if old_km == local_keymap():
             set_local_keymap(buffer.active_keymap())
-
-
 
 
 LOCAL_KEYMAP_SETTER = LocalKeymapSetter()
@@ -202,7 +200,7 @@ class KeyEater(object):
             except KeyError:
                 raise KeyError("No such command: %s" % command)
 
-        command()
+        command(CommandContext())
 
 
 KEY_EATER = KeyEater()
