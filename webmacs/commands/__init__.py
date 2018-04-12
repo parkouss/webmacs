@@ -66,7 +66,7 @@ class InteractiveCommand(object):
             prompt.finished.connect(executor.call)
             ctx.minibuffer.do_prompt(prompt)
         else:
-            self.binding()
+            self.binding(ctx)
 
 
 def define_command(name, binding=None, **args):

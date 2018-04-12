@@ -15,8 +15,7 @@
 
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
-from . import KeyPress, CONTENT_EDIT_KEYMAP as KEYMAP
-from ..keyboardhandler import send_key_event
+from . import CONTENT_EDIT_KEYMAP as KEYMAP
 
 
 def run_js(ctx, cmd):
@@ -39,14 +38,8 @@ def cancel(ctx):
     """)
 
 
-@KEYMAP.define_key("C-n")
-def next(ctx):
-    send_key_event(ctx.sender, KeyPress.from_str("Down"))
-
-
-@KEYMAP.define_key("C-p")
-def prev(ctx):
-    send_key_event(ctx.sender, KeyPress.from_str("Up"))
+KEYMAP.define_key("C-n", "send-key-down")
+KEYMAP.define_key("C-p", "send-key-up")
 
 
 @KEYMAP.define_key("C-Space")

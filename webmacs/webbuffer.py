@@ -20,7 +20,7 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 from PyQt5.QtWebChannel import QWebChannel
 from collections import namedtuple
 
-from .keymaps import KeyPress, BUFFER_KEYMAP as KEYMAP
+from .keymaps import BUFFER_KEYMAP as KEYMAP
 from . import hooks
 from . import BUFFERS, current_minibuffer, minibuffer_show_info, current_buffer
 from .content_handler import WebContentHandler
@@ -28,7 +28,7 @@ from .application import app
 from .minibuffer.prompt import YesNoPrompt
 from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
-from .keyboardhandler import send_key_event, LOCAL_KEYMAP_SETTER
+from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .mode import get_mode, Mode, get_auto_modename_for_url
 
 
@@ -368,25 +368,9 @@ KEYMAP.define_key("M", "bookmark-add")
 KEYMAP.define_key("+", "zoom-in")
 KEYMAP.define_key("-", "zoom-out")
 KEYMAP.define_key("0", "zoom-normal")
-
-
-@KEYMAP.define_key("C-n")
-@KEYMAP.define_key("n")
-def send_down(ctx):
-    send_key_event(ctx.sender, KeyPress.from_str("Down"))
-
-
-@KEYMAP.define_key("C-p")
-@KEYMAP.define_key("p")
-def send_up(ctx):
-    send_key_event(ctx.sender, KeyPress.from_str("Up"))
-
-
-@KEYMAP.define_key("C-f")
-def send_right(ctx):
-    send_key_event(ctx.sender, KeyPress.from_str("Right"))
-
-
-@KEYMAP.define_key("C-b")
-def send_left(ctx):
-    send_key_event(ctx.sender, KeyPress.from_str("Left"))
+KEYMAP.define_key("C-n", "send-key-down")
+KEYMAP.define_key("n", "send-key-down")
+KEYMAP.define_key("C-p", "send-key-up")
+KEYMAP.define_key("p", "send-key-up")
+KEYMAP.define_key("C-f", "send-key-right")
+KEYMAP.define_key("C-b", "send-key-left")

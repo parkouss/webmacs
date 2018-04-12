@@ -22,8 +22,8 @@ from ..minibuffer import Prompt, KEYMAP
 from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
 from ..webbuffer import create_buffer
-from ..keymaps import Keymap
-from ..keyboardhandler import current_prefix_arg
+from ..keymaps import Keymap, KeyPress
+from ..keyboardhandler import current_prefix_arg, send_key_event
 from .. import BUFFERS, windows
 from ..mode import MODES
 
@@ -328,3 +328,27 @@ def buffer_set_mode(ctx):
     index = ctx.prompt.index()
     if index.isValid():
         ctx.buffer.set_mode(index.internalPointer())
+
+
+@define_command("send-key-down")
+def send_down(ctx):
+    """Send a key down event."""
+    send_key_event(ctx.sender, KeyPress.from_str("Down"))
+
+
+@define_command("send-key-up")
+def send_up(ctx):
+    """Send a key up event."""
+    send_key_event(ctx.sender, KeyPress.from_str("Up"))
+
+
+@define_command("send-key-right")
+def send_right(ctx):
+    """Send a key right event."""
+    send_key_event(ctx.sender, KeyPress.from_str("Right"))
+
+
+@define_command("send-key-left")
+def send_left(ctx):
+    """Send a key left event."""
+    send_key_event(ctx.sender, KeyPress.from_str("Left"))
