@@ -102,7 +102,9 @@ def minibuffer_show_info(text):
 
 
 class CommandContext(object):
-    def __init__(self, buffer=None):
+    def __init__(self, sender, keypress, buffer=None):
+        self.sender = sender
+        self.keypress = keypress
         self.buffer = buffer or current_buffer()
         self.prompt = None
 

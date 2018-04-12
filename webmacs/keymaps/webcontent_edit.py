@@ -41,14 +41,12 @@ def cancel(ctx):
 
 @KEYMAP.define_key("C-n")
 def next(ctx):
-    key = KeyPress.from_str("Down")
-    send_key_event(key)
+    send_key_event(ctx.sender, KeyPress.from_str("Down"))
 
 
 @KEYMAP.define_key("C-p")
 def prev(ctx):
-    key = KeyPress.from_str("Up")
-    send_key_event(key)
+    send_key_event(ctx.sender, KeyPress.from_str("Up"))
 
 
 @KEYMAP.define_key("C-Space")

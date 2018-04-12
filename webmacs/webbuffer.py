@@ -372,21 +372,21 @@ KEYMAP.define_key("0", "zoom-normal")
 
 @KEYMAP.define_key("C-n")
 @KEYMAP.define_key("n")
-def send_down():
-    send_key_event(KeyPress.from_str("Down"))
+def send_down(ctx):
+    send_key_event(ctx.sender, KeyPress.from_str("Down"))
 
 
 @KEYMAP.define_key("C-p")
 @KEYMAP.define_key("p")
-def send_up():
-    send_key_event(KeyPress.from_str("Up"))
+def send_up(ctx):
+    send_key_event(ctx.sender, KeyPress.from_str("Up"))
 
 
 @KEYMAP.define_key("C-f")
-def send_right():
-    send_key_event(KeyPress.from_str("Right"))
+def send_right(ctx):
+    send_key_event(ctx.sender, KeyPress.from_str("Right"))
 
 
 @KEYMAP.define_key("C-b")
-def send_left():
-    send_key_event(KeyPress.from_str("Left"))
+def send_left(ctx):
+    send_key_event(ctx.sender, KeyPress.from_str("Left"))
