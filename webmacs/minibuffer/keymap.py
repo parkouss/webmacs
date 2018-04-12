@@ -13,8 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
-
 from ..keymaps import Keymap
 
 KEYMAP = Keymap("minibuffer")
@@ -83,15 +81,13 @@ def cancel(ctx):
 
 @KEYMAP.define_key("M-Backspace")
 def clean_aindent_bsunindent(ctx):
-    input = ctx.minibuffer.input()
+    edit = ctx.minibuffer.input()
+    if edit.hasSelectedText():
+        edit.deselect()
 
-    parts = re.split(r"([-_ /])", input.text())
-    while parts:
-        if parts[-1] in ("", "-", "_", " ", "/"):
-            parts.pop()
-        else:
-            break
-    input.setText("".join(parts[:-1]))
+    edit.cursorWordBackward(True)
+    if edit.hasSelectedText():
+        edit.del_()
 
 
 @KEYMAP.define_key("C-Space")
@@ -126,7 +122,7 @@ def forward_word(ctx):
 @KEYMAP.define_key("M-Left")
 def backward_word(ctx):
     edit = ctx.minibuffer.input()
-    edit.cursorWordBackward(edit.mark())
+    edit.cursorWordForward(edit.mark())
 
 
 @KEYMAP.define_key("M-w")
@@ -155,20 +151,11 @@ def delete_char(ctx):
 def delete_word(ctx):
     edit = ctx.minibuffer.input()
     if edit.hasSelectedText():
+        edit.deselect()
+
+    edit.cursorWordBackward(True)
+    if edit.hasSelectedText():
         edit.del_()
-    else:
-        pos = edit.cursorPosition()
-        text = edit.text()
-        deleted_some = False
-        for i in range(pos, len(text)):
-            char = text[i]
-            if char in ("-", "_", " "):
-                if deleted_some:
-                    break
-                edit.del_()
-            else:
-                deleted_some = True
-                edit.del_()
 
 
 @KEYMAP.define_key("C-a")
