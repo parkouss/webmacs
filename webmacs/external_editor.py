@@ -7,8 +7,10 @@ import shlex
 
 editor_cmd = variables.define_variable(
     "external-editor-command",
-    "command to open an external editor",
-    "emacs {file}",
+    "command to open an external editor. You must use the {file}"
+    " placeholder in the command, as it will be used to open the"
+    " temporary file.",
+    "emacsclient -c -a '' {file}",
     conditions=(
         variables.condition(lambda v: isinstance(v, str),
                             "Must be an instance of string"),
