@@ -95,7 +95,8 @@ sudo pip3 install .
   navigate quickly using the incremental search, though this is working well
   with Qt >= 5.10.
 - bookmarks (*M* to add a bookmark, *m* to open the bookmark list)
-- zoom in and out, using *+* and *-*.
+- zoom in and out, using *+* and *-*. *=* to reset the zoom.
+- zoom (text only) using *C-+*, *C--* and *C-=*.
 
 
 * Documentation
