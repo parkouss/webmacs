@@ -121,5 +121,6 @@ def capitalize_word(ctx):
 
 
 @KEYMAP.define_key("C-x e")
+@KEYMAP.define_key("C-x C-e")
 def open_external_editor(ctx):
     run_js(ctx, "external_editor_open(getActiveElement())");

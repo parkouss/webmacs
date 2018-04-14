@@ -97,6 +97,7 @@ sudo pip3 install .
 - bookmarks (*M* to add a bookmark, *m* to open the bookmark list)
 - zoom in and out, using *+* and *-*. *=* to reset the zoom.
 - zoom (text only) using *C-+*, *C--* and *C-=*.
+- edit text fields with an external editor (defaulting to emacsclient): *C-x e*
 
 
 * Documentation
