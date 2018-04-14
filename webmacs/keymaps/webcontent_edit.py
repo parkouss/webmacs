@@ -118,3 +118,8 @@ def downcase_word(ctx):
 @KEYMAP.define_key("M-c")
 def capitalize_word(ctx):
     run_js(ctx, "capitalize_word(getActiveElement());")
+
+
+@KEYMAP.define_key("C-x e")
+def open_external_editor(ctx):
+    run_js(ctx, "external_editor_open(getActiveElement())");

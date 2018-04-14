@@ -227,3 +227,25 @@ function capitalize_word(e) {
 	}
     });
 }
+
+var EXTERNAL_EDITOR_REQUESTS = {};
+
+function external_editor_open(e) {
+    var id = new Date().getUTCMilliseconds() + "";
+    let txt = (e.isContentEditable) ?
+	e.innerText : e.value;
+    __webmacsHandler__.openExternalEditor(id, txt);
+    EXTERNAL_EDITOR_REQUESTS[id] = e;
+}
+
+function external_editor_finish(id, content) {
+    if (content !== false) {
+	let e = EXTERNAL_EDITOR_REQUESTS[id];
+	if (e.isContentEditable) {
+	    e.innerText = content;
+	} else {
+	    e.value = content;
+	}
+    }
+    delete EXTERNAL_EDITOR_REQUESTS[id];
+}
