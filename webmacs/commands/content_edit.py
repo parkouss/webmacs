@@ -51,9 +51,9 @@ def cancel(ctx):
     mark active, then just unfocus the editable js object.
     """
     if ctx.buffer.hasSelection():
-        run_js(ctx, "clear_mark(getActiveElement());")
+        run_js(ctx, "textedit.clear_mark();")
     else:
-        run_js(ctx, "getActiveElement().blur();")
+        run_js(ctx, "textedit.getActiveElement().blur();")
     ctx.buffer.set_text_edit_mark(False)
 
 
@@ -63,7 +63,7 @@ def set_mark(ctx):
     Set or clear the mark in browser text field.
     """
     if ctx.buffer.hasSelection():
-        run_js(ctx, "clear_mark(getActiveElement());")
+        run_js(ctx, "textedit.clear_mark();")
     ctx.buffer.set_text_edit_mark(
         not ctx.buffer.text_edit_mark
     )
@@ -131,7 +131,7 @@ def delete_char(ctx):
     """
     run_js(
         ctx,
-        "select_text(getActiveElement(), 'forward', 'character');",
+        "textedit.select_text('forward', 'character');",
         delete_selection(ctx),
     )
 
@@ -143,7 +143,7 @@ def delete_word(ctx):
     """
     run_js(
         ctx,
-        "select_text(getActiveElement(), 'forward', 'word');",
+        "textedit.select_text('forward', 'word');",
         delete_selection(ctx),
     )
 
@@ -155,7 +155,7 @@ def delete_word_backward(ctx):
     """
     run_js(
         ctx,
-        "select_text(getActiveElement(), 'backward', 'word');",
+        "textedit.select_text('backward', 'word');",
         delete_selection(ctx),
     )
 
@@ -166,7 +166,7 @@ def copy(ctx):
     Copy browser text field selection in the clipboard.
     """
     ctx.buffer.set_text_edit_mark(False)
-    run_js(ctx, "copy_text(getActiveElement(), true);")
+    run_js(ctx, "textedit.copy_text(true);")
 
 
 @define_command("content-edit-cut")
@@ -174,7 +174,7 @@ def cut(ctx):
     """
     Cut browser text field selection in the clipboard.
     """
-    run_js(ctx, "copy_text(getActiveElement());",
+    run_js(ctx, "textedit.copy_text();",
            delete_selection(ctx))
 
 
@@ -183,7 +183,7 @@ def upcase_word(ctx):
     """
     Upcase the word forward in browser text field.
     """
-    run_js(ctx, "upcase_word(getActiveElement());")
+    run_js(ctx, "textedit.upcase_word();")
 
 
 @define_command("content-edit-downcase-forward-word")
@@ -191,7 +191,7 @@ def downcase_word(ctx):
     """
     Downcase the word forward in browser text field.
     """
-    run_js(ctx, "downcase_word(getActiveElement());")
+    run_js(ctx, "textedit.downcase_word();")
 
 
 @define_command("content-edit-capitalize-forward-word")
@@ -199,7 +199,7 @@ def capitalize_word(ctx):
     """
     Capitalize the word forward in browser text field.
     """
-    run_js(ctx, "capitalize_word(getActiveElement());")
+    run_js(ctx, "textedit.capitalize_word();")
 
 
 @define_command("content-edit-open-external-editor")
@@ -207,7 +207,7 @@ def open_external_editor(ctx):
     """
     Open an external editor to change the text field content.
     """
-    run_js(ctx, "external_editor_open(getActiveElement())");
+    run_js(ctx, "textedit.external_editor_open()");
 
 
 @define_command("content-edit-undo")

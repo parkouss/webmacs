@@ -13,8 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
+var textedit = {};
 
-var getActiveElement = function( doc ){
+textedit.context = function() {
+    let e = textedit.getActiveElement();
+    return {
+	element: e,
+	sel: e. ownerDocument.getSelection(),
+	isContentEditable: e.isContentEditable
+    }
+}
+
+textedit.getActiveElement = function( doc ){
     doc = doc || document;
 
     var elt = doc.activeElement;
@@ -24,37 +34,45 @@ var getActiveElement = function( doc ){
     return elt;
 };
 
-function clear_mark(e) {
-    if (e.selectionDirection) {
+textedit.clear_mark = function(ctx) {
+    ctx = ctx || textedit.context();
+    if (! ctx.isContentEditable) {
+	let e = ctx.element;
 	var pos = e.selectionDirection == "forward" ? e.selectionEnd : e.selectionStart;
 	e.setSelectionRange(pos, pos);
     } else {
-	let sel = e.ownerDocument.getSelection();
+	let sel = ctx.sel;
 	if (! sel.isCollapsed) {
 	    sel.collapse(sel.focusNode, sel.focusOffset);
 	}
     }
 }
 
-function select_text(e, direction, granularity) {
-    clear_mark(e);
-    let sel = e.ownerDocument.getSelection();
-    sel.modify("extend", direction, granularity);
+textedit.select_text = function(direction, granularity, ctx) {
+    ctx = ctx || textedit.context();
+    textedit.clear_mark(ctx);
+    ctx.sel.modify("extend", direction, granularity);
 }
 
-function copy_text(e, reset_selection) {
-    let sel = e.ownerDocument.getSelection();
+textedit.copy_text = function(reset_selection, ctx) {
+    ctx = ctx || textedit.context();
+    let sel = ctx.sel;
     if (sel.type !== 'Range') {
 	return;
     }
     __webmacsHandler__.copyToClipboard(sel.toString());
     if (reset_selection) {
-	clear_mark(e);
+	textedit.clear_mark(ctx);
     }
 }
 
-function _change_next_word_case(e, fn) {
-    select_text(e, 'forward', 'word');
+textedit._change_next_word_case = function(ctx, fn) {
+    ctx = ctx || textedit.context();
+    textedit.select_text('forward', 'word', ctx);
+    if (ctx.isContentEditable) {
+	return;
+    }
+    let e = ctx.element;
     var pos = e.selectionStart;
     var txt = e.value;
     var nextpos = e.selectionEnd;
@@ -64,38 +82,46 @@ function _change_next_word_case(e, fn) {
 }
 
 
-function upcase_word(e) {
-    _change_next_word_case(e, function(t) { return t.toUpperCase() });
-}
-
-function downcase_word(e) {
-    _change_next_word_case(e, function(t) { return t.toLowerCase() });
-}
-
-function capitalize_word(e) {
-    _change_next_word_case(e, function(t) {
-	return t.charAt(0).toUpperCase() + t.substring(1).toLowerCase();
+textedit.upcase_word = function(ctx) {
+    textedit._change_next_word_case(ctx, function(t) {
+	return t.toUpperCase();
     });
 }
 
-var EXTERNAL_EDITOR_REQUESTS = {};
-
-function external_editor_open(e) {
-    var id = new Date().getUTCMilliseconds() + "";
-    let txt = (e.isContentEditable) ?
-	e.innerText : e.value;
-    __webmacsHandler__.openExternalEditor(id, txt);
-    EXTERNAL_EDITOR_REQUESTS[id] = e;
+textedit.downcase_word = function(ctx) {
+    textedit._change_next_word_case(ctx, function(t) {
+	return t.toLowerCase();
+    });
 }
 
-function external_editor_finish(id, content) {
+textedit.capitalize_word = function(ctx) {
+    textedit._change_next_word_case(ctx, function(t) {
+	return t.toLowerCase().replace(/(?:^|\s)\S/g, function(a) {
+	    return a.toUpperCase();
+	});
+    });
+}
+
+textedit.EXTERNAL_EDITOR_REQUESTS = {};
+
+textedit.external_editor_open = function(ctx) {
+    ctx = ctx || textedit.context();
+    var id = new Date().getUTCMilliseconds() + "";
+    let e = ctx.element;
+    let txt = (ctx.isContentEditable) ?
+	e.innerText : e.value;
+    __webmacsHandler__.openExternalEditor(id, txt);
+    textedit.EXTERNAL_EDITOR_REQUESTS[id] = e;
+}
+
+textedit.external_editor_finish = function(id, content) {
     if (content !== false) {
-	let e = EXTERNAL_EDITOR_REQUESTS[id];
+	let e = textedit.EXTERNAL_EDITOR_REQUESTS[id];
 	if (e.isContentEditable) {
 	    e.innerText = content;
 	} else {
 	    e.value = content;
 	}
     }
-    delete EXTERNAL_EDITOR_REQUESTS[id];
+    delete textedit.EXTERNAL_EDITOR_REQUESTS[id];
 }

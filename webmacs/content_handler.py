@@ -73,7 +73,7 @@ class WebContentHandler(QObject):
         else:
             new_content = repr(new_content)
         self.buffer.runJavaScript(
-            "external_editor_finish({}, {});".format(
+            "textedit.external_editor_finish({}, {});".format(
                 repr(request_id),
                 new_content
             ),
