@@ -298,8 +298,9 @@ def text_zoom_in(ctx):
                              QWebEngineScript.ApplicationWorld,
                              _show_info_text_zoom(ctx))
 
+
 @define_command("text-zoom-out")
-def text_zoom_in(ctx):
+def text_zoom_out(ctx):
     """
     Zom out (text only) in the buffer.
     """
@@ -307,8 +308,9 @@ def text_zoom_in(ctx):
                              QWebEngineScript.ApplicationWorld,
                              _show_info_text_zoom(ctx))
 
+
 @define_command("text-zoom-reset")
-def text_zoom_in(ctx):
+def text_zoom_reset(ctx):
     """
     Reset the zoom (text only) in the buffer.
     """

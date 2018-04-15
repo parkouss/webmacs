@@ -207,7 +207,7 @@ def open_external_editor(ctx):
     """
     Open an external editor to change the text field content.
     """
-    run_js(ctx, "textedit.external_editor_open()");
+    run_js(ctx, "textedit.external_editor_open()")
 
 
 @define_command("content-edit-undo")
@@ -216,5 +216,5 @@ def undo(ctx):
 
 
 @define_command("content-edit-redo")
-def undo(ctx):
+def redo(ctx):
     ctx.buffer.triggerAction(WebBuffer.Redo)
