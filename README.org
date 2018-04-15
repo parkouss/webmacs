@@ -41,10 +41,11 @@ pip install -e <path_to_webmacs_sources>
 python -m webmacs.main
 #+END_SRC
 
-Or you can install it globally:
+Then you can create a system alias to run it:
 #+BEGIN_SRC bash
-cd <path_to_webmacs_sources>
-sudo pip3 install .
+sudo ln -s <path_to_venv>/bin/webmacs /usr/local/bin/webmacs
+# now you can use the webmacs command on your system, given that
+# /usr/local/bin is in your PATH.
 #+END_SRC
 
 
