@@ -18,6 +18,7 @@ from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QKeyEvent
 
 from ..application import app
+from ..webbuffer import WebBuffer
 from . import define_command
 
 
@@ -207,3 +208,13 @@ def open_external_editor(ctx):
     Open an external editor to change the text field content.
     """
     run_js(ctx, "external_editor_open(getActiveElement())");
+
+
+@define_command("content-edit-undo")
+def undo(ctx):
+    ctx.buffer.triggerAction(WebBuffer.Undo)
+
+
+@define_command("content-edit-redo")
+def undo(ctx):
+    ctx.buffer.triggerAction(WebBuffer.Redo)
