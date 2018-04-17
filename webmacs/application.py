@@ -25,11 +25,12 @@ from PyQt5.QtWidgets import QApplication
 
 from . import require
 from .version import opengl_vendor
-from .adblock import Adblocker, AdblockUpdaterThread
+from .adblock import Adblocker, AdblockUpdateRunner
 from .download_manager import DownloadManager
 from .profile import default_profile
 from .minibuffer.right_label import init_minibuffer_right_labels
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
+from .runnable import run
 
 
 if sys.platform.startswith("linux"):
@@ -111,9 +112,7 @@ class Application(QApplication):
 
         self._setup_conf_paths()
 
-        self._adblock_thread = None
         self._interceptor = UrlInterceptor(self)
-        self.adblock_update()
 
         self._download_manager = DownloadManager(self)
 
@@ -178,23 +177,18 @@ class Application(QApplication):
         return self.profile.ignored_certs
 
     def adblock_update(self):
-        if self._adblock_thread is not None:
-            return
-
-        generator = Adblocker(self.adblock_path())
-
         def adblock_thread_finished():
-            self._adblock_thread.deleteLater()
-            self._adblock_thread = None
             logging.debug("adblock update finished")
 
-        self._adblock_thread = AdblockUpdaterThread(generator)
-        self._adblock_thread.finished.connect(adblock_thread_finished)
-        self._adblock_thread.adblock_updated.connect(
+        generator = Adblocker(self.adblock_path())
+        runner = AdblockUpdateRunner(generator)
+        runner.finished.connect(adblock_thread_finished)
+        runner.adblock_updated.connect(
             self._interceptor.update_adblock
         )
-        self._adblock_thread.start()
         logging.debug("starting adblock update")
+        run(runner)
 
     def post_init(self):
+        self.adblock_update()
         init_minibuffer_right_labels()
