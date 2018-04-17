@@ -172,7 +172,7 @@ def toggle_ad_block(ctx):
     from .webbuffer import reload_buffer_no_cache
 
     app().url_interceptor().toggle_use_adblock()
-    reload_buffer_no_cache()
+    reload_buffer_no_cache(ctx)
 
 
 class VisitedLinksModel(PromptTableModel):
