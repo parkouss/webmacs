@@ -178,11 +178,11 @@ class KeyEater(object):
             return False
 
         if result.complete:
+            self._show_info_kbd()
             try:
                 self._call_command(sender, keypress, result.command)
             except Exception:
                 logging.exception("Error calling command:")
-            self._show_info_kbd()
             self._keypresses = []
             self._reset_prefix_arg = True
         else:

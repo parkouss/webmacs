@@ -14,6 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import re
 from collections import namedtuple
 
 from PyQt5.QtCore import QUrl, QThread, pyqtSlot as Slot, \
@@ -250,7 +251,7 @@ def get_url(prompt):
     value = prompt.value().strip()
 
     # split webjumps and protocols between command and argument
-    if "://" in value:
+    if re.match("^\S+://.*", value):
         args = value.split("://", 1)
     else:
         args = value.split(" ", 1)

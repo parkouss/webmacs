@@ -56,7 +56,7 @@ class DlPrompt(Prompt):
     download_started = Signal(object)
 
     def __init__(self, dl):
-        Prompt.__init__(self)
+        Prompt.__init__(self, None)
         self._dl = dl
         self.label = "Download file [{}]:".format(dl.mimeType())
 

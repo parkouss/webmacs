@@ -14,6 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from ..commands import define_command
 from ..minibuffer import Prompt, KEYMAP
@@ -279,3 +280,40 @@ def zoom_normal(ctx):
     Zoom-normal in the buffer.
     """
     ctx.buffer.zoom_normal()
+
+
+def _show_info_text_zoom(ctx):
+    def _wrapper(ratio):
+        ctx.minibuffer.show_info("Text zoom level: %02d%%"
+                                 % (ratio * 100))
+    return _wrapper
+
+
+@define_command("text-zoom-in")
+def text_zoom_in(ctx):
+    """
+    Zom in (text only) in the buffer.
+    """
+    ctx.buffer.runJavaScript("textzoom.changeFont(0.1);",
+                             QWebEngineScript.ApplicationWorld,
+                             _show_info_text_zoom(ctx))
+
+
+@define_command("text-zoom-out")
+def text_zoom_out(ctx):
+    """
+    Zom out (text only) in the buffer.
+    """
+    ctx.buffer.runJavaScript("textzoom.changeFont(-0.1);",
+                             QWebEngineScript.ApplicationWorld,
+                             _show_info_text_zoom(ctx))
+
+
+@define_command("text-zoom-reset")
+def text_zoom_reset(ctx):
+    """
+    Reset the zoom (text only) in the buffer.
+    """
+    ctx.buffer.runJavaScript("textzoom.resetChangeFont();",
+                             QWebEngineScript.ApplicationWorld,
+                             _show_info_text_zoom(ctx))

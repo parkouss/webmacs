@@ -93,6 +93,7 @@ class WebBuffer(QWebEnginePage):
         self.__delay_loading_url = None
         self.__keymap_mode = Mode.KEYMAP_NORMAL
         self.__mode = get_mode("standard-mode")
+        self.__text_edit_mark = False
 
         if url:
             if isinstance(url, DelayedLoadingUrl):
@@ -103,6 +104,13 @@ class WebBuffer(QWebEnginePage):
     @property
     def mode(self):
         return self.__mode
+
+    @property
+    def text_edit_mark(self):
+        return self.__text_edit_mark
+
+    def set_text_edit_mark(self, on):
+        self.__text_edit_mark = on
 
     def set_mode(self, modename):
         if self.__mode.name == modename:
@@ -365,6 +373,9 @@ KEYMAP.define_key("C-x h", "select-buffer-content")
 KEYMAP.define_key("C", "caret-browsing-init")
 KEYMAP.define_key("m", "bookmark-open")
 KEYMAP.define_key("M", "bookmark-add")
+KEYMAP.define_key("C-+", "text-zoom-in")
+KEYMAP.define_key("C--", "text-zoom-out")
+KEYMAP.define_key("C-=", "text-zoom-reset")
 KEYMAP.define_key("+", "zoom-in")
 KEYMAP.define_key("-", "zoom-out")
 KEYMAP.define_key("0", "zoom-normal")

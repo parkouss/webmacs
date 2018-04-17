@@ -153,7 +153,7 @@ def delete_word(ctx):
     if edit.hasSelectedText():
         edit.deselect()
 
-    edit.cursorWordBackward(True)
+    edit.cursorWordForward(True)
     if edit.hasSelectedText():
         edit.del_()
 
