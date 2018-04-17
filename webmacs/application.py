@@ -30,6 +30,8 @@ from .download_manager import DownloadManager
 from .profile import default_profile
 from .minibuffer.right_label import init_minibuffer_right_labels
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
+from .spell_checking import SpellCheckingUpdateRunner, \
+    spell_checking_dictionaries
 from .runnable import run
 
 
@@ -178,7 +180,7 @@ class Application(QApplication):
 
     def adblock_update(self):
         def adblock_thread_finished():
-            logging.debug("adblock update finished")
+            logging.debug("Adblock update finished")
 
         generator = Adblocker(self.adblock_path())
         runner = AdblockUpdateRunner(generator)
@@ -186,9 +188,26 @@ class Application(QApplication):
         runner.adblock_updated.connect(
             self._interceptor.update_adblock
         )
-        logging.debug("starting adblock update")
+        logging.debug("Starting adblock update")
+        run(runner)
+
+    def update_spell_checking(self):
+        if not bool(spell_checking_dictionaries.value):
+            return
+
+        spell_check_path = os.path.join(self.applicationDirPath(),
+                                        "qtwebengine_dictionaries")
+
+        def spc_finished():
+            self.profile.update_spell_checking()
+            logging.debug("Spell check update finished")
+
+        runner = SpellCheckingUpdateRunner(spell_check_path)
+        runner.finished.connect(spc_finished)
+        logging.debug("Starting spell check update")
         run(runner)
 
     def post_init(self):
         self.adblock_update()
+        self.update_spell_checking()
         init_minibuffer_right_labels()

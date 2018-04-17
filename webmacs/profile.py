@@ -24,6 +24,7 @@ from .autofill import Autofill
 from .autofill.db import PasswordDb
 from .ignore_certificates import IgnoredCertificates
 from .bookmarks import Bookmarks
+from . import variables
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -38,6 +39,11 @@ class Profile(object):
         self.q_profile = q_profile
 
         self._scheme_handlers = {}  # keep a python reference
+
+    def update_spell_checking(self):
+        dicts = variables.get("spell-checking-dictionaries")
+        self.q_profile.setSpellCheckEnabled(bool(dicts))
+        self.q_profile.setSpellCheckLanguages(dicts)
 
     def enable(self, app):
         path = os.path.join(app.profiles_path(), self.name)
@@ -70,6 +76,8 @@ class Profile(object):
         self.q_profile.downloadRequested.connect(
             app.download_manager().download_requested
         )
+
+        self.update_spell_checking()
 
         def inject_js(filepath, ipoint=QWebEngineScript.DocumentCreation,
                       iid=QWebEngineScript.ApplicationWorld, sub_frames=False):
