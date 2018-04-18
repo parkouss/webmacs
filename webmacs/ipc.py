@@ -16,6 +16,7 @@
 import os
 import json
 import struct
+import logging
 from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 from PyQt5.QtNetwork import QLocalServer, QLocalSocket
 
@@ -86,7 +87,9 @@ class IpcServer(QObject):
         QObject.__init__(self)
         self._server = QLocalServer()
         self._server.newConnection.connect(self._on_new_connection)
-        self._server.listen(self.get_sock_name())
+        if not self._server.listen(self.get_sock_name()):
+            logging.error("Can not start ipc: %s"
+                          % self._server.errorString())
         self._readers = {}
 
     def cleanup(self):
