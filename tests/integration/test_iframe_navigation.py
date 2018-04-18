@@ -42,12 +42,7 @@ def test_iframe_follow(session, pytestconfig):
 
     session.keyclick("f")
 
-    # argh, the minibuffer focus is not automatically detected under xvfb
-    if pytestconfig.xvfb:
-        # so force the keymap...
-        set_local_keymap(follow_keymap)
-    else:
-        session.wait_local_keymap(follow_keymap)
+    session.wait_local_keymap(follow_keymap)
     # TODO FIXME can't use wkeyclicks("2"), why?
     session.keyclick(Qt.Key_2, widget=current_window().minibuffer().input())
     session.wkeyclicks("Enter", widget=current_window().minibuffer().input())
