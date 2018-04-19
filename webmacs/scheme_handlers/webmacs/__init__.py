@@ -120,3 +120,34 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
     @register_page()
     def variables(self, job, _, name):
         self.reply_template(job, name, {"variables": VARIABLES})
+
+    @register_page(match_url="^keymap/(\S+)$", visible=False)
+    def keymap(self, job, _, keymap):
+        km = KEYMAPS[keymap]
+
+        self.reply_template(job, "keymap", {
+            "name": keymap,
+            "keymap": km,
+            "bindings": _get_keymap_bindings(km),
+        })
+
+    @register_page()
+    def bindings(self, job, _, name):
+        bindings = {}
+        for kname, km in KEYMAPS.items():
+            bindings[kname] = _get_keymap_bindings(km)
+
+        self.reply_template(job, name, {"bindings": bindings})
+
+
+def _get_keymap_bindings(km):
+    acc = []
+
+    def add(prefix, cmd):
+        if isinstance(cmd, str):
+            acc.append((
+                " ".join(str(k) for k in prefix),
+                cmd
+            ))
+    km.traverse_commands(add)
+    return acc

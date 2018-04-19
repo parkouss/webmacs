@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Bindings{% endblock %}
+{% block content %}
+<h1>Webmacs bindings</h1>
+{% for name, km in bindings|dictsort %}
+{% if km %}
+<h2>In <a href="webmacs://keymap/{{name}}">{{name}}</a> keymap:</h2>
+<table>
+{% for prefix, command in km|sort %}
+  <tr>
+    <td>{{prefix}}</td>
+    <td><a href="webmacs://command/{{command}}">{{command}}</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endfor %}
+{% endblock %}
