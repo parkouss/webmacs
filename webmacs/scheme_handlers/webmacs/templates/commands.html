@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Available commands{% endblock %}
+{% block content %}
+<h1>Webmacs commands</h1>
+<table>
+{% for name, command in commands|dictsort %}
+  {% if command.visible %}
+  <tr>
+    <td>{{name}}</td><td>{{command.binding.__doc__}}</td>
+  </tr>
+  {% endif %}
+{% endfor %}
+</table>
+{% endblock %}
