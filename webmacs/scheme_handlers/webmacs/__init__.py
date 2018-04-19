@@ -20,6 +20,7 @@ from PyQt5.QtWebEngineCore import QWebEngineUrlSchemeHandler
 from jinja2 import Environment, PackageLoader
 from ... import version, COMMANDS
 from ...variables import VARIABLES
+from ...keymaps import KEYMAPS
 
 
 PAGES = []
@@ -95,6 +96,26 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
     @register_page()
     def commands(self, job, _, name):
         self.reply_template(job, name, {"commands": COMMANDS})
+
+    @register_page(match_url="^command/(\S+)$", visible=False)
+    def command(self, job, _, command):
+        used_in_keymaps = []
+
+        for name, km in KEYMAPS.items():
+            def add(prefix, cmd):
+                if cmd == command:
+                    used_in_keymaps.append((
+                        " ".join(str(k) for k in prefix),
+                        name,
+                    ))
+
+            km.traverse_commands(add)
+
+        self.reply_template(job, "command", {
+            "command_name": command,
+            "command": COMMANDS[command],
+            "used_in_keymaps": used_in_keymaps,
+        })
 
     @register_page()
     def variables(self, job, _, name):

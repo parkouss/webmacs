@@ -249,7 +249,7 @@ class BookmarksModel(VisitedLinksModel):
         self.visitedlinks = bookmarks
 
 
-BOOKMARKS_KEYMAP = Keymap("visited-links-list", parent=KEYMAP)
+BOOKMARKS_KEYMAP = Keymap("bookmarks-list", parent=KEYMAP)
 # so removing a bookmark is like removing a visited link
 BOOKMARKS_KEYMAP.define_key("C-k", visited_links_remove_entry)
 

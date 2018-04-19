@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{command_name}} command{% endblock %}
+{% block content %}
+<h1>Command: {{command_name}}</h1>
+
+<p>{{command.binding.__doc__}}</p>
+
+{% if used_in_keymaps %}
+<h2>This command is bound to:</h2>
+<table>
+  <tr><th>binding</th><th>keymap</th></tr>
+  {% for binding, keymap in used_in_keymaps %}
+  <tr><td>{{binding}}</td><td>{{keymap}}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

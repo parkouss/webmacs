@@ -7,7 +7,8 @@
 {% for name, command in commands|dictsort %}
   {% if command.visible %}
   <tr>
-    <td>{{name}}</td><td>{{command.binding.__doc__}}</td>
+    <td><a href="webmacs://command/{{name}}">{{name}}</a></td>
+    <td>{{command.binding.__doc__}}</td>
   </tr>
   {% endif %}
 {% endfor %}

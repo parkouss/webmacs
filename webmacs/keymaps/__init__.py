@@ -20,6 +20,7 @@ from PyQt5.QtGui import QKeyEvent
 
 KEY2CHAR = {}
 CHAR2KEY = {}
+KEYMAPS = {}
 
 
 def _set_key(key, char, *chars):
@@ -322,6 +323,30 @@ class Keymap(object):
         self.name = name
         self.parent = parent
         self.bindings = {}
+        if self.name is not None:
+            if self.name in KEYMAPS:
+                raise ValueError("A keymap named %s already exists."
+                                 % self.name)
+            KEYMAPS[self.name] = self
+
+    def _traverse_commands(self, prefix, acc_fn):
+        for keypress, cmd in self.bindings.items():
+            new_prefix = prefix + [keypress]
+            if isinstance(cmd, Keymap):
+                cmd._traverse_commands(new_prefix, acc_fn)
+            else:
+                acc_fn(new_prefix, cmd)
+        if self.parent:
+            for keypress, cmd in self.parent.bindings.items():
+                if keypress not in self.bindings:
+                    new_prefix = prefix + [keypress]
+                    if isinstance(cmd, Keymap):
+                        cmd._traverse_commands(new_prefix, acc_fn)
+                    else:
+                        acc_fn(new_prefix, cmd)
+
+    def traverse_commands(self, acc_fn):
+        self._traverse_commands([], acc_fn)
 
     def _define_key(self, key, binding):
         keys = [KeyPress.from_str(k) for k in key.split()]
@@ -411,7 +436,7 @@ EMPTY_KEYMAP = Keymap("empty")
 GLOBAL_KEYMAP = Keymap("global")
 BUFFER_KEYMAP = Keymap("webbuffer")
 CONTENT_EDIT_KEYMAP = Keymap("webcontent-edit")
-CARET_BROWSING_KEYMAP = Keymap("Caret Browsing")
+CARET_BROWSING_KEYMAP = Keymap("caret-browsing")
 FULLSCREEN_KEYMAP = Keymap("video-fullscreen")
 
 
