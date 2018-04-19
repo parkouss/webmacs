@@ -352,3 +352,53 @@ def send_right(ctx):
 def send_left(ctx):
     """Send a key left event."""
     send_key_event(ctx.sender, KeyPress.from_str("Left"))
+
+
+def _open_url(ctx, url):
+    if current_prefix_arg() == (4,):
+        buffer = create_buffer()
+        ctx.current_view.setBuffer(buffer)
+    else:
+        buffer = ctx.buffer
+
+    buffer.load(url)
+
+
+@define_command("describe-bindings")
+def describe_bindings(ctx):
+    """
+    Display current bindings in the current buffer or in a new buffer.
+    """
+    _open_url(ctx, "webmacs://bindings")
+
+
+@define_command("describe-commands")
+def describe_commands(ctx):
+    """
+    Display commands in the current buffer or in a new buffer.
+    """
+    _open_url(ctx, "webmacs://commands")
+
+
+@define_command("describe-variables")
+def describe_variables(ctx):
+    """
+    Display variables in the current buffer or in a new buffer.
+    """
+    _open_url(ctx, "webmacs://variables")
+
+
+@define_command("downloads")
+def downloads(ctx):
+    """
+    Display information about the current downloads.
+    """
+    _open_url(ctx, "webmacs://downloads")
+
+
+@define_command("version")
+def version(ctx):
+    """
+    Display version information.
+    """
+    _open_url(ctx, "webmacs://version")
