@@ -346,9 +346,9 @@ class Minibuffer(QWidget):
         self.close_prompt()
         self._prompt = prompt
         if prompt:
-            prompt.enable(self)
             prompt.closed.connect(self._prompt_closed)
             prompt.closed.connect(prompt.deleteLater)
+            return prompt.exec_(self)
 
     def close_prompt(self):
         if self._prompt:

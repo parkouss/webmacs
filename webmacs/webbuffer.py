@@ -15,7 +15,7 @@
 
 import logging
 
-from PyQt5.QtCore import QUrl, pyqtSlot as Slot, QEventLoop
+from PyQt5.QtCore import QUrl, pyqtSlot as Slot
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 from PyQt5.QtWebChannel import QWebChannel
 from collections import namedtuple
@@ -259,20 +259,13 @@ class WebBuffer(QWebEnginePage):
             return
 
         # ask authentication credentials
-        loop = QEventLoop()
         prompt = AskPasswordPrompt(autofill, self)
         current_minibuffer().do_prompt(prompt)
 
-        def save_auth():
-            data = self.__authentication_data = FormData(url, prompt.username,
-                                                         prompt.password, None)
-            authenticator.setUser(data.username)
-            authenticator.setPassword(data.password)
-            loop.quit()
-
-        prompt.closed.connect(save_auth)
-
-        loop.exec_()
+        data = self.__authentication_data = FormData(url, prompt.username,
+                                                     prompt.password, None)
+        authenticator.setUser(data.username)
+        authenticator.setPassword(data.password)
 
     def certificateError(self, error):
         url = "{}:{}".format(error.url().host(), error.url().port(80))
@@ -280,24 +273,17 @@ class WebBuffer(QWebEnginePage):
         if db.is_ignored(url):
             return True
 
-        loop = QEventLoop()
         prompt = YesNoPrompt("[certificate error] {} - ignore ? "
                              .format(error.errorDescription()))
         current_minibuffer().do_prompt(prompt)
 
-        prompt.closed.connect(loop.quit)
-        loop.exec_()
         if prompt.yes:
             db.ignore(url)
         return prompt.yes
 
     def javaScriptConfirm(self, url, msg):
-        loop = QEventLoop()
         prompt = YesNoPrompt("[js-confirm] {} ".format(msg))
         current_minibuffer().do_prompt(prompt)
-
-        prompt.closed.connect(loop.quit)
-        loop.exec_()
         return prompt.yes
 
     def javaScriptAlert(self, url, msg):

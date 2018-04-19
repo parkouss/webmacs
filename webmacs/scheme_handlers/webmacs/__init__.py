@@ -137,7 +137,8 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
         for kname, km in KEYMAPS.items():
             bindings[kname] = _get_keymap_bindings(km)
 
-        self.reply_template(job, name, {"bindings": bindings, "keymaps": KEYMAPS})
+        self.reply_template(job, name, {"bindings": bindings,
+                                        "keymaps": KEYMAPS})
 
 
 def _get_keymap_bindings(km):

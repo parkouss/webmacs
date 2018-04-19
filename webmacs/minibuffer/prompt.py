@@ -17,7 +17,7 @@ import os
 import collections
 
 from PyQt5.QtCore import QObject, QAbstractTableModel, QModelIndex, Qt, \
-    pyqtSlot as Slot, pyqtSignal as Signal, QRegExp
+    pyqtSlot as Slot, pyqtSignal as Signal, QRegExp, QEventLoop
 
 from PyQt5.QtGui import QRegExpValidator
 
@@ -172,6 +172,13 @@ class Prompt(QObject):
             history.push(self.value())
         self.close()
         self.finished.emit()
+
+    def exec_(self, minibuffer):
+        self.enable(minibuffer)
+        loop = QEventLoop()
+        self.closed.connect(loop.quit)
+        loop.exec_()
+        return self.value()
 
 
 class PromptHistory(object):

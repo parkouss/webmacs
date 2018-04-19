@@ -13,8 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtCore import QStringListModel, QModelIndex, \
-    QEventLoop, QTimer
+from PyQt5.QtCore import QStringListModel, QModelIndex
 import itertools
 
 from . import define_command, COMMANDS
@@ -268,7 +267,7 @@ def open_bookmark(ctx):
     """
     Prompt to open a bookmark.
     """
-    visited_links_history(ctx.prompt)
+    visited_links_history(ctx)
 
 
 class BookmarkAddPrompt(Prompt):
@@ -290,21 +289,14 @@ def bookmark_add(ctx):
     minibuff = ctx.minibuffer
     url = ctx.prompt.value()
 
-    def doit():
-        loop = QEventLoop()
-        otherprompt = Prompt()
-        otherprompt.label = "bookmark's name: "
-        minibuff.do_prompt(otherprompt)
-        otherprompt.closed.connect(loop.quit)
-        loop.exec_()
+    otherprompt = Prompt(ctx)
+    otherprompt.label = "bookmark's name: "
+    name = minibuff.do_prompt(otherprompt)
 
-        name = otherprompt.value()
-        if name:
-            app().bookmarks().set(url, name)
-            minibuff.show_info("Bookmark {} created."
-                               .format(name))
-
-    QTimer.singleShot(0, doit)
+    if name:
+        app().bookmarks().set(url, name)
+        minibuff.show_info("Bookmark {} created."
+                           .format(name))
 
 
 class ModesPrompt(Prompt):
