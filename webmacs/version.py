@@ -14,10 +14,14 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import re
 
 from PyQt5.QtGui import (QOpenGLContext, QOpenGLVersionProfile,
                          QOffscreenSurface)
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWebEngineWidgets import QWebEngineProfile
+from PyQt5.QtCore import QT_VERSION_STR, QT_VERSION  # noqa: F401
+from . import __version__ as WEBMACS_VERSION_STR  # noqa: F401
 
 
 def opengl_vendor():  # pragma: no cover
@@ -64,3 +68,26 @@ def opengl_vendor():  # pragma: no cover
         ctx.doneCurrent()
         if old_context and old_surface:
             old_context.makeCurrent(old_surface)
+
+
+def QT_VERSION_CHECK(major, minor, patch):
+    return (major << 16) | (minor << 8) | patch
+
+
+def chromium_version():
+    """
+    Get the Chromium version for QtWebEngine.
+
+    This can also be checked by looking at this file with the right Qt tag:
+    https://github.com/qt/qtwebengine/blob/dev/tools/scripts/version_resolver.py#L41
+    """
+    if QWebEngineProfile is None:
+        # This should never happen
+        return 'unavailable'
+    profile = QWebEngineProfile()
+    ua = profile.httpUserAgent()
+    match = re.search(r' Chrome/([^ ]*) ', ua)
+    if not match:
+        logging.error("Could not get Chromium version from: {}".format(ua))
+        return 'unknown'
+    return match.group(1)

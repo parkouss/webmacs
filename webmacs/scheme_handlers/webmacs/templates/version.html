@@ -3,11 +3,10 @@
 {% block title %}Version{% endblock %}
 {% block content %}
 <table>
+  {% for name, version in versions %}
   <tr>
-    <td>webmacs version:</td><td>{{version}}</td>
+    <td>{{name}}:</td><td>{{version}}</td>
   </tr>
-  <tr>
-    <td>qt version:</td><td>{{qt_version}}</td>
-  </tr>
+  {% endfor %}
 </table>
 {% endblock %}

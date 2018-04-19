@@ -14,10 +14,10 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from PyQt5.QtCore import QT_VERSION_STR, QBuffer, QFile
+from PyQt5.QtCore import QBuffer, QFile
 from PyQt5.QtWebEngineCore import QWebEngineUrlSchemeHandler
 from jinja2 import Environment, PackageLoader
-from ... import __version__
+from ... import version
 
 
 PAGES = {}
@@ -65,8 +65,12 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
     @register_page
     def version(self):
         return {
-            "version": __version__,
-            "qt_version": QT_VERSION_STR
+            "versions": (
+                ("Webmacs version", version.WEBMACS_VERSION_STR),
+                ("Qt version", version.QT_VERSION_STR),
+                ("Chromium version", version.chromium_version()),
+                ("Opengl vendor", version.opengl_vendor()),
+            )
         }
 
     @register_page
