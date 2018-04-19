@@ -316,23 +316,17 @@ KeymapLookupResult = namedtuple("KeymapLookupResult",
                                 ("complete", "command", "keymap"))
 
 
-class Keymap(object):
-    __slots__ = ("name", "bindings", "parent")
+class InternalKeymap(object):
+    __slots__ = ("bindings", "parent")
 
-    def __init__(self, name=None, parent=None):
-        self.name = name
-        self.parent = parent
+    def __init__(self, parent=None):
         self.bindings = {}
-        if self.name is not None:
-            if self.name in KEYMAPS:
-                raise ValueError("A keymap named %s already exists."
-                                 % self.name)
-            KEYMAPS[self.name] = self
+        self.parent = parent
 
     def _traverse_commands(self, prefix, acc_fn):
         for keypress, cmd in self.bindings.items():
             new_prefix = prefix + [keypress]
-            if isinstance(cmd, Keymap):
+            if isinstance(cmd, InternalKeymap):
                 cmd._traverse_commands(new_prefix, acc_fn)
             else:
                 acc_fn(new_prefix, cmd)
@@ -340,7 +334,7 @@ class Keymap(object):
             for keypress, cmd in self.parent.bindings.items():
                 if keypress not in self.bindings:
                     new_prefix = prefix + [keypress]
-                    if isinstance(cmd, Keymap):
+                    if isinstance(cmd, InternalKeymap):
                         cmd._traverse_commands(new_prefix, acc_fn)
                     else:
                         acc_fn(new_prefix, cmd)
@@ -358,10 +352,10 @@ class Keymap(object):
         for keypress in keys[:-1]:
             if keypress in kmap.bindings:
                 othermap = kmap.bindings[keypress]
-                if not isinstance(othermap, Keymap):
-                    othermap = Keymap()
+                if not isinstance(othermap, InternalKeymap):
+                    othermap = InternalKeymap()
             else:
-                othermap = Keymap()
+                othermap = InternalKeymap()
             kmap.bindings[keypress] = othermap
             kmap = othermap
 
@@ -413,7 +407,7 @@ class Keymap(object):
             while keymap:
                 entry = keymap.bindings.get(keypress)
                 if entry is not None:
-                    if isinstance(entry, Keymap):
+                    if isinstance(entry, InternalKeymap):
                         keymap = entry
                         partial_match = True
                         break
@@ -428,16 +422,58 @@ class Keymap(object):
         else:
             return None
 
+
+class Keymap(InternalKeymap):
+    __slots__ = InternalKeymap.__slots__ + ("name", "doc")
+
+    def __init__(self, name, parent=None, doc=None):
+        InternalKeymap.__init__(self, parent=parent)
+        self.name = name
+        self.doc = doc
+        if self.name in KEYMAPS:
+            raise ValueError("A keymap named %s already exists."
+                             % self.name)
+        KEYMAPS[self.name] = self
+
     def __str__(self):
         return self.name
 
+    @property
+    def brief_doc(self):
+        if self.doc:
+            return self.doc.split("\n", 1)[0]
+
 
 EMPTY_KEYMAP = Keymap("empty")
-GLOBAL_KEYMAP = Keymap("global")
-BUFFER_KEYMAP = Keymap("webbuffer")
-CONTENT_EDIT_KEYMAP = Keymap("webcontent-edit")
-CARET_BROWSING_KEYMAP = Keymap("caret-browsing")
-FULLSCREEN_KEYMAP = Keymap("video-fullscreen")
+
+GLOBAL_KEYMAP = Keymap("global", doc="""\
+The global keymap is always active.
+
+It act as a fallback to other keymaps, which are considered local. Only one
+local keymap can be active at a time. A binding is first searched in the
+currently active local keymap, and if not found the global keymap is used.
+
+Only bindings with modifiers should be bound to it, else it will be impossible
+to edit text inside the browser.""")
+
+BUFFER_KEYMAP = Keymap("webbuffer", doc="""\
+Local keymap activated when a web buffer is focused.\
+
+A web buffer is focused when there is no text editing, no caret browsing, or
+when the minibuffer input is not shown... It is enabled when no other local
+keymap is enabled.""")
+
+CONTENT_EDIT_KEYMAP = Keymap("webcontent-edit", doc="""\
+Local keymap activated when a webcontent field (input, textarea, ...) is \
+focused.""")
+
+CARET_BROWSING_KEYMAP = Keymap("caret-browsing", doc="""\
+Local keymap activated when you are navigating the webbuffer with a caret.\
+""")
+
+FULLSCREEN_KEYMAP = Keymap("video-fullscreen", doc="""\
+Local Keymap activated when a video is played full screen.
+""")
 
 
 def global_keymap():

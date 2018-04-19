@@ -6,6 +6,7 @@
 {% for name, km in bindings|dictsort %}
 {% if km %}
 <h2>In <a href="webmacs://keymap/{{name}}">{{name}}</a> keymap:</h2>
+<p>{{keymaps[name].brief_doc}}</p>
 <table>
 {% for prefix, command in km|sort %}
   <tr>
