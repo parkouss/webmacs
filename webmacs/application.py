@@ -25,11 +25,14 @@ from PyQt5.QtWidgets import QApplication
 
 from . import require
 from .version import opengl_vendor
-from .adblock import Adblocker, AdblockUpdaterThread
+from .adblock import Adblocker, AdblockUpdateRunner
 from .download_manager import DownloadManager
 from .profile import default_profile
 from .minibuffer.right_label import init_minibuffer_right_labels
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
+from .spell_checking import SpellCheckingUpdateRunner, \
+    spell_checking_dictionaries
+from .runnable import run
 
 
 if sys.platform.startswith("linux"):
@@ -111,9 +114,7 @@ class Application(QApplication):
 
         self._setup_conf_paths()
 
-        self._adblock_thread = None
         self._interceptor = UrlInterceptor(self)
-        self.adblock_update()
 
         self._download_manager = DownloadManager(self)
 
@@ -178,23 +179,35 @@ class Application(QApplication):
         return self.profile.ignored_certs
 
     def adblock_update(self):
-        if self._adblock_thread is not None:
-            return
+        def adblock_thread_finished():
+            logging.debug("Adblock update finished")
 
         generator = Adblocker(self.adblock_path())
-
-        def adblock_thread_finished():
-            self._adblock_thread.deleteLater()
-            self._adblock_thread = None
-            logging.debug("adblock update finished")
-
-        self._adblock_thread = AdblockUpdaterThread(generator)
-        self._adblock_thread.finished.connect(adblock_thread_finished)
-        self._adblock_thread.adblock_updated.connect(
+        runner = AdblockUpdateRunner(generator)
+        runner.finished.connect(adblock_thread_finished)
+        runner.adblock_updated.connect(
             self._interceptor.update_adblock
         )
-        self._adblock_thread.start()
-        logging.debug("starting adblock update")
+        logging.debug("Starting adblock update")
+        run(runner)
+
+    def update_spell_checking(self):
+        if not bool(spell_checking_dictionaries.value):
+            return
+
+        spell_check_path = os.path.join(self.applicationDirPath(),
+                                        "qtwebengine_dictionaries")
+
+        def spc_finished():
+            self.profile.update_spell_checking()
+            logging.debug("Spell check update finished")
+
+        runner = SpellCheckingUpdateRunner(spell_check_path)
+        runner.finished.connect(spc_finished)
+        logging.debug("Starting spell check update")
+        run(runner)
 
     def post_init(self):
+        self.adblock_update()
+        self.update_spell_checking()
         init_minibuffer_right_labels()

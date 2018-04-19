@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Keymap {{name}}{% endblock %}
+{% block content %}
+<h1>Keymap {{name}}:</h1>
+<table>
+{% for prefix, command in bindings|sort %}
+<tr>
+  <td>{{prefix}}</td>
+  <td><a href="webmacs://command/{{command}}">{{command}}</a></td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

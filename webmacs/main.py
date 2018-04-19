@@ -19,6 +19,7 @@ import socket
 import logging
 import imp
 import sys
+import atexit
 
 from PyQt5.QtNetwork import QAbstractSocket
 
@@ -125,6 +126,7 @@ def main():
                   getattr(logging, opts.webcontent_log_level.upper()))
 
     conn = IpcServer.check_server_connection()
+
     if conn:
         conn.send_data(opts.__dict__)
         data = conn.get_data()
@@ -136,6 +138,7 @@ def main():
 
     app = Application(["webmacs"])
     server = IpcServer()
+    atexit.register(server.cleanup)
 
     window = Window()
     # register the window as being the current one
@@ -165,10 +168,7 @@ def main():
     app.post_init()
     signal_wakeup(app)
     signal.signal(signal.SIGINT, lambda s, h: app.quit())
-    try:
-        app.exec_()
-    finally:
-        server.cleanup()
+    sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
