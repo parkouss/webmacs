@@ -158,7 +158,8 @@ class TestSession(object):
 
 
 @pytest.yield_fixture()
-def session(qtbot, qapp):
+def session(qtbot, qapp, mocker):
+    mocker.patch("webmacs.minibuffer.prompt.Prompt._exec")
     sess = TestSession(qtbot, qapp)
 
     window = Window()

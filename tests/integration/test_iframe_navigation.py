@@ -1,6 +1,5 @@
 from webmacs import current_window
 from webmacs.commands.follow import KEYMAP as follow_keymap
-from webmacs.keyboardhandler import set_local_keymap
 from PyQt5.QtCore import Qt
 
 

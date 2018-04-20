@@ -173,11 +173,15 @@ class Prompt(QObject):
         self.close()
         self.finished.emit()
 
+    def _exec(self, loop):
+        # mocked in tests to not block.
+        loop.exec_()
+
     def exec_(self, minibuffer):
         self.enable(minibuffer)
         loop = QEventLoop()
         self.closed.connect(loop.quit)
-        loop.exec_()
+        self._exec(loop)
         return self.value()
 
 
