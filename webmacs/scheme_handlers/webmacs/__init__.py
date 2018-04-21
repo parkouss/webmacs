@@ -97,7 +97,7 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
     def commands(self, job, _, name):
         self.reply_template(job, name, {"commands": COMMANDS})
 
-    @register_page(match_url="^command/(\S+)$", visible=False)
+    @register_page(match_url=r"^command/(\S+)$", visible=False)
     def command(self, job, _, command):
         used_in_keymaps = []
 
@@ -121,7 +121,11 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
     def variables(self, job, _, name):
         self.reply_template(job, name, {"variables": VARIABLES})
 
-    @register_page(match_url="^keymap/(\S+)$", visible=False)
+    @register_page(match_url=r"^variable/(\S+)$", visible=False)
+    def variable(self, job, _, name):
+        self.reply_template(job, "variable", {"variable": VARIABLES[name]})
+
+    @register_page(match_url=r"^keymap/(\S+)$", visible=False)
     def keymap(self, job, _, keymap):
         km = KEYMAPS[keymap]
 

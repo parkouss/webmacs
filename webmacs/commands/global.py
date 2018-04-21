@@ -25,6 +25,7 @@ from ..keymaps import Keymap, KeyPress
 from ..keyboardhandler import current_prefix_arg, send_key_event
 from .. import BUFFERS, windows
 from ..mode import MODES
+from ..variables import VARIABLES
 
 
 class CommandsListPrompt(Prompt):
@@ -394,3 +395,31 @@ def version(ctx):
     Display version information.
     """
     _open_url(ctx, "webmacs://version")
+
+
+class VariableListPrompt(Prompt):
+    label = "describe variable: "
+    complete_options = {
+        "match": Prompt.FuzzyMatch,
+        "complete-empty": True,
+    }
+    history = PromptHistory()
+
+    def validate(self, name):
+        return name
+
+    def completer_model(self):
+        model = QStringListModel(self)
+        model.setStringList(sorted(VARIABLES))
+        return model
+
+
+@define_command("describe-variable", prompt=VariableListPrompt)
+def describe_variable(ctx):
+    """
+    Prompt for a variable name to describe.
+    """
+    variable = ctx.prompt.value()
+    print(variable)
+    if variable in VARIABLES:
+        ctx.buffer.load("webmacs://variable/%s" % variable)
