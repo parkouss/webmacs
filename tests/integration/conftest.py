@@ -9,7 +9,7 @@ from PyQt5.QtCore import QEvent
 
 from webmacs.application import Application
 from webmacs import (windows, buffers, WINDOWS_HANDLER, current_buffer,
-                     current_window)
+                     current_window, current_minibuffer)
 from webmacs.webbuffer import create_buffer
 from webmacs.window import Window
 from webmacs.webbuffer import close_buffer
@@ -45,13 +45,29 @@ def qapp(qapp_args):
 
 
 class TestSession(object):
-    def __init__(self, qtbot, qapp):
+    def __init__(self, qtbot, qapp, prompt_exec):
         self.qtbot = qtbot
         self.qapp = qapp
+        self.prompt_exec = prompt_exec
+
+    def set_prompt_exec(self, fn):
+        self.prompt_exec.side_effect = fn
 
     @property
     def buffer(self):
         return current_buffer()
+
+    @property
+    def window(self):
+        return current_window()
+
+    @property
+    def minibuffer(self):
+        return current_minibuffer()
+
+    @property
+    def minibuffer_input(self):
+        return self.minibuffer.input()
 
     def wait_signal(self, *args, **kwargs):
         return self.qtbot.wait_signal(*args, **kwargs)
@@ -117,17 +133,17 @@ class TestSession(object):
         self.check_javascript(script, True, buffer=buffer)
 
     def keyclick(self, key, widget=None, **kwargs):
-        widget = widget or current_window().current_web_view()
+        widget = widget or self.qapp.focusWidget()
         for w in iter_widgets_for_events(widget):
             QTest.keyClick(w, key, **kwargs)
 
     def keyclicks(self, keys, widget=None, **kwargs):
-        widget = widget or current_window().current_web_view()
+        widget = widget or self.qapp.focusWidget()
         for w in iter_widgets_for_events(widget):
             QTest.keyClicks(w, keys, **kwargs)
 
     def wkeyclicks(self, shortcut, widget=None):
-        widget = widget or current_window().current_web_view()
+        widget = widget or self.qapp.focusWidget()
         keys = [KeyPress.from_str(k) for k in shortcut.split()]
         for w in iter_widgets_for_events(widget):
             for key in keys:
@@ -159,8 +175,8 @@ class TestSession(object):
 
 @pytest.yield_fixture()
 def session(qtbot, qapp, mocker):
-    mocker.patch("webmacs.minibuffer.prompt.Prompt._exec")
-    sess = TestSession(qtbot, qapp)
+    prompt_exec = mocker.patch("webmacs.minibuffer.prompt._prompt_exec")
+    sess = TestSession(qtbot, qapp, prompt_exec)
 
     window = Window()
     WINDOWS_HANDLER.current_window = window

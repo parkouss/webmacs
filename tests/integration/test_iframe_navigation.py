@@ -1,4 +1,3 @@
-from webmacs import current_window
 from webmacs.commands.follow import KEYMAP as follow_keymap
 from PyQt5.QtCore import Qt
 
@@ -43,8 +42,8 @@ def test_iframe_follow(session, pytestconfig):
 
     session.wait_local_keymap(follow_keymap)
     # TODO FIXME can't use wkeyclicks("2"), why?
-    session.keyclick(Qt.Key_2, widget=current_window().minibuffer().input())
-    session.wkeyclicks("Enter", widget=current_window().minibuffer().input())
+    session.keyclick(Qt.Key_2)
+    session.wkeyclicks("Enter")
     session.wait_local_keymap("webcontent-edit")
     session.keyclicks("youhou")
 

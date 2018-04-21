@@ -95,6 +95,11 @@ class PromptTableModel(QAbstractTableModel):
             return QModelIndex()
 
 
+def _prompt_exec(prompt, loop):
+    # mocked in tests to not block.
+    loop.exec_()
+
+
 class Prompt(QObject):
     label = ""
     complete_options = {}
@@ -173,15 +178,11 @@ class Prompt(QObject):
         self.close()
         self.finished.emit()
 
-    def _exec(self, loop):
-        # mocked in tests to not block.
-        loop.exec_()
-
     def exec_(self, minibuffer):
         self.enable(minibuffer)
         loop = QEventLoop()
         self.closed.connect(loop.quit)
-        self._exec(loop)
+        _prompt_exec(self, loop)
         return self.value()
 
 
