@@ -245,20 +245,21 @@ class YesNoPrompt(Prompt):
     def __init__(self, label, parent=None):
         Prompt.__init__(self, parent)
         self.label = label + "[y/n]"
-        self.yes = None
+        self.yes = False
 
     def enable(self, minibuffer):
         set_global_keymap_enabled(False)  # disable any global keychord
         Prompt.enable(self, minibuffer)
         buffer_input = minibuffer.input()
 
-        validator = QRegExpValidator(QRegExp("[yYnN]"), self)
+        validator = QRegExpValidator(QRegExp("[yYnN]"), buffer_input)
         buffer_input.setValidator(validator)
         buffer_input.textEdited.connect(self._on_text_edited)
+
+    def value(self):
+        return self.yes
 
     def _on_text_edited(self, text):
         self.yes = text in ('y', 'Y')
         self.close()
-        buffer_input = self.minibuffer.input()
-        buffer_input.validator().deleteLater()
         set_global_keymap_enabled(True)

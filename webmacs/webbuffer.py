@@ -282,9 +282,9 @@ class WebBuffer(QWebEnginePage):
         return prompt.yes
 
     def javaScriptConfirm(self, url, msg):
-        prompt = YesNoPrompt("[js-confirm] {} ".format(msg))
-        current_minibuffer().do_prompt(prompt)
-        return prompt.yes
+        return current_minibuffer().do_prompt(
+            YesNoPrompt("[js-confirm] {} ".format(msg))
+        )
 
     def javaScriptAlert(self, url, msg):
         msg = "[js-alert] {}".format(msg)
