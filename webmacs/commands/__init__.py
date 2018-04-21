@@ -18,26 +18,6 @@ from ..minibuffer import Prompt
 from .. import COMMANDS
 
 
-class CommandExecutor(QObject):
-    """
-    Internal object to execute commands when a prompt is used.
-    """
-    def __init__(self, cmd, prompt):
-        QObject.__init__(self, prompt)
-        self.cmd = cmd
-        self.prompt = prompt
-
-    @Slot()
-    def call(self):
-        ctx = self.prompt.ctx
-        ctx.prompt = self.prompt
-        try:
-            self.cmd(ctx)
-        finally:
-            # to avoid reference cycle
-            ctx.prompt = None
-
-
 class InteractiveCommand(object):
     """
     A command to interact with the system.
@@ -61,9 +41,16 @@ class InteractiveCommand(object):
     def __call__(self, ctx):
         if self.prompt:
             prompt = self.prompt(ctx)
-            # executor will be destroyed with its parent, the prompt
-            executor = CommandExecutor(self.binding, prompt)
-            prompt.finished.connect(executor.call)
+
+            def call():
+                ctx.prompt = prompt
+                try:
+                    self.binding(ctx)
+                finally:
+                    # to avoid reference cycle
+                    ctx.prompt = None
+
+            prompt.finished.connect(call)
             ctx.minibuffer.do_prompt(prompt)
         else:
             self.binding(ctx)
