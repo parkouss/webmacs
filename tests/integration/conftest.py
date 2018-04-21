@@ -5,7 +5,7 @@ import time
 from PyQt5.QtTest import QTest
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import QEvent
+from PyQt5.QtCore import QEvent, QTimer
 
 from webmacs.application import Application
 from webmacs import (windows, buffers, WINDOWS_HANDLER, current_buffer,
@@ -52,6 +52,12 @@ class TestSession(object):
 
     def set_prompt_exec(self, fn):
         self.prompt_exec.side_effect = fn
+
+    def waiter(self):
+        return Waiter(self)
+
+    def call_next(self, fn):
+        QTimer.singleShot(0, fn)
 
     @property
     def buffer(self):
@@ -171,6 +177,19 @@ class TestSession(object):
         assert self.wait_until(wait), (
             "keymap %s is not active (%s)" % (name_or_keymap, local_keymap())
         )
+
+
+class Waiter(object):
+    def __init__(self, session):
+        self.session = session
+        self.end = False
+
+    def set(self):
+        self.end = True
+
+    def wait(self, wait=5, **kwargs):
+        kwargs["wait"] = wait
+        self.session.wait_until(lambda: self.end, **kwargs)
 
 
 @pytest.yield_fixture()
