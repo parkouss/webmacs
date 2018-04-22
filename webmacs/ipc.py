@@ -72,23 +72,26 @@ class IPcReader(QObject):
 
 class IpcServer(QObject):
     @classmethod
-    def get_sock_name(cls):
-        return "webmacs.ipc"
+    def get_sock_name(cls, instance):
+        if instance is None:
+            return "webmacs.ipc"
+        return "webmacs.{}.ipc".format(instance)
 
     @classmethod
-    def check_server_connection(cls):
+    def check_server_connection(cls, instance=None):
         sock = QLocalSocket()
-        sock.connectToServer(cls.get_sock_name())
+        sock.connectToServer(cls.get_sock_name(instance))
         if sock.waitForConnected(1000):
             return IPcReader(sock)
         return None
 
-    def __init__(self):
+    def __init__(self, instance=None):
         QObject.__init__(self)
-        QLocalServer.removeServer(self.get_sock_name())
+        sock_name = self.get_sock_name(instance)
+        QLocalServer.removeServer(sock_name)
         self._server = QLocalServer()
         self._server.newConnection.connect(self._on_new_connection)
-        if not self._server.listen(self.get_sock_name()):
+        if not self._server.listen(sock_name):
             logging.error("Can not start ipc: %s"
                           % self._server.errorString())
         self._readers = {}

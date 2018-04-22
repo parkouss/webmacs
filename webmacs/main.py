@@ -78,6 +78,9 @@ def parse_args(argv=None):
                         default="critical",
                         choices=("info", "warning", "error", "critical"))
 
+    parser.add_argument("-i", "--instance",
+                        help="Create or reuse a named webmacs instance.")
+
     parser.add_argument("url", nargs="?",
                         help="url to open")
 
@@ -125,7 +128,7 @@ def main():
     setup_logging(getattr(logging, opts.log_level.upper()),
                   getattr(logging, opts.webcontent_log_level.upper()))
 
-    conn = IpcServer.check_server_connection()
+    conn = IpcServer.check_server_connection(opts.instance)
 
     if conn:
         conn.send_data(opts.__dict__)
@@ -137,7 +140,7 @@ def main():
         return
 
     app = Application(["webmacs"])
-    server = IpcServer()
+    server = IpcServer(opts.instance)
     atexit.register(server.cleanup)
 
     window = Window()
