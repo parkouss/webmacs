@@ -79,6 +79,10 @@ class LocalKeymapSetter(QObject):
         if old_km == local_keymap():
             set_local_keymap(buffer.active_keymap())
 
+    def buffer_opened_in_view(self, buffer):
+        if not self.enabled_minibuffer:
+            set_local_keymap(buffer.active_keymap())
+
 
 LOCAL_KEYMAP_SETTER = LocalKeymapSetter()
 
