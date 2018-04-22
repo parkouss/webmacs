@@ -85,6 +85,7 @@ class IpcServer(QObject):
 
     def __init__(self):
         QObject.__init__(self)
+        QLocalServer.removeServer(self.get_sock_name())
         self._server = QLocalServer()
         self._server.newConnection.connect(self._on_new_connection)
         if not self._server.listen(self.get_sock_name()):
