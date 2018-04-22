@@ -420,6 +420,6 @@ def describe_variable(ctx):
     Prompt for a variable name to describe.
     """
     variable = ctx.prompt.value()
-    print(variable)
     if variable in VARIABLES:
-        ctx.buffer.load("webmacs://variable/%s" % variable)
+        buffer = create_buffer("webmacs://variable/%s" % variable)
+        ctx.view.setBuffer(buffer)
