@@ -15,7 +15,9 @@
 
 import os
 import re
-from PyQt5.QtCore import QBuffer, QFile
+import importlib
+import inspect
+from PyQt5.QtCore import QBuffer, QFile, QUrlQuery
 from PyQt5.QtWebEngineCore import QWebEngineUrlSchemeHandler
 from jinja2 import Environment, PackageLoader
 from ... import version, COMMANDS
@@ -144,6 +146,35 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
         self.reply_template(job, name, {"bindings": bindings,
                                         "keymaps": KEYMAPS})
 
+    @register_page(match_url=r"^pydoc/.+$", visible=False)
+    def pydoc(self, job, url):
+        from pygments.formatters import HtmlFormatter
+        from pygments.lexers.python import Python3Lexer
+        from pygments import highlight
+
+        modname = url.path().lstrip("/")
+        query = QUrlQuery(url)
+        extras = {}
+        if query.hasQueryItem("hl_lines"):
+            start, end = query.queryItemValue("hl_lines").split("-")
+            extras["hl_lines"] = list(range(int(start), int(end) + 1))
+
+        mod = importlib.import_module(modname)
+        filepath = inspect.getsourcefile(mod)
+
+        formatter = HtmlFormatter(
+            title="Module %s" % modname,
+            full=True,
+            lineanchors="line",
+            **extras
+        )
+
+        with open(filepath) as f:
+            code = highlight(f.read(), Python3Lexer(), formatter)
+
+        buffer = QBuffer(self)
+        buffer.setData(code.encode("utf-8"))
+        job.reply(b"text/html", buffer)
 
 def _get_keymap_bindings(km):
     acc = []

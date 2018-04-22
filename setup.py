@@ -69,7 +69,7 @@ setup(
 Work in progress.
 ''',
     packages=find_packages(),
-    install_requires=["dateparser", "jinja2"],
+    install_requires=["dateparser", "jinja2", "pygments"],
     tests_require=["pytest"],
     cmdclass={'test': PyTest},
     entry_points={"console_scripts": ["webmacs = webmacs.main:main"]},
