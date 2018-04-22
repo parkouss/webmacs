@@ -113,9 +113,20 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
 
             km.traverse_commands(add)
 
+        cmd = COMMANDS[command]
+
+        lines, loc = inspect.getsourcelines(cmd.binding)
+        src_url = "webmacs://pydoc/{}?hl_lines={}-{}#line-{}".format(
+            cmd.binding.__module__,
+            loc,
+            loc + len(lines),
+            loc
+        )
+
         self.reply_template(job, "command", {
             "command_name": command,
-            "command": COMMANDS[command],
+            "command": cmd,
+            "command_src_url": src_url,
             "used_in_keymaps": used_in_keymaps,
         })
 

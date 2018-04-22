@@ -4,6 +4,7 @@
 {% block content %}
 <h1>Command: {{command_name}}</h1>
 
+<p>See the <a href="{{command_src_url}}">source code</a>.</p>
 <p>{{command.binding.__doc__}}</p>
 
 {% if used_in_keymaps %}
