@@ -417,3 +417,19 @@ def describe_variable(ctx):
     if variable in VARIABLES:
         buffer = create_buffer("webmacs://variable/%s" % variable)
         ctx.view.setBuffer(buffer)
+
+
+class DescribeCommandsListPrompt(CommandsListPrompt):
+    label = "describe command: "
+    history = PromptHistory()
+
+
+@define_command("describe-command", prompt=DescribeCommandsListPrompt)
+def describe_variable(ctx):
+    """
+    Prompt for a command name to describe.
+    """
+    command = ctx.prompt.value()
+    if command in COMMANDS:
+        buffer = create_buffer("webmacs://command/%s" % command)
+        ctx.view.setBuffer(buffer)
