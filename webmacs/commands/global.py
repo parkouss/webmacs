@@ -22,8 +22,9 @@ from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
 from ..webbuffer import create_buffer
 from ..keymaps import Keymap, KeyPress
-from ..keyboardhandler import current_prefix_arg, send_key_event
-from .. import BUFFERS, windows
+from ..keyboardhandler import current_prefix_arg, send_key_event, \
+    local_keymap, KEY_EATER, CallHandler
+from .. import BUFFERS, windows, current_window
 from ..mode import MODES
 from ..variables import VARIABLES
 
@@ -425,7 +426,7 @@ class DescribeCommandsListPrompt(CommandsListPrompt):
 
 
 @define_command("describe-command", prompt=DescribeCommandsListPrompt)
-def describe_variable(ctx):
+def describe_command(ctx):
     """
     Prompt for a command name to describe.
     """
@@ -433,3 +434,57 @@ def describe_variable(ctx):
     if command in COMMANDS:
         buffer = create_buffer("webmacs://command/%s" % command)
         ctx.view.setBuffer(buffer)
+
+
+class ReportCallHandler(CallHandler):
+    def __init__(self, prompt):
+        CallHandler.__init__(self)
+        self.prompt = prompt
+        self.key_presses = []
+
+    def keys_as_text(self):
+        return " - ".join(str(k) for k in self.key_presses)
+
+    def no_call(self, sender, keypress):
+        self.key_presses.append(keypress)
+        self.prompt.close()
+        self.prompt.minibuffer.show_info("No such key: %s"
+                                         % self.keys_as_text())
+
+    def partial_call(self, sender, keypress):
+        self.key_presses.append(keypress)
+        self.prompt.minibuffer.input().setText("%s -"
+                                               % self.keys_as_text())
+
+    def call(self, sender, keypress, command):
+        self.prompt.close()
+        # todo, should probably dedicate a web page for that.
+        if isinstance(command, str):
+            buff = create_buffer("webmacs://command/%s" % command)
+            current_window().current_web_view().setBuffer(buff)
+        else:
+            self.prompt.minibuffer.show_info(
+                "%s would call the compiled command %s"
+                % (self.keys_as_text(), command)
+            )
+
+
+class BindingPrompt(Prompt):
+    label = "describe key: "
+
+    def enable(self, minibuffer):
+        self.keymap = local_keymap()
+        Prompt.enable(self, minibuffer)
+        self.orig_handler = KEY_EATER.call_handler
+        KEY_EATER.set_call_handler(ReportCallHandler(self))
+
+    def close(self):
+        KEY_EATER.set_call_handler(self.orig_handler)
+        Prompt.close(self)
+
+
+@define_command("describe-key", prompt=BindingPrompt)
+def describe_binding(ctx):
+    """
+    Retrieve the command called by the given binding.
+    """

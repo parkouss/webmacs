@@ -187,6 +187,7 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
         buffer.setData(code.encode("utf-8"))
         job.reply(b"text/html", buffer)
 
+
 def _get_keymap_bindings(km):
     acc = []
 

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtCore import QObject, pyqtSlot as Slot
 from ..minibuffer import Prompt
 from .. import COMMANDS
 

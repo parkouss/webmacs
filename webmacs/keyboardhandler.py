@@ -92,8 +92,8 @@ class KeyEater(object):
     Handle Qt keypresses events.
     """
     def __init__(self):
+        self.set_call_handler(CallHandler())
         self._keypresses = []
-        self._commands = COMMANDS
         self._local_key_map = None
         self._use_global_keymap = True
         self.universal_key = KeyPress.from_str("C-u")
@@ -103,6 +103,9 @@ class KeyEater(object):
         for i in "1234567890":
             self._allowed_universal_keys[CHAR2KEY[i]] \
                 = lambda: self._num_update_prefix_arg(i)
+
+    def set_call_handler(self, call_handler):
+        self.call_handler = call_handler
 
     def set_local_key_map(self, keymap):
         if keymap != self._local_key_map:
@@ -179,6 +182,7 @@ class KeyEater(object):
             if len(self._keypresses) > 1:
                 self._show_info_kbd(" is undefined.")
             self._keypresses = []
+            self.call_handler.no_call(sender, keypress)
             return False
 
         if result.complete:
@@ -186,15 +190,21 @@ class KeyEater(object):
             self._keypresses = []
             self._reset_prefix_arg = True
             try:
-                self._call_command(sender, keypress, result.command)
+                self.call_handler.call(sender, keypress, result.command)
             except Exception:
                 logging.exception("Error calling command:")
         else:
             self._show_info_kbd(" -")
+            self.call_handler.partial_call(sender, keypress)
 
         return result is not None
 
-    def _call_command(self, sender, keypress, command):
+
+class CallHandler(object):
+    def __init__(self):
+        self._commands = COMMANDS
+
+    def call(self, sender, keypress, command):
         if isinstance(command, str):
             try:
                 command = self._commands[command]
@@ -202,6 +212,12 @@ class KeyEater(object):
                 raise KeyError("No such command: %s" % command)
 
         command(CommandContext(sender, keypress))
+
+    def no_call(self, sender, keypress):
+        pass
+
+    def partial_call(self, sender, keypress):
+        pass
 
 
 KEY_EATER = KeyEater()
