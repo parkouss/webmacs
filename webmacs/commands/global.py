@@ -36,9 +36,6 @@ class CommandsListPrompt(Prompt):
     }
     history = PromptHistory()
 
-    def validate(self, name):
-        return name
-
     def completer_model(self):
         model = QStringListModel(self)
         model.setStringList(sorted(k for k, v in COMMANDS.items()
@@ -404,9 +401,6 @@ class VariableListPrompt(Prompt):
         "complete-empty": True,
     }
     history = PromptHistory()
-
-    def validate(self, name):
-        return name
 
     def completer_model(self):
         model = QStringListModel(self)
