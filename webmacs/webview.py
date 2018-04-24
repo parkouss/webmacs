@@ -19,9 +19,28 @@ from PyQt5.QtCore import QEvent
 
 from .keyboardhandler import local_keymap, set_local_keymap, KEY_EATER, \
     LOCAL_KEYMAP_SETTER
-from . import BUFFERS
+from . import BUFFERS, windows, variables
 from .application import app
 
+
+def _update_stylesheets(var):
+    for w in windows():
+        for view in w.webviews():
+            c = view.container()
+            if c:
+                c.setStyleSheet(var.value)
+
+
+webview_container_stylesheet = variables.define_variable(
+    "webview-container-stylesheet",
+    "stylesheet associated to the webview containers.",
+    """\
+[current=true] {
+    border-top: 3px solid black;
+}\
+""",
+    callbacks=(_update_stylesheets,)
+)
 
 class WebViewContainer(QFrame):
     def __init__(self, view):
@@ -32,6 +51,7 @@ class WebViewContainer(QFrame):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         self.setLayout(layout)
+        self.setStyleSheet(webview_container_stylesheet.value)
 
     def show_focused(self, active):
         self.setProperty("current", active)

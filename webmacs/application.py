@@ -109,9 +109,6 @@ class Application(QApplication):
                 " on your hardware."
             )
 
-        with open(os.path.join(THIS_DIR, "app_style.css")) as f:
-            self.setStyleSheet(f.read())
-
         self._setup_conf_paths()
 
         self._interceptor = UrlInterceptor(self)

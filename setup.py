@@ -74,7 +74,6 @@ Work in progress.
     cmdclass={'test': PyTest},
     entry_points={"console_scripts": ["webmacs = webmacs.main:main"]},
     package_data={"webmacs": [
-        "app_style.css",
         "scripts/*.js",
         "scheme_handlers/webmacs/js/*.js",
         "scheme_handlers/webmacs/templates/*.html",
