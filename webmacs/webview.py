@@ -35,8 +35,14 @@ webview_container_stylesheet = variables.define_variable(
     "webview-container-stylesheet",
     "stylesheet associated to the webview containers.",
     """\
-[current=true] {
-    border-top: 3px solid black;
+[single=false][current=true] {
+    border-top: 1px solid black;
+    padding: 1px;
+    background-color: red;
+}
+[single=false][current=false] {
+    border-top: 1px solid white;
+    padding: 1px;
 }\
 """,
     callbacks=(_update_stylesheets,)
@@ -55,6 +61,8 @@ class WebViewContainer(QFrame):
 
     def show_focused(self, active):
         self.setProperty("current", active)
+        self.setProperty("single",
+                         len(self._view.window.webviews()) == 1)
         # force the style to be taken into account
         self.setStyle(self.style())
 
