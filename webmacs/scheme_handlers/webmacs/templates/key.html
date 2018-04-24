@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}key {{key}} on {{keymap}}{% endblock %}
+{% block content %}
+<p>{{key}} run the command
+  {% if named_command %}
+  <a href="webmacs://command/{{command_name}}">{{command_name}}</a>
+  {% else %}
+  {{command_name}}
+  {% endif %}
+  (found in <a href="webmacs://keymap/{{keymap}}">{{keymap}} keymap</a>),
+  which is
+  {% if named_command %}
+  an interactive command
+  {% else %}
+  a raw python function
+  {% endif %}
+   defined in <a href="{{command_src_url}}">{{modname}}</a>.
+</p>
+
+<p>
+  It is bound to {{all_keys|join(', ')}}.
+</p>
+
+<p>{{command_doc}}</p>
+
+{% endblock %}

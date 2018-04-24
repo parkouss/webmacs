@@ -21,10 +21,10 @@ from ..minibuffer import Prompt, KEYMAP
 from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
 from ..webbuffer import create_buffer
-from ..keymaps import Keymap, KeyPress
+from ..keymaps import Keymap, KeyPress, KEYMAPS
 from ..keyboardhandler import current_prefix_arg, send_key_event, \
     local_keymap, KEY_EATER, CallHandler
-from .. import BUFFERS, windows, current_window
+from .. import BUFFERS, windows
 from ..mode import MODES
 from ..variables import VARIABLES
 
@@ -445,28 +445,29 @@ class ReportCallHandler(CallHandler):
     def keys_as_text(self):
         return " - ".join(str(k) for k in self.key_presses)
 
-    def no_call(self, sender, keypress):
+    def no_call(self, sender, keymap, keypress):
         self.key_presses.append(keypress)
         self.prompt.close()
         self.prompt.minibuffer.show_info("No such key: %s"
                                          % self.keys_as_text())
 
-    def partial_call(self, sender, keypress):
+    def partial_call(self, sender, keymap, keypress):
         self.key_presses.append(keypress)
         self.prompt.minibuffer.input().setText("%s -"
                                                % self.keys_as_text())
 
-    def call(self, sender, keypress, command):
+    def call(self, sender, keymap, keypress, command):
+        self.key_presses.append(keypress)
+        if not isinstance(command, str):
+            command = "{}:{}".format(command.__module__,
+                                     command.__name__)
+        self.prompt.called_with = {
+            "command": command,
+            "key": self.keys_as_text(),
+            "keymap": keymap.name or "unknown",
+        }
+        self.prompt.finished.emit()
         self.prompt.close()
-        # todo, should probably dedicate a web page for that.
-        if isinstance(command, str):
-            buff = create_buffer("webmacs://command/%s" % command)
-            current_window().current_web_view().setBuffer(buff)
-        else:
-            self.prompt.minibuffer.show_info(
-                "%s would call the compiled command %s"
-                % (self.keys_as_text(), command)
-            )
 
 
 class BindingPrompt(Prompt):
@@ -488,3 +489,7 @@ def describe_binding(ctx):
     """
     Retrieve the command called by the given binding.
     """
+    url = "webmacs://key/{key}?command={command}&keymap={keymap}".format(
+        **ctx.prompt.called_with
+    )
+    ctx.view.setBuffer(create_buffer(url))

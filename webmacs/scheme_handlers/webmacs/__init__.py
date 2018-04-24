@@ -115,13 +115,7 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
 
         cmd = COMMANDS[command]
 
-        lines, loc = inspect.getsourcelines(cmd.binding)
-        src_url = "webmacs://pydoc/{}?hl_lines={}-{}#line-{}".format(
-            cmd.binding.__module__,
-            loc,
-            loc + len(lines),
-            loc
-        )
+        src_url = get_src_url(cmd.binding)
 
         self.reply_template(job, "command", {
             "command_name": command,
@@ -187,6 +181,54 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
         buffer.setData(code.encode("utf-8"))
         job.reply(b"text/html", buffer)
 
+    @register_page(match_url=r"^key/.+$", visible=False)
+    def key(self, job, url):
+        key = url.path().lstrip("/")
+        query = QUrlQuery(url)
+        command = query.queryItemValue("command")
+        keymap = query.queryItemValue("keymap")
+
+        if ":" in command:
+            modname, fname = command.split(":", 1)
+            fn = getattr(importlib.import_module(modname), fname)
+            command_name = fn.__name__
+            named_command = False
+        else:
+            command_name = command
+            cmd = COMMANDS[command]
+            fn = cmd.binding
+            named_command = True
+            modname = fn.__module__
+        command_doc = fn.__doc__
+        src_url = get_src_url(fn)
+
+        def _get_all_keys(km):
+            acc = []
+
+            cmd = command_name if named_command else fn
+
+            def add(prefix, cmd_):
+                if cmd == cmd_:
+                    acc.append(" ".join(str(k) for k in prefix))
+            km.traverse_commands(add)
+            return acc
+
+        try:
+            all_keys = _get_all_keys(KEYMAPS[keymap])
+        except KeyError:
+            all_keys = (key,)
+
+        self.reply_template(job, "key", {
+            "command_name": command_name,
+            "keymap": keymap,
+            "key": key,
+            "command_doc": command_doc,
+            "named_command": named_command,
+            "command_src_url": src_url,
+            "modname": modname,
+            "all_keys": all_keys,
+        })
+
 
 def _get_keymap_bindings(km):
     acc = []
@@ -199,3 +241,13 @@ def _get_keymap_bindings(km):
             ))
     km.traverse_commands(add)
     return acc
+
+
+def get_src_url(obj):
+    lines, loc = inspect.getsourcelines(obj)
+    return "webmacs://pydoc/{}?hl_lines={}-{}#line-{}".format(
+        obj.__module__,
+        loc,
+        loc + len(lines),
+        loc
+    )

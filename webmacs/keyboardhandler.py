@@ -182,7 +182,7 @@ class KeyEater(object):
             if len(self._keypresses) > 1:
                 self._show_info_kbd(" is undefined.")
             self._keypresses = []
-            self.call_handler.no_call(sender, keypress)
+            self.call_handler.no_call(sender, keymap, keypress)
             return False
 
         if result.complete:
@@ -190,12 +190,13 @@ class KeyEater(object):
             self._keypresses = []
             self._reset_prefix_arg = True
             try:
-                self.call_handler.call(sender, keypress, result.command)
+                self.call_handler.call(sender, keymap, keypress,
+                                       result.command)
             except Exception:
                 logging.exception("Error calling command:")
         else:
             self._show_info_kbd(" -")
-            self.call_handler.partial_call(sender, keypress)
+            self.call_handler.partial_call(sender, keymap, keypress)
 
         return result is not None
 
@@ -204,7 +205,7 @@ class CallHandler(object):
     def __init__(self):
         self._commands = COMMANDS
 
-    def call(self, sender, keypress, command):
+    def call(self, sender, keymap, keypress, command):
         if isinstance(command, str):
             try:
                 command = self._commands[command]
@@ -213,10 +214,10 @@ class CallHandler(object):
 
         command(CommandContext(sender, keypress))
 
-    def no_call(self, sender, keypress):
+    def no_call(self, sender, keymap, keypress):
         pass
 
-    def partial_call(self, sender, keypress):
+    def partial_call(self, sender, keymap, keypress):
         pass
 
 
