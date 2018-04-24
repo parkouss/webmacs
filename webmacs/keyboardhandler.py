@@ -53,7 +53,10 @@ class LocalKeymapSetter(QObject):
 
     def view_focus_changed(self, view, enabled):
         if enabled:
-            set_local_keymap(view.buffer().active_keymap())
+            # fixes issue were a raw qwebenginepage comes here. To
+            # reproduce, have two opened buffers, then C-x 2, C-x 3.
+            if hasattr(view.buffer(), "active_keymap"):
+                set_local_keymap(view.buffer().active_keymap())
 
     def web_content_edit_focus_changed(self, buff, enabled):
         if enabled:
