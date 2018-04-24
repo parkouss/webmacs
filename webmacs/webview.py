@@ -116,6 +116,15 @@ class WebView(QWebEngineView):
         return self._container
 
     def setBuffer(self, buffer):
+        otherviews = self.window.webviews()
+        multiviews = len(otherviews) > 1
+        if multiviews:
+            # this prevent multi views from being scrolled to the
+            # right; to reproduce, C-x 3, C-x o, then C-x f and open
+            # something
+            for v in otherviews:
+                v.setFocus()
+
         self.setPage(buffer)
         buffer.update_title()
         url = buffer.delayed_loading_url()
@@ -126,6 +135,13 @@ class WebView(QWebEngineView):
         if buffer != BUFFERS[0]:
             BUFFERS.remove(buffer)
             BUFFERS.insert(0, buffer)
+
+        if multiviews:
+            # weird bug. To reproduce, C-x 3, then C-x o, then C-x f
+            # and open a google page for example. Then hit C-n: the
+            # window on the right receive the event, though it should
+            # be the one on the left.
+            self.window.current_web_view().set_current()
 
     def buffer(self):
         return self.page()

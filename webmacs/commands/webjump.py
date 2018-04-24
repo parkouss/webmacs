@@ -129,7 +129,7 @@ class WebJumpPrompt(Prompt):
     def enable(self, minibuffer):
         self.bookmarks = app().bookmarks().list()
         Prompt.enable(self, minibuffer)
-        self.new_buffer = PromptNewBuffer(self.force_new_buffer)
+        self.new_buffer = PromptNewBuffer(self.ctx, self.force_new_buffer)
         self.new_buffer.enable(minibuffer)
         minibuffer.input().textEdited.connect(self._text_edited)
         minibuffer.input().installEventFilter(self)
