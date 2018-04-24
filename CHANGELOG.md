@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+
+- fix event handling on web views. For example, after some time creating and
+  deleting views, a click on a view to focus it was not working anymore.
+
 ## [0.3]
 
 ### Added

@@ -46,6 +46,7 @@ class WebView(QWebEngineView):
     """Do not instantiate that class directly"""
     def __init__(self, window, with_container=True):
         QWebEngineView.__init__(self)
+        self._viewport = None
         self.window = window  # todo fix this accessor
         if with_container:
             self._container = WebViewContainer(self)
@@ -56,7 +57,13 @@ class WebView(QWebEngineView):
         if evt.type() == QEvent.ChildAdded:
             obj = evt.child()
             if isinstance(obj, QWidget):
+                if self._viewport:
+                    try:
+                        self._viewport.removeEventFilter(self)
+                    except RuntimeError:
+                        pass
                 obj.installEventFilter(self)
+                self._viewport = obj
         return QWebEngineView.event(self, evt)
 
     def eventFilter(self, obj, evt):
