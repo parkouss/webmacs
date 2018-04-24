@@ -122,7 +122,11 @@ def switch_buffer(ctx):
     selected = ctx.prompt.index()
     if selected.row() >= 0:
         view = ctx.window.current_web_view()
-        view.setBuffer(selected.internalPointer())
+        buffer = selected.internalPointer()
+        if buffer.view() and buffer.view() != view:
+            # swap buffers
+            buffer.view().setPage(view.buffer())
+        view.setBuffer(buffer)
 
 
 @define_command("go-forward")
