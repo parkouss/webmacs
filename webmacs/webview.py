@@ -59,6 +59,17 @@ class WebView(QFrame):
         self.setStyleSheet(webview_stylesheet.value)
 
     def setBuffer(self, buffer):
+        otherviews = [w for w in self.main_window.webviews()
+                      if w != self]
+        for v in otherviews:
+            # this prevent multi views from being scrolled to the
+            # right; to reproduce, C-x 3, C-x o, then C-x f and open
+            # something
+            iv = v.internal_view()
+            if iv:
+                pass
+                iv.setFocus()
+
         if self._internal_view:
             self._internal_view.detach()
 
