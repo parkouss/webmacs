@@ -51,11 +51,6 @@ class WebContentHandler(QObject):
         self.browserObjectActivated.emit(json.loads(obj))
 
     @Slot(str)
-    def onBufferFocus(self):
-        if self.buffer and self.buffer.view():
-            self.buffer.view().set_current()
-
-    @Slot(str)
     def copyToClipboard(self, text):
         app().clipboard().setText(text)
 

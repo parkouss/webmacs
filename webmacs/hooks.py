@@ -23,11 +23,6 @@ class Hook(list):
 
     add = list.append
 
-
-webview_created = Hook()
-
-webview_closed = Hook()
-
 webbuffer_created = Hook()
 
 webbuffer_closed = Hook()

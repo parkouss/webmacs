@@ -59,7 +59,6 @@ class Window(QWidget):
     def _create_webview(self):
         view = WebView(self)
         self._webviews.append(view)
-        # hooks.webview_created.call(view)
         return view
 
     def current_web_view(self):
@@ -90,7 +89,6 @@ class Window(QWidget):
             return False
         self._webviews_layout.removeWidget(container)
         self._webviews.remove(webview)
-        hooks.webview_closed.call(webview)
         container.deleteLater()
         webview.deleteLater()
         return True
