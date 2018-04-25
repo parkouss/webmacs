@@ -62,6 +62,10 @@ class WebView(QFrame):
         if self._internal_view:
             self._internal_view.detach()
 
+        if buffer is None:
+            self._internal_view = None
+            return
+
         internal_view = buffer.internal_view()
         if not internal_view:
             internal_view = InternalWebView()

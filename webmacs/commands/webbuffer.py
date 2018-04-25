@@ -123,7 +123,12 @@ def switch_buffer(ctx):
     if selected.row() >= 0:
         view = ctx.window.current_web_view()
         buffer = selected.internalPointer()
-        # TODO swap buffers if the buffer is already displayed
+        if buffer.view():
+            # swap buffers if the buffer is already displayed
+            otherbuffer = view.buffer()
+            view.setBuffer(None)
+            otherview = buffer.view()
+            otherview.setBuffer(otherbuffer)
         view.setBuffer(buffer)
 
 
