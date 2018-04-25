@@ -111,6 +111,7 @@ class InternalWebView(QWebEngineView):
         QWebEngineView.__init__(self)
         self._viewport = None
         self._view = None
+        self._fullscreen_state = None
 
     def view(self):
         return self._view
@@ -142,68 +143,55 @@ class InternalWebView(QWebEngineView):
         t = evt.type()
         if t == QEvent.KeyPress:
             return KEY_EATER.event_filter(obj, evt)
-        elif t == QEvent.ShortcutOverride:
+
+        view = self._view
+        if not view:
+            return False
+
+        if t == QEvent.ShortcutOverride:
             # disable automatic shortcuts in browser, like C-a
             return True
         elif t == QEvent.MouseButtonPress:
-            if self != self._view.main_window.current_web_view():
-                self._view.set_current()
+            if view != view.main_window.current_web_view():
+                view.set_current()
         elif t == QEvent.FocusIn:
             if self.isEnabled():  # disabled when there is a full-screen window
-                LOCAL_KEYMAP_SETTER.view_focus_changed(self._view, True)
+                LOCAL_KEYMAP_SETTER.view_focus_changed(view, True)
         elif t == QEvent.FocusOut:
             if self.isEnabled():  # disabled when there is a full-screen window
-                LOCAL_KEYMAP_SETTER.view_focus_changed(self._view, False)
+                LOCAL_KEYMAP_SETTER.view_focus_changed(view, False)
         return False
 
     def request_fullscreen(self, toggle_on):
-        w = self.window
-
         if toggle_on:
-            if w.fullscreen_window:
+            if self._fullscreen_state:
                 return
-            w.fullscreen_window = FullScreenWindow(self.window)
-            w.fullscreen_window.enable(self)
+            self._fullscreen_state = FullScreenState(self)
             return True
         else:
-            if not w.fullscreen_window:
+            if not self._fullscreen_state:
                 return
-            w.fullscreen_window.disable()
-            w.fullscreen_window = None
+            self._fullscreen_state.restore()
+            self._fullscreen_state = None
             return True
 
 
-class FullScreenWindow(WebView):
-    def __init__(self, window):
-        WebView.__init__(self, window, with_container=False)
-        self._other_view = None
-        self._other_keymap = None
+class FullScreenState(object):
+    def __init__(self, internal_view):
+        self.view = internal_view.view()
+        self.internal_view = internal_view
+        self.keymap = local_keymap()
 
-    def eventFilter(self, obj, evt):
-        t = evt.type()
-        if t == QEvent.KeyPress:
-            return KEY_EATER.event_filter(obj, evt)
-        elif t == QEvent.ShortcutOverride:
-            # disable automatic shortcuts in browser, like C-a
-            return True
-        return False
-
-    def enable(self, webview):
-        self._other_view = webview
-        webview.setEnabled(False)
-        buff = webview.buffer()
-        self.setBuffer(buff)
-        self._other_keymap = local_keymap()
-        set_local_keymap(buff.mode.fullscreen_keymap())
+        set_local_keymap(self.view.buffer().mode.fullscreen_keymap())
+        self.internal_view.detach()
         # show fullscreen on the right place.
-        screen = app().screens()[app().desktop().screenNumber(webview)]
-        self.showFullScreen()
-        self.setGeometry(screen.geometry())
+        screen = app().screens()[app().desktop().screenNumber(self.view)]
+        self.internal_view.showFullScreen()
+        self.internal_view.setGeometry(screen.geometry())
+        self.view.main_window.fullscreen_window = self
 
-    def disable(self):
-        self._other_view.setEnabled(True)
-        self._other_view.setBuffer(self.buffer())
-        self.close()
-        self.deleteLater()
-        set_local_keymap(self._other_keymap)
-        self._other_keymap = None
+    def restore(self):
+        set_local_keymap(self.keymap)
+        self.internal_view.showNormal()
+        self.internal_view.attach(self.view)
+        self.view.main_window.fullscreen_window = None

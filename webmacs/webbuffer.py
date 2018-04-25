@@ -228,10 +228,10 @@ class WebBuffer(QWebEnginePage):
 
     @Slot("QWebEngineFullScreenRequest")
     def _on_full_screen_requested(self, request):
-        view = self.view()
-        if not view:
+        internal_view = self.internal_view()
+        if not internal_view:
             return
-        if view.request_fullscreen(request.toggleOn()):
+        if internal_view.request_fullscreen(request.toggleOn()):
             request.accept()
 
     def createWindow(self, type):

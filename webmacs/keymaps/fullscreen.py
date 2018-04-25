@@ -14,6 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 from . import FULLSCREEN_KEYMAP
+from .. import current_window
 
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 
@@ -22,6 +23,6 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage
 @FULLSCREEN_KEYMAP.define_key("C-g")
 @FULLSCREEN_KEYMAP.define_key("Esc")
 def exit_full_screen(ctx):
-    fw = ctx.window.fullscreen_window
+    fw = current_window().fullscreen_window
     if fw:
-        fw.triggerPageAction(QWebEnginePage.ExitFullScreen)
+        fw.internal_view.triggerPageAction(QWebEnginePage.ExitFullScreen)
