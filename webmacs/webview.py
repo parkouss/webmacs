@@ -134,13 +134,7 @@ class InternalWebView(QWebEngineView):
         if evt.type() == QEvent.ChildAdded:
             obj = evt.child()
             if isinstance(obj, QWidget):
-                if self._viewport:
-                    try:
-                        self._viewport.removeEventFilter(self)
-                    except RuntimeError:
-                        pass
                 obj.installEventFilter(self)
-                self._viewport = obj
         return QWebEngineView.event(self, evt)
 
     def eventFilter(self, obj, evt):
