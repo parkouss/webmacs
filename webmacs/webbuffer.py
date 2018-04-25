@@ -47,10 +47,14 @@ def close_buffer(wb, keep_one=True):
         invisibles = [b for b in BUFFERS if not b.view()]
         if not invisibles:
             # all buffers have views, so close the view of our buffer first
-            view.window.close_view(view)
+            view.main_window.close_view(view)
         else:
             # associate the first buffer that does not have any view yet
             view.setBuffer(invisibles[0])
+
+    internal_view = wb.internal_view()
+    if internal_view:
+        internal_view.deleteLater()
 
     app().download_manager().detach_buffer(wb)
     BUFFERS.remove(wb)

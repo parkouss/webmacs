@@ -79,12 +79,10 @@ class Window(QWidget):
         return view
 
     def _delete_webview(self, webview):
-        container = webview.container()
         if len(self._webviews) <= 1:
             return False
-        self._webviews_layout.removeWidget(container)
+        self._webviews_layout.removeWidget(webview)
         self._webviews.remove(webview)
-        container.deleteLater()
         webview.deleteLater()
         return True
 
@@ -117,7 +115,7 @@ class Window(QWidget):
 
         # do not show the window focused if there is one left
         if len(self.webviews()) == 1:
-            self.current_web_view().container().show_focused(False)
+            self.current_web_view().show_focused(True)
 
     def close_other_views(self):
         """close all views but the current one"""
