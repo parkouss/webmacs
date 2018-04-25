@@ -1,6 +1,6 @@
 from ..keyboardhandler import current_prefix_arg
 from ..webbuffer import create_buffer
-from .. import current_window, current_buffer
+from .. import current_buffer
 
 
 class PromptNewBuffer(object):

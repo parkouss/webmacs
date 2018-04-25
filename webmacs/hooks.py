@@ -23,6 +23,7 @@ class Hook(list):
 
     add = list.append
 
+
 webbuffer_created = Hook()
 
 webbuffer_closed = Hook()

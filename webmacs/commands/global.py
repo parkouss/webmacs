@@ -21,7 +21,7 @@ from ..minibuffer import Prompt, KEYMAP
 from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
 from ..webbuffer import create_buffer
-from ..keymaps import Keymap, KeyPress, KEYMAPS
+from ..keymaps import Keymap, KeyPress
 from ..keyboardhandler import current_prefix_arg, send_key_event, \
     local_keymap, KEY_EATER, CallHandler
 from .. import BUFFERS, windows

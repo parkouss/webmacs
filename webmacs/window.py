@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from .webview import WebView
 from .minibuffer import Minibuffer
 from .egrid import EGridLayout
-from . import hooks, WINDOWS_HANDLER
+from . import WINDOWS_HANDLER
 
 
 def remove_layout_spaces(layout):
