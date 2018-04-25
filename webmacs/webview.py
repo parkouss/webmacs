@@ -103,7 +103,7 @@ class WebView(QFrame):
 
     def set_current(self):
         self.main_window._change_current_webview(self)
-        # self._internal_view.setFocus()
+        self._internal_view.setFocus()
         self.buffer().update_title()
 
 
