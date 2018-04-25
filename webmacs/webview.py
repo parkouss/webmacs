@@ -26,14 +26,12 @@ from .application import app
 def _update_stylesheets(var):
     for w in windows():
         for view in w.webviews():
-            c = view.container()
-            if c:
-                c.setStyleSheet(var.value)
+            view.setStyleSheet(var.value)
 
 
-webview_container_stylesheet = variables.define_variable(
-    "webview-container-stylesheet",
-    "stylesheet associated to the webview containers.",
+webview_stylesheet = variables.define_variable(
+    "webview-stylesheet",
+    "stylesheet associated to the webviews.",
     """\
 [single=false][current=true] {
     border-top: 1px solid black;
@@ -58,7 +56,7 @@ class WebView(QFrame):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         self.setLayout(layout)
-        self.setStyleSheet(webview_container_stylesheet.value)
+        self.setStyleSheet(webview_stylesheet.value)
 
     def setBuffer(self, buffer):
         if self._internal_view:
