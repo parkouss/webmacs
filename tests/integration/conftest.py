@@ -189,7 +189,7 @@ class Waiter(object):
 
     def wait(self, wait=5, **kwargs):
         kwargs["wait"] = wait
-        self.session.wait_until(lambda: self.end, **kwargs)
+        return self.session.wait_until(lambda: self.end, **kwargs)
 
 
 @pytest.yield_fixture()
