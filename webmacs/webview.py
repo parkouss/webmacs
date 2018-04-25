@@ -82,6 +82,11 @@ class WebView(QFrame):
             BUFFERS.remove(buffer)
             BUFFERS.insert(0, buffer)
 
+        if self.main_window.current_web_view() == self:
+            # keyboard focus is lost without that.
+            internal_view.setFocus()
+            self.show_focused(True)
+
     def buffer(self):
         if self._internal_view:
             return self._internal_view.page()
