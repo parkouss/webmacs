@@ -116,7 +116,7 @@ class CommandContext(object):
     def window(self):
         view = self.view
         if view:
-            return view.window
+            return view.main_window
 
     @property
     def minibuffer(self):

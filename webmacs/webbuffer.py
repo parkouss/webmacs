@@ -101,6 +101,14 @@ class WebBuffer(QWebEnginePage):
             else:
                 self.load(url)
 
+    def internal_view(self):
+        return QWebEnginePage.view(self)
+
+    def view(self):
+        iv = self.internal_view()
+        if iv:
+            return iv.view()
+
     @property
     def mode(self):
         return self.__mode
@@ -296,7 +304,7 @@ class WebBuffer(QWebEnginePage):
     def main_window(self):
         view = self.view()
         if view:
-            return view.window
+            return view.main_window
 
     def update_title(self, title=None):
         if self == current_buffer():

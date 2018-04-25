@@ -48,38 +48,79 @@ webview_container_stylesheet = variables.define_variable(
     callbacks=(_update_stylesheets,)
 )
 
-class WebViewContainer(QFrame):
-    def __init__(self, view):
+
+class WebView(QFrame):
+    def __init__(self, window):
         QFrame.__init__(self)
-        self._view = view
+        self.main_window = window
+        self._internal_view = None
         layout = QVBoxLayout()
-        layout.addWidget(view)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         self.setLayout(layout)
         self.setStyleSheet(webview_container_stylesheet.value)
 
+    def setBuffer(self, buffer):
+        if self._internal_view:
+            self._internal_view.detach()
+
+        internal_view = buffer.view()
+        if not internal_view:
+            internal_view = InternalWebView()
+            internal_view.setPage(buffer)
+
+        internal_view.attach(self)
+        self._internal_view = internal_view
+
+        buffer.update_title()
+        url = buffer.delayed_loading_url()
+        if url:
+            buffer.load(url.url)
+        LOCAL_KEYMAP_SETTER.buffer_opened_in_view(buffer)
+        # move the buffer so it becomes the most recently opened
+        if buffer != BUFFERS[0]:
+            BUFFERS.remove(buffer)
+            BUFFERS.insert(0, buffer)
+
+    def buffer(self):
+        if self._internal_view:
+            return self._internal_view.page()
+
     def show_focused(self, active):
         self.setProperty("current", active)
         self.setProperty("single",
-                         len(self._view.window.webviews()) == 1)
+                         len(self.main_window.webviews()) == 1)
         # force the style to be taken into account
         self.setStyle(self.style())
+
+    def internal_view(self):
+        return self._internal_view
+
+    def set_current(self):
+        self.main_window._change_current_webview(self)
+        # self._internal_view.setFocus()
+        self.buffer().update_title()
+
+
+class InternalWebView(QWebEngineView):
+    """Do not instantiate that class directly"""
+    def __init__(self):
+        QWebEngineView.__init__(self)
+        self._viewport = None
+        self._view = None
 
     def view(self):
         return self._view
 
+    def attach(self, view):
+        self._view = view
+        view.layout().addWidget(self)
 
-class WebView(QWebEngineView):
-    """Do not instantiate that class directly"""
-    def __init__(self, window, with_container=True):
-        QWebEngineView.__init__(self)
-        self._viewport = None
-        self.window = window  # todo fix this accessor
-        if with_container:
-            self._container = WebViewContainer(self)
-        else:
-            self._container = None
+    def detach(self):
+        if self._view:
+            self._view.layout().removeWidget(self)
+            self.setParent(None)
+            self._view = None
 
     def event(self, evt):
         if evt.type() == QEvent.ChildAdded:
@@ -102,54 +143,15 @@ class WebView(QWebEngineView):
             # disable automatic shortcuts in browser, like C-a
             return True
         elif t == QEvent.MouseButtonPress:
-            if self != self.window.current_web_view():
-                self.set_current()
+            if self != self._view.main_window.current_web_view():
+                self._view.set_current()
         elif t == QEvent.FocusIn:
             if self.isEnabled():  # disabled when there is a full-screen window
-                LOCAL_KEYMAP_SETTER.view_focus_changed(self, True)
+                LOCAL_KEYMAP_SETTER.view_focus_changed(self._view, True)
         elif t == QEvent.FocusOut:
             if self.isEnabled():  # disabled when there is a full-screen window
-                LOCAL_KEYMAP_SETTER.view_focus_changed(self, False)
+                LOCAL_KEYMAP_SETTER.view_focus_changed(self._view, False)
         return False
-
-    def container(self):
-        return self._container
-
-    def setBuffer(self, buffer):
-        otherviews = self.window.webviews()
-        multiviews = len(otherviews) > 1
-        if multiviews:
-            # this prevent multi views from being scrolled to the
-            # right; to reproduce, C-x 3, C-x o, then C-x f and open
-            # something
-            for v in otherviews:
-                v.setFocus()
-
-        self.setPage(buffer)
-        buffer.update_title()
-        url = buffer.delayed_loading_url()
-        if url:
-            buffer.load(url.url)
-        LOCAL_KEYMAP_SETTER.buffer_opened_in_view(buffer)
-        # move the buffer so it becomes the most recently opened
-        if buffer != BUFFERS[0]:
-            BUFFERS.remove(buffer)
-            BUFFERS.insert(0, buffer)
-
-        if multiviews:
-            # weird bug. To reproduce, C-x 3, then C-x o, then C-x f
-            # and open a google page for example. Then hit C-n: the
-            # window on the right receive the event, though it should
-            # be the one on the left.
-            self.window.current_web_view().set_current()
-
-    def buffer(self):
-        return self.page()
-
-    def set_current(self):
-        self.window._change_current_webview(self)
-        self.setFocus()
-        self.buffer().update_title()
 
     def request_fullscreen(self, toggle_on):
         w = self.window
@@ -202,6 +204,3 @@ class FullScreenWindow(WebView):
         self.deleteLater()
         set_local_keymap(self._other_keymap)
         self._other_keymap = None
-
-    def set_current(self):
-        pass

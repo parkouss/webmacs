@@ -37,7 +37,7 @@ class Window(QWidget):
         view = self._create_webview()
         self._central_widget = QWidget()
         self._layout.addWidget(self._central_widget)
-        self._webviews_layout = EGridLayout(view.container())
+        self._webviews_layout = EGridLayout(view)
         remove_layout_spaces(self._webviews_layout)
         self._central_widget.setLayout(self._webviews_layout)
 
@@ -50,15 +50,16 @@ class Window(QWidget):
         WINDOWS_HANDLER.register_window(self)
 
     def _change_current_webview(self, webview):
-        self._current_web_view.container().show_focused(False)
+        assert isinstance(webview, WebView)
+        self._current_web_view.show_focused(False)
         if len(self._webviews) > 1:
-            webview.container().show_focused(True)
+            webview.show_focused(True)
         self._current_web_view = webview
 
     def _create_webview(self):
         view = WebView(self)
         self._webviews.append(view)
-        hooks.webview_created.call(view)
+        # hooks.webview_created.call(view)
         return view
 
     def current_web_view(self):
@@ -136,7 +137,7 @@ class Window(QWidget):
 
         # do not show the window focused if there is one left
         if len(self.webviews()) == 1:
-            self.current_web_view().container().show_focused(False)
+            self.current_web_view().show_focused(False)
 
     def update_title(self, title):
         if title:
