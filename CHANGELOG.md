@@ -10,12 +10,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - improve using multiple views, fixing a lot of bugs around that (keyboard
   focus lost, crash using switch-buffer on an already displayed buffer, ...)
+
+### Changed
+
 - switching buffers now tries its best to keep the current scroll and cursor
   position, so that coming back to a previous buffer feels more natural. This
   is in part implemented by keeping one internal qt webengineview per buffer.
 - improved the visibility of the current view when there are multiple
   views. There is now a border on each side of the view, with one pixel red and
   one black.
+
+### Added
+
 - added a variable **webview-stylesheet** to customize the above view style.
 
 ## [0.3]
