@@ -176,16 +176,13 @@ class Application(QApplication):
         return self.profile.ignored_certs
 
     def adblock_update(self):
-        def adblock_thread_finished():
-            logging.debug("Adblock update finished")
+        def adblock_thread_finished(error, adblock):
+            if adblock:
+                self._interceptor.update_adblock(adblock)
 
         generator = Adblocker(self.adblock_path())
-        runner = AdblockUpdateRunner(generator)
-        runner.finished.connect(adblock_thread_finished)
-        runner.adblock_updated.connect(
-            self._interceptor.update_adblock
-        )
-        logging.debug("Starting adblock update")
+        runner = AdblockUpdateRunner(generator,
+                                     on_finished=adblock_thread_finished)
         run(runner)
 
     def update_spell_checking(self):
@@ -195,13 +192,11 @@ class Application(QApplication):
         spell_check_path = os.path.join(self.applicationDirPath(),
                                         "qtwebengine_dictionaries")
 
-        def spc_finished():
+        def spc_finished(*a):
             self.profile.update_spell_checking()
-            logging.debug("Spell check update finished")
 
-        runner = SpellCheckingUpdateRunner(spell_check_path)
-        runner.finished.connect(spc_finished)
-        logging.debug("Starting spell check update")
+        runner = SpellCheckingUpdateRunner(spell_check_path,
+                                           on_finished=spc_finished)
         run(runner)
 
     def post_init(self):

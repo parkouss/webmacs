@@ -20,8 +20,6 @@ import time
 from datetime import datetime, timezone
 import dateparser
 
-from PyQt5.QtCore import pyqtSignal as Signal
-
 from _adblock import AdBlock
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import urllib.request
@@ -142,16 +140,11 @@ class Adblocker(object):
 
 
 class AdblockUpdateRunner(Runner):
-    adblock_updated = Signal(object)
+    description = "adblock updater"
 
-    def __init__(self, adblocker):
-        Runner.__init__(self)
+    def __init__(self, adblocker, **kwargs):
+        Runner.__init__(self, **kwargs)
         self.adblocker = adblocker
 
-    def __str__(self):
-        return "adblock updater"
-
-    def run(self):
-        adblock = self.adblocker.maybe_update_adblock()
-        if adblock is not None:
-            self.adblock_updated.emit(adblock)
+    def run_in_thread(self):
+        return self.adblocker.maybe_update_adblock()
