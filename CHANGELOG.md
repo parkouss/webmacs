@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- Fixed using i-search when caret browsing is enabled
 - improve using multiple views, fixing a lot of bugs around that (keyboard
   focus lost, crash using switch-buffer on an already displayed buffer, ...)
 

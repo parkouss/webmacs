@@ -63,7 +63,7 @@ class ISearchPrompt(Prompt):
     def enable(self, minibuffer):
         self._caret_browsing = local_keymap() == CARET_BROWSING_KEYMAP
         if self._caret_browsing:
-            caret_browsing_commands.shutdown()
+            caret_browsing_commands.shutdown(self.ctx)
         Prompt.enable(self, minibuffer)
         self._update_label()
         self.page = self.ctx.buffer
@@ -99,7 +99,7 @@ class ISearchPrompt(Prompt):
         self.minibuffer.input().textChanged.disconnect(self.on_text_edited)
         Prompt.close(self)
         if self._caret_browsing:
-            caret_browsing_commands.init()
+            caret_browsing_commands.init(self.ctx)
 
 
 @define_command("i-search-forward", prompt=ISearchPrompt)
