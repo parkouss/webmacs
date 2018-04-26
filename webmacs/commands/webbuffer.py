@@ -324,3 +324,11 @@ def text_zoom_reset(ctx):
     ctx.buffer.runJavaScript("textzoom.resetChangeFont();",
                              QWebEngineScript.ApplicationWorld,
                              _show_info_text_zoom(ctx))
+
+
+@define_command("buffer-unselect")
+def buffer_unselect(ctx):
+    """
+    Unselect selection in the current web buffer.
+    """
+    ctx.buffer.triggerAction(WebBuffer.Unselect)

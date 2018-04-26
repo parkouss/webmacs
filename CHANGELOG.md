@@ -24,6 +24,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 
 - added a variable **webview-stylesheet** to customize the above view style.
+- added a command **buffer-unselect** to clear selection in the current buffer.
+- bound **buffer-unselect** to **C-g** in the webbuffer keymap.
 
 ## [0.3]
 
