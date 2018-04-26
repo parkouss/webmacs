@@ -102,16 +102,16 @@ class Profile(object):
         inject_js(os.path.join(THIS_DIR, "scripts", "textzoom.js"))
 
     def load_session(self):
-        from .session import Session
+        from .session import session_load
         if os.path.exists(self.session_file):
             with open(self.session_file, "r") as f:
-                Session.load(f).apply()
+                session_load(f)
                 return True
 
     def save_session(self):
-        from .session import Session
+        from .session import session_save
         with open(self.session_file, "w") as f:
-            Session().save(f)
+            session_save(f)
 
 
 def default_profile():

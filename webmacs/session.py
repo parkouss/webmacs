@@ -20,51 +20,47 @@ from .webbuffer import (create_buffer, close_buffer, QUrl,
                         DelayedLoadingUrl)
 
 
-class Session(object):
-    def __init__(self, urls=None):
-        if urls is None:
-            urls = [{
-                "url": b.url().toString(),
-                "title": b.title()
-            } for b in BUFFERS]
-        self.urls = urls
+def session_load(stream):
+    data = json.load(stream)
+    urls = data["urls"]
 
-    @classmethod
-    def load(cls, stream):
-        data = json.load(stream)
-        return cls(urls=data["urls"])
+    # apply the session config
+    cwin = current_window()
 
-    def apply(self):
-        cwin = current_window()
+    # close any opened window other than the current one
+    for win in windows():
+        if win != cwin:
+            win.close()
 
-        # close any opened window other than the current one
-        for win in windows():
-            if win != cwin:
-                win.close()
+    # close any webview except the current one
+    cwin.close_other_views()
 
-        # close any webview except the current one
-        cwin.close_other_views()
+    # and close all the buffers
+    for buff in BUFFERS:
+        close_buffer(buff, keep_one=False)
 
-        # and close all the buffers
-        for buff in BUFFERS:
-            close_buffer(buff, keep_one=False)
+    # now, load urls in buffers
+    for url in reversed(urls):
+        if isinstance(url, str):
+            # old format, no delay loading support
+            # TODO must be removed after some time
+            create_buffer(url)
+        else:
+            # new format, url must be a dict
+            create_buffer(DelayedLoadingUrl(
+                url=QUrl(url["url"]),
+                title=url["title"]
+            ))
 
-        # now, load urls in buffers
-        for url in reversed(self.urls):
-            if isinstance(url, str):
-                # old format, no delay loading support
-                # TODO must be removed after some time
-                create_buffer(url)
-            else:
-                # new format, url must be a dict
-                create_buffer(DelayedLoadingUrl(
-                    url=QUrl(url["url"]),
-                    title=url["title"]
-                ))
+    # and open the first buffer in the view
+    if BUFFERS:
+        cwin.current_web_view().setBuffer(BUFFERS[0])
 
-        # and open the first buffer in the view
-        if BUFFERS:
-            cwin.current_web_view().setBuffer(BUFFERS[0])
 
-    def save(self, stream):
-        json.dump({"urls": self.urls}, stream)
+def session_save(stream):
+    urls = [{
+        "url": b.url().toString(),
+        "title": b.title()
+    } for b in BUFFERS]
+
+    json.dump({"urls": urls}, stream)
