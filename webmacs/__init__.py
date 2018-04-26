@@ -15,7 +15,7 @@
 
 import importlib
 
-from PyQt5.QtCore import QObject, QEvent
+from PyQt5.QtCore import QObject, QEvent, QTimer
 
 
 __version__ = '0.3'
@@ -99,6 +99,16 @@ def minibuffer_show_info(text):
     Display text information in the current minibuffer.
     """
     current_minibuffer().show_info(text)
+
+
+def call_later(fn, msec=0):
+    """
+    Call the given function after the given time interval.
+
+    If msec is 0, the function call is still delayed to the next handling of
+    events in the qt event loop.
+    """
+    QTimer.singleShot(msec, fn)
 
 
 class CommandContext(object):
