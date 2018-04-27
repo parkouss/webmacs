@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from .webview import WebView
 from .minibuffer import Minibuffer
 from .egrid import EGridLayout
-from . import WINDOWS_HANDLER, call_later
+from . import WINDOWS_HANDLER
 
 
 def remove_layout_spaces(layout):
@@ -33,8 +33,7 @@ class Window(QWidget):
         remove_layout_spaces(self._layout)
         self.setLayout(self._layout)
 
-        self._webviews = []
-        view = self._create_webview()
+        view = WebView(self)
         self._central_widget = QWidget()
         self._layout.addWidget(self._central_widget)
         self._webviews_layout = EGridLayout(view)
@@ -52,49 +51,31 @@ class Window(QWidget):
     def _change_current_webview(self, webview):
         assert isinstance(webview, WebView)
         self._current_web_view.show_focused(False)
-        if len(self._webviews) > 1:
+        if len(self.webviews()) > 1:
             webview.show_focused(True)
         self._current_web_view = webview
-
-    def _sort_webviews_byposition(self):
-        def top_top_bottom(view):
-            return view.geometry().center().y()
-
-        def left_to_right(view):
-            return view.geometry().center().x()
-
-        self._webviews = sorted(self._webviews, key=top_top_bottom)
-        self._webviews = sorted(self._webviews, key=left_to_right)
-
-    def _create_webview(self):
-        view = WebView(self)
-        self._webviews.append(view)
-        return view
 
     def current_web_view(self):
         return self._current_web_view
 
     def webviews(self):
-        return self._webviews
+        return self._webviews_layout.widgets()
 
     def create_webview_on_right(self):
-        view = self._create_webview()
+        view = WebView(self)
         self._webviews_layout.insert_widget_right(self._current_web_view, view)
-        call_later(self._sort_webviews_byposition)
         return view
 
     def create_webview_on_bottom(self):
-        view = self._create_webview()
+        view = WebView(self)
         self._webviews_layout.insert_widget_bottom(self._current_web_view,
                                                    view)
-        call_later(self._sort_webviews_byposition)
         return view
 
     def _delete_webview(self, webview):
-        if len(self._webviews) <= 1:
+        if len(self.webviews()) <= 1:
             return False
         self._webviews_layout.removeWidget(webview)
-        self._webviews.remove(webview)
         webview.deleteLater()
         return True
 
@@ -128,8 +109,6 @@ class Window(QWidget):
         # do not show the window focused if there is one left
         if len(self.webviews()) == 1:
             self.current_web_view().show_focused(True)
-        else:
-            call_later(self._sort_webviews_byposition)
 
     def close_other_views(self):
         """close all views but the current one"""
@@ -143,8 +122,6 @@ class Window(QWidget):
         # do not show the window focused if there is one left
         if len(self.webviews()) == 1:
             self.current_web_view().show_focused(False)
-        else:
-            call_later(self._sort_webviews_byposition)
 
     def update_title(self, title):
         if title:

@@ -16,6 +16,8 @@
 from PyQt5.QtWidgets import QLayout
 from PyQt5.QtCore import QRect, QSize
 
+from . import call_later
+
 
 class LayoutEntry(object):
     VERTICAL = 1
@@ -89,12 +91,39 @@ class LayoutEntry(object):
 class EGridLayout(QLayout):
     def __init__(self, main_widget, parent=None):
         QLayout.__init__(self, parent)
+        # keep an ordered list of the widgets
+        self._widgets = []
+        # to avoid asking reordering many times
+        self.__widget_sort_asked = False
         self._item_added = None
         self._root = LayoutEntry()
         self.add_widget(main_widget, self._root)
 
+    def widgets(self):
+        return self._widgets
+
+    def __sort_widgets_by_position(self):
+        def top_top_bottom(w):
+            return w.geometry().center().y()
+
+        def left_to_right(w):
+            return w.geometry().center().x()
+
+        self._widgets = sorted(self._widgets, key=top_top_bottom)
+        self._widgets = sorted(self._widgets, key=left_to_right)
+        self.__widget_sort_asked = False
+
+    def _sort_widgets_by_position(self):
+        # compress requests for reordering widgets
+        if self.__widget_sort_asked:
+            return
+        self.__widget_sort_asked = True
+        call_later(self.__sort_widgets_by_position)
+
     def add_widget(self, widget, parent_entry, direction=None):
         self.addWidget(widget)
+        self._widgets.append(widget)
+        self._sort_widgets_by_position()
         item = self._item_added
         self._item_added = None
         if direction is not None:
@@ -121,7 +150,11 @@ class EGridLayout(QLayout):
             return None
 
     def takeAt(self, index):
-        return self.entries()[index].pop()
+        entry = self.entries()[index]
+        if entry.item:
+            self._widgets.remove(entry.item.widget())
+            self._sort_widgets_by_position()
+        return entry.pop()
 
     def sizeHint(self):
         size = QSize(0, 0)
