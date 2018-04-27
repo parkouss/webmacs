@@ -16,7 +16,7 @@
 from PyQt5.QtWidgets import QLayout
 from PyQt5.QtCore import QRect, QSize
 
-from . import call_later
+from . import call_later, BUFFERS
 from .webview import WebView
 
 
@@ -185,3 +185,65 @@ class ViewGridLayout(QLayout):
                 self.invalidate()
                 break
         return widget
+
+    def dump_state(self):
+        def item_dump_state(entry):
+            if entry.item is None:
+                return {
+                    "split": ("horizontal"
+                              if entry.split == self.HORIZONTAL
+                              else "vertical"),
+                    "views": [item_dump_state(c) for c in entry.children]
+                }
+            else:
+                view = entry.item.widget()
+                buffer_index = BUFFERS.index(view.buffer())
+                if view == self._current_view:
+                    return {"buffer": buffer_index, "current": True}
+                else:
+                    return {"buffer": buffer_index}
+
+        return item_dump_state(self._root)
+
+    def restore_state(self, grid_data):
+        buffers = list(BUFFERS)
+
+        main_view = self._current_view
+
+        def restore(data, view):
+            split = data.get("split")
+
+            if split is None:
+                # attach the buffer to the view. Note the global variable
+                # BUFFERS is modified by this call, we reset it later
+                view.setBuffer(buffers[data["buffer"]])
+                if data.get("current"):
+                    self._current_view = view
+
+            else:
+                # we have splits to do.
+                split = (self.HORIZONTAL if split == "horizontal"
+                         else self.VERTICAL)
+
+                # first split everything, to create the views
+                rest = [(data["views"][0], view)]
+                for wdata in data["views"][1:]:
+                    view = self.split_view(split, view)
+                    rest.append((wdata, view))
+
+                # and now let's recurse to set nested buffers
+                for wdata, view in rest:
+                    restore(wdata, view)
+
+        restore(grid_data, main_view)
+
+        # put back buffer order
+        BUFFERS.clear()
+        BUFFERS.extend(buffers)
+
+        # and update the focus of the views
+        for w in self._views:
+            w.show_focused(w == self._current_view)
+
+        # required to have the right keyboard focus
+        self._current_view.set_current()

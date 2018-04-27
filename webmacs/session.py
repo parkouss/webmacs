@@ -55,9 +55,9 @@ def _session_load(stream):
         cwin = Window()
         cwin.showMaximized()
 
-    # and open the first buffer in the view
-    if BUFFERS:
-        cwin.current_webview().setBuffer(BUFFERS[0])
+        # and open the first buffer in the view
+        if BUFFERS:
+            cwin.current_webview().setBuffer(BUFFERS[0])
 
 
 def _session_save(stream):
@@ -80,7 +80,7 @@ def session_load(profile, opts):
     Must be called at application startup, when no buffers nor views is set up
     already.
     """
-    if os.path.exists(profile.session_file):
+    if not opts.url and os.path.exists(profile.session_file):
         try:
             with open(profile.session_file, "r") as f:
                 _session_load(f)

@@ -122,8 +122,10 @@ class Window(QWidget):
         return {
             "geometry": self.geometry().getRect(),
             "window-state": int(self.windowState()),
+            "view-layout": self._webviews_layout.dump_state(),
         }
 
     def restore_state(self, data, version):
         self.setGeometry(QRect(*data["geometry"]))
         self.setWindowState(Qt.WindowStates(data["window-state"]))
+        self._webviews_layout.restore_state(data["view-layout"])
