@@ -49,13 +49,13 @@ class Window(QWidget):
         self.current_webview().show_focused(False)
         if len(self.webviews()) > 1:
             webview.show_focused(True)
-        self._webviews_layout.set_current_widget(webview)
+        self._webviews_layout.set_current_view(webview)
 
     def current_webview(self):
-        return self._webviews_layout.current_widget()
+        return self._webviews_layout.current_view()
 
     def webviews(self):
-        return self._webviews_layout.widgets()
+        return self._webviews_layout.views()
 
     def create_webview_on_right(self):
         return self._webviews_layout.split_view(ViewGridLayout.VERTICAL)

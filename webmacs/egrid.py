@@ -94,48 +94,48 @@ class ViewGridLayout(QLayout):
     def __init__(self, window=None):
         QLayout.__init__(self)
         self._window = window
-        main_widget = WebView(window)
+        main_view = WebView(window)
         # keep an ordered list of the widgets
-        self._widgets = []
-        self._current_widget = main_widget
+        self._views = []
+        self._current_view = main_view
         # to avoid asking reordering many times
-        self.__widget_sort_asked = False
+        self.__view_sort_asked = False
         self._item_added = None
         self._root = LayoutEntry()
-        self.add_widget(main_widget, self._root)
+        self.add_view(main_view, self._root)
 
-    def current_widget(self):
-        return self._current_widget
+    def current_view(self):
+        return self._current_view
 
-    def set_current_widget(self, widget):
-        assert widget in self._widgets
-        self._current_widget = widget
+    def set_current_view(self, widget):
+        assert widget in self._views
+        self._current_view = widget
 
-    def widgets(self):
-        return self._widgets
+    def views(self):
+        return self._views
 
-    def __sort_widgets_by_position(self):
+    def __sort_views_by_position(self):
         def top_top_bottom(w):
             return w.geometry().center().y()
 
         def left_to_right(w):
             return w.geometry().center().x()
 
-        self._widgets = sorted(self._widgets, key=top_top_bottom)
-        self._widgets = sorted(self._widgets, key=left_to_right)
-        self.__widget_sort_asked = False
+        self._views = sorted(self._views, key=top_top_bottom)
+        self._views = sorted(self._views, key=left_to_right)
+        self.__view_sort_asked = False
 
-    def _sort_widgets_by_position(self):
+    def _sort_views_by_position(self):
         # compress requests for reordering widgets
-        if self.__widget_sort_asked:
+        if self.__view_sort_asked:
             return
-        self.__widget_sort_asked = True
-        call_later(self.__sort_widgets_by_position)
+        self.__view_sort_asked = True
+        call_later(self.__sort_views_by_position)
 
-    def add_widget(self, widget, parent_entry, direction=None):
+    def add_view(self, widget, parent_entry, direction=None):
         self.addWidget(widget)
-        self._widgets.append(widget)
-        self._sort_widgets_by_position()
+        self._views.append(widget)
+        self._sort_views_by_position()
         item = self._item_added
         self._item_added = None
         if direction is not None:
@@ -161,8 +161,8 @@ class ViewGridLayout(QLayout):
     def takeAt(self, index):
         entry = self.entries()[index]
         if entry.item:
-            self._widgets.remove(entry.item.widget())
-            self._sort_widgets_by_position()
+            self._views.remove(entry.item.widget())
+            self._sort_views_by_position()
         return entry.pop()
 
     def sizeHint(self):
@@ -177,11 +177,11 @@ class ViewGridLayout(QLayout):
 
     def split_view(self, direction, reference=None):
         widget = WebView(self._window)
-        refindex = self.indexOf(reference or self._current_widget)
+        refindex = self.indexOf(reference or self._current_view)
         refitem = self.itemAt(refindex)
         for entry in self._root:
             if entry.item == refitem:
-                self.add_widget(widget, entry, direction)
+                self.add_view(widget, entry, direction)
                 self.invalidate()
                 break
         return widget
