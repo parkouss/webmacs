@@ -15,9 +15,8 @@
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
-from .webview import WebView
 from .minibuffer import Minibuffer
-from .egrid import EGridLayout
+from .egrid import ViewGridLayout
 from . import WINDOWS_HANDLER
 
 
@@ -33,10 +32,9 @@ class Window(QWidget):
         remove_layout_spaces(self._layout)
         self.setLayout(self._layout)
 
-        view = WebView(self)
         self._central_widget = QWidget()
         self._layout.addWidget(self._central_widget)
-        self._webviews_layout = EGridLayout(view)
+        self._webviews_layout = ViewGridLayout(self)
         remove_layout_spaces(self._webviews_layout)
         self._central_widget.setLayout(self._webviews_layout)
 
@@ -48,7 +46,6 @@ class Window(QWidget):
         WINDOWS_HANDLER.register_window(self)
 
     def _change_current_webview(self, webview):
-        assert isinstance(webview, WebView)
         self.current_webview().show_focused(False)
         if len(self.webviews()) > 1:
             webview.show_focused(True)
@@ -61,14 +58,10 @@ class Window(QWidget):
         return self._webviews_layout.widgets()
 
     def create_webview_on_right(self):
-        view = WebView(self)
-        self._webviews_layout.insert_widget_right(view)
-        return view
+        return self._webviews_layout.split_view(ViewGridLayout.VERTICAL)
 
     def create_webview_on_bottom(self):
-        view = WebView(self)
-        self._webviews_layout.insert_widget_bottom(view)
-        return view
+        return self._webviews_layout.split_view(ViewGridLayout.HORIZONTAL)
 
     def _delete_webview(self, webview):
         self._webviews_layout.removeWidget(webview)

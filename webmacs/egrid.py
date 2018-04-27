@@ -17,11 +17,10 @@ from PyQt5.QtWidgets import QLayout
 from PyQt5.QtCore import QRect, QSize
 
 from . import call_later
+from .webview import WebView
 
 
 class LayoutEntry(object):
-    VERTICAL = 1
-    HORIZONTAL = 2
 
     def __init__(self, parent=None, item=None):
         self.parent = parent
@@ -58,7 +57,7 @@ class LayoutEntry(object):
         if self.item:
             self.item.setGeometry(rect)
 
-        elif self.split == self.VERTICAL:
+        elif self.split == ViewGridLayout.VERTICAL:
             x = rect.x()
             width = rect.width() / len(self.children)
             for child in self.children:
@@ -66,7 +65,7 @@ class LayoutEntry(object):
                 child.set_geometry(cr)
                 x += width
 
-        elif self.split == self.HORIZONTAL:
+        elif self.split == ViewGridLayout.HORIZONTAL:
             y = rect.y()
             height = rect.height() / len(self.children)
             for child in self.children:
@@ -88,9 +87,14 @@ class LayoutEntry(object):
         return None
 
 
-class EGridLayout(QLayout):
-    def __init__(self, main_widget, parent=None):
-        QLayout.__init__(self, parent)
+class ViewGridLayout(QLayout):
+    VERTICAL = 1
+    HORIZONTAL = 2
+
+    def __init__(self, window=None):
+        QLayout.__init__(self)
+        self._window = window
+        main_widget = WebView(window)
         # keep an ordered list of the widgets
         self._widgets = []
         self._current_widget = main_widget
@@ -104,6 +108,7 @@ class EGridLayout(QLayout):
         return self._current_widget
 
     def set_current_widget(self, widget):
+        assert widget in self._widgets
         self._current_widget = widget
 
     def widgets(self):
@@ -170,20 +175,13 @@ class EGridLayout(QLayout):
     def setGeometry(self, rect):
         self._root.set_geometry(rect)
 
-    def insert_widget_right(self, widget, reference=None):
+    def split_view(self, direction, reference=None):
+        widget = WebView(self._window)
         refindex = self.indexOf(reference or self._current_widget)
         refitem = self.itemAt(refindex)
         for entry in self._root:
             if entry.item == refitem:
-                self.add_widget(widget, entry, entry.VERTICAL)
+                self.add_widget(widget, entry, direction)
                 self.invalidate()
                 break
-
-    def insert_widget_bottom(self, widget, reference=None):
-        refindex = self.indexOf(reference or self._current_widget)
-        refitem = self.itemAt(refindex)
-        for entry in self._root:
-            if entry.item == refitem:
-                self.add_widget(widget, entry, entry.HORIZONTAL)
-                self.invalidate()
-                break
+        return widget
