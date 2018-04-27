@@ -73,11 +73,8 @@ class Window(QWidget):
         return view
 
     def _delete_webview(self, webview):
-        if len(self.webviews()) <= 1:
-            return False
         self._webviews_layout.removeWidget(webview)
         webview.deleteLater()
-        return True
 
     def minibuffer(self):
         return self._minibuffer
