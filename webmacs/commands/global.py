@@ -96,7 +96,7 @@ def _get_or_create_buffer(win):
     for awin in windows():
         for view in awin.webviews():
             visible_buffers.append(view.buffer())
-    current_buffer = win.current_web_view().buffer()
+    current_buffer = win.current_webview().buffer()
     buffers = [b for b in BUFFERS
                if b not in visible_buffers
                or b == current_buffer]
@@ -151,7 +151,7 @@ def close_view(ctx):
     Close the current view.
     """
     window = ctx.window
-    window.close_view(window.current_web_view())
+    window.close_view(window.current_webview())
 
 
 @define_command("maximise-view")
@@ -208,7 +208,7 @@ class VisitedLinksPrompt(Prompt):
     def get_buffer(self):
         if self.new_buffer:
             buf = create_buffer()
-            view = self.ctx.window.current_web_view()
+            view = self.ctx.window.current_webview()
             view.setBuffer(buf)
         else:
             buf = self.ctx.buffer

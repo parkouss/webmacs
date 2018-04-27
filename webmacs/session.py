@@ -44,7 +44,7 @@ def _session_load(stream):
 
     # and open the first buffer in the view
     if BUFFERS:
-        cwin.current_web_view().setBuffer(BUFFERS[0])
+        cwin.current_webview().setBuffer(BUFFERS[0])
 
     cwin.showMaximized()
 
@@ -75,7 +75,7 @@ def session_load(profile, opts):
                               profile.session_file)
     window = Window()
     buffer = create_buffer(opts.url or "http://duckduckgo.com/")
-    window.current_web_view().setBuffer(buffer)
+    window.current_webview().setBuffer(buffer)
     window.showMaximized()
 
 

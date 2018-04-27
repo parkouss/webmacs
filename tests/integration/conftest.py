@@ -199,7 +199,7 @@ def session(qtbot, qapp, mocker):
 
     window = Window()
     WINDOWS_HANDLER.current_window = window
-    window.current_web_view().setBuffer(create_buffer())
+    window.current_webview().setBuffer(create_buffer())
 
     window.show()
     qtbot.waitForWindowShown(window)

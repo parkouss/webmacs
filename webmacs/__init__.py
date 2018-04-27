@@ -81,7 +81,7 @@ def current_buffer():
     """
     w = current_window()
     if w:
-        return w.current_web_view().buffer()
+        return w.current_webview().buffer()
 
 
 def buffers():

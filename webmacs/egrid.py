@@ -93,11 +93,18 @@ class EGridLayout(QLayout):
         QLayout.__init__(self, parent)
         # keep an ordered list of the widgets
         self._widgets = []
+        self._current_widget = main_widget
         # to avoid asking reordering many times
         self.__widget_sort_asked = False
         self._item_added = None
         self._root = LayoutEntry()
         self.add_widget(main_widget, self._root)
+
+    def current_widget(self):
+        return self._current_widget
+
+    def set_current_widget(self, widget):
+        self._current_widget = widget
 
     def widgets(self):
         return self._widgets

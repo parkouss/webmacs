@@ -48,7 +48,7 @@ class LocalKeymapSetter(QObject):
             if not mb.popup().isVisible():
                 # when the minibuffer input is hidden, enable its view's
                 # buffer
-                buff = mb.parent().parent().current_web_view().buffer()
+                buff = mb.parent().parent().current_webview().buffer()
                 set_local_keymap(buff.active_keymap())
 
     def view_focus_changed(self, view, enabled):

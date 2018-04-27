@@ -43,32 +43,31 @@ class Window(QWidget):
         self._minibuffer = Minibuffer(self)
         self._layout.addWidget(self._minibuffer)
 
-        self._current_web_view = view
         self.fullscreen_window = None
 
         WINDOWS_HANDLER.register_window(self)
 
     def _change_current_webview(self, webview):
         assert isinstance(webview, WebView)
-        self._current_web_view.show_focused(False)
+        self.current_webview().show_focused(False)
         if len(self.webviews()) > 1:
             webview.show_focused(True)
-        self._current_web_view = webview
+        self._webviews_layout.set_current_widget(webview)
 
-    def current_web_view(self):
-        return self._current_web_view
+    def current_webview(self):
+        return self._webviews_layout.current_widget()
 
     def webviews(self):
         return self._webviews_layout.widgets()
 
     def create_webview_on_right(self):
         view = WebView(self)
-        self._webviews_layout.insert_widget_right(self._current_web_view, view)
+        self._webviews_layout.insert_widget_right(self.current_webview(), view)
         return view
 
     def create_webview_on_bottom(self):
         view = WebView(self)
-        self._webviews_layout.insert_widget_bottom(self._current_web_view,
+        self._webviews_layout.insert_widget_bottom(self.current_webview(),
                                                    view)
         return view
 
@@ -86,7 +85,7 @@ class Window(QWidget):
             return
 
         views = self.webviews()
-        index = views.index(self.current_web_view())
+        index = views.index(self.current_webview())
         index = index + 1
         if index >= len(views):
             index = 0
@@ -98,18 +97,18 @@ class Window(QWidget):
         if len(views) == 1:
             return  # can't delete a single view
 
-        if view == self.current_web_view():
+        if view == self.current_webview():
             self.other_view()
 
         self._delete_webview(view)
 
         # do not show the window focused if there is one left
         if len(self.webviews()) == 1:
-            self.current_web_view().show_focused(True)
+            self.current_webview().show_focused(True)
 
     def close_other_views(self):
         """close all views but the current one"""
-        view = self.current_web_view()
+        view = self.current_webview()
         # to remove more than one item correctly, the iteration must
         # be done on a shallow copy of the list
         for other in list(self.webviews()):
@@ -118,7 +117,7 @@ class Window(QWidget):
 
         # do not show the window focused if there is one left
         if len(self.webviews()) == 1:
-            self.current_web_view().show_focused(False)
+            self.current_webview().show_focused(False)
 
     def update_title(self, title):
         if title:

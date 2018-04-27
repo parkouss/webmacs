@@ -137,5 +137,5 @@ def ipc_dispatch(data):
     win = current_window()
     url = data.get("url")
     if url:
-        view = win.current_web_view()
+        view = win.current_webview()
         view.setBuffer(create_buffer(url))

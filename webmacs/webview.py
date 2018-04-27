@@ -95,7 +95,7 @@ class WebView(QFrame):
             BUFFERS.remove(buffer)
             BUFFERS.insert(0, buffer)
 
-        if self.main_window.current_web_view() == self:
+        if self.main_window.current_webview() == self:
             # keyboard focus is lost without that.
             internal_view.setFocus()
             self.show_focused(True)
@@ -161,7 +161,7 @@ class InternalWebView(QWebEngineView):
             # disable automatic shortcuts in browser, like C-a
             return True
         elif t == QEvent.MouseButtonPress:
-            if view != view.main_window.current_web_view():
+            if view != view.main_window.current_webview():
                 view.set_current()
         elif t == QEvent.FocusIn:
             if self.isEnabled():  # disabled when there is a full-screen window
