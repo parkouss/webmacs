@@ -170,8 +170,8 @@ class EGridLayout(QLayout):
     def setGeometry(self, rect):
         self._root.set_geometry(rect)
 
-    def insert_widget_right(self, reference, widget):
-        refindex = self.indexOf(reference)
+    def insert_widget_right(self, widget, reference=None):
+        refindex = self.indexOf(reference or self._current_widget)
         refitem = self.itemAt(refindex)
         for entry in self._root:
             if entry.item == refitem:
@@ -179,8 +179,8 @@ class EGridLayout(QLayout):
                 self.invalidate()
                 break
 
-    def insert_widget_bottom(self, reference, widget):
-        refindex = self.indexOf(reference)
+    def insert_widget_bottom(self, widget, reference=None):
+        refindex = self.indexOf(reference or self._current_widget)
         refitem = self.itemAt(refindex)
         for entry in self._root:
             if entry.item == refitem:

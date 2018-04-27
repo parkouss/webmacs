@@ -62,13 +62,12 @@ class Window(QWidget):
 
     def create_webview_on_right(self):
         view = WebView(self)
-        self._webviews_layout.insert_widget_right(self.current_webview(), view)
+        self._webviews_layout.insert_widget_right(view)
         return view
 
     def create_webview_on_bottom(self):
         view = WebView(self)
-        self._webviews_layout.insert_widget_bottom(self.current_webview(),
-                                                   view)
+        self._webviews_layout.insert_widget_bottom(view)
         return view
 
     def _delete_webview(self, webview):
