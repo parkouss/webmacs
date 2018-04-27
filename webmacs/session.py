@@ -14,30 +14,20 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import logging
+import os
 
-from .import BUFFERS, current_window, windows
-from .webbuffer import (create_buffer, close_buffer, QUrl,
-                        DelayedLoadingUrl)
+from .import BUFFERS
+from .webbuffer import create_buffer, QUrl, DelayedLoadingUrl
+from .window import Window
 
 
-def session_load(stream):
+def _session_load(stream):
     data = json.load(stream)
     urls = data["urls"]
 
     # apply the session config
-    cwin = current_window()
-
-    # close any opened window other than the current one
-    for win in windows():
-        if win != cwin:
-            win.close()
-
-    # close any webview except the current one
-    cwin.close_other_views()
-
-    # and close all the buffers
-    for buff in BUFFERS:
-        close_buffer(buff, keep_one=False)
+    cwin = Window()
 
     # now, load urls in buffers
     for url in reversed(urls):
@@ -56,11 +46,42 @@ def session_load(stream):
     if BUFFERS:
         cwin.current_web_view().setBuffer(BUFFERS[0])
 
+    cwin.showMaximized()
 
-def session_save(stream):
+
+def _session_save(stream):
     urls = [{
         "url": b.url().toString(),
         "title": b.title()
     } for b in BUFFERS]
 
     json.dump({"urls": urls}, stream)
+
+
+def session_load(profile, opts):
+    """
+    Try to load the session, given the profile.
+
+    Must be called at application startup, when no buffers nor views is set up
+    already.
+    """
+    if os.path.exists(profile.session_file):
+        try:
+            with open(profile.session_file, "r") as f:
+                _session_load(f)
+                return True
+        except Exception:
+            logging.exception("Unable to load the session (%s)",
+                              profile.session_file)
+    window = Window()
+    buffer = create_buffer(opts.url or "http://duckduckgo.com/")
+    window.current_web_view().setBuffer(buffer)
+    window.showMaximized()
+
+
+def session_save(profile):
+    """
+    Save the session for the given profile.
+    """
+    with open(profile.session_file, "w") as f:
+        _session_save(f)

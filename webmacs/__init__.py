@@ -79,7 +79,9 @@ def current_buffer():
     """
     Returns the current buffer.
     """
-    return current_window().current_web_view().buffer()
+    w = current_window()
+    if w:
+        return w.current_web_view().buffer()
 
 
 def buffers():
@@ -91,14 +93,18 @@ def current_minibuffer():
     """
     Returns the current minibuffer.
     """
-    return current_window().minibuffer()
+    w = current_window()
+    if w:
+            return w.minibuffer()
 
 
 def minibuffer_show_info(text):
     """
     Display text information in the current minibuffer.
     """
-    current_minibuffer().show_info(text)
+    minibuffer = current_minibuffer()
+    if minibuffer:
+            minibuffer.show_info(text)
 
 
 def call_later(fn, msec=0):

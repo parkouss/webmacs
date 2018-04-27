@@ -23,11 +23,9 @@ import atexit
 
 from PyQt5.QtNetwork import QAbstractSocket
 
-from .webbuffer import create_buffer
 from .application import Application, app as _app
-from .window import Window
-from . import WINDOWS_HANDLER, current_window
 from .ipc import IpcServer
+from .session import session_load, session_save
 
 
 def signal_wakeup(app):
@@ -101,12 +99,8 @@ def init(opts):
     :param opts: the result of the parsed command line.
     """
     app = _app()
-    window = current_window()
-    if opts.url or not app.profile.load_session():
-        buffer = create_buffer(opts.url or "http://duckduckgo.com/")
-        window.current_web_view().setBuffer(buffer)
-
-    window.showMaximized()
+    app.aboutToQuit.connect(lambda: session_save(app.profile))
+    session_load(app.profile, opts)
 
 
 def _handle_user_init_error(msg):
@@ -142,10 +136,6 @@ def main():
     app = Application(["webmacs"])
     server = IpcServer(opts.instance)
     atexit.register(server.cleanup)
-
-    window = Window()
-    # register the window as being the current one
-    WINDOWS_HANDLER.current_window = window
 
     # load a user init module if any
     try:

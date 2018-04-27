@@ -118,8 +118,6 @@ class Application(QApplication):
         self.profile = default_profile()
         self.profile.enable(self)
 
-        self.aboutToQuit.connect(self.profile.save_session)
-
         settings = QWebEngineSettings.globalSettings()
         settings.setAttribute(
             QWebEngineSettings.LinksIncludedInFocusChain, False,
