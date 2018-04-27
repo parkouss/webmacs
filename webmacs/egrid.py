@@ -134,18 +134,15 @@ class EGridLayout(QLayout):
     def entries(self):
         return [e for e in self._root if e.item]
 
-    def items(self):
-        return [e.item for e in self._root if e.item]
-
     def addItem(self, item):
         self._item_added = item
 
     def count(self):
-        return len(self.items())
+        return len(self.entries())
 
     def itemAt(self, index):
         try:
-            return self.items()[index]
+            return self.entries()[index].item
         except IndexError:
             return None
 
@@ -158,8 +155,8 @@ class EGridLayout(QLayout):
 
     def sizeHint(self):
         size = QSize(0, 0)
-        for item in self.items():
-            size = size.expandedTo(item.sizeHint())
+        for entry in self.entries():
+            size = size.expandedTo(entry.item.sizeHint())
 
         return size + self.count() * QSize(self.spacing(), self.spacing())
 
