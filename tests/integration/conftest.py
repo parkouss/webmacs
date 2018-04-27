@@ -194,6 +194,10 @@ class Waiter(object):
 
 @pytest.yield_fixture()
 def session(qtbot, qapp, mocker):
+    # do not close the application on last window closed
+    mocker.patch("webmacs.WindowsHandler._on_last_window_closing") \
+        .return_value = False
+
     prompt_exec = mocker.patch("webmacs.minibuffer.prompt._prompt_exec")
     sess = TestSession(qtbot, qapp, prompt_exec)
 
