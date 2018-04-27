@@ -17,17 +17,20 @@ import json
 import logging
 import os
 
-from .import BUFFERS
+from .import BUFFERS, windows
 from .webbuffer import create_buffer, QUrl, DelayedLoadingUrl
 from .window import Window
 
 
+FORMAT_VERSION = 1
+
+
 def _session_load(stream):
     data = json.load(stream)
+    version = data.get("version", 0)
     urls = data["urls"]
 
     # apply the session config
-    cwin = Window()
 
     # now, load urls in buffers
     for url in reversed(urls):
@@ -42,11 +45,19 @@ def _session_load(stream):
                 title=url["title"]
             ))
 
+    if version > 0:
+        # only one window supported for now
+        wdata = data["windows"][0]
+        cwin = Window()
+        cwin.restore_state(wdata, version)
+        cwin.show()
+    else:
+        cwin = Window()
+        cwin.showMaximized()
+
     # and open the first buffer in the view
     if BUFFERS:
         cwin.current_webview().setBuffer(BUFFERS[0])
-
-    cwin.showMaximized()
 
 
 def _session_save(stream):
@@ -55,7 +66,11 @@ def _session_save(stream):
         "title": b.title()
     } for b in BUFFERS]
 
-    json.dump({"urls": urls}, stream)
+    json.dump({
+        "version": FORMAT_VERSION,
+        "urls": urls,
+        "windows": [w.dump_state() for w in windows()]
+    }, stream)
 
 
 def session_load(profile, opts):

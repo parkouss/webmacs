@@ -134,6 +134,8 @@ class Application(QApplication):
 
         self.installEventFilter(LOCAL_KEYMAP_SETTER)
 
+        self.setQuitOnLastWindowClosed(False)
+
         _app_requires()
 
     def _setup_conf_paths(self):

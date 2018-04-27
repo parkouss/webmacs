@@ -49,6 +49,13 @@ class WindowsHandler(QObject):
         if t == QEvent.WindowActivate:
             self.current_window = window
         elif t == QEvent.Close:
+            if len(self.windows) == 1:
+                # last window is closed, do not remove it from the list but
+                # exit the application. This is required from proper session
+                # saving.
+                from .application import app
+                app().quit()
+                return True
             self.windows.remove(window)
             if window == self.current_window:
                 self.current_window = None

@@ -14,6 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtCore import Qt, QRect
 
 from .minibuffer import Minibuffer
 from .egrid import ViewGridLayout
@@ -116,3 +117,13 @@ class Window(QWidget):
             self.setWindowTitle("{} - Webmacs".format(title))
         else:
             self.setWindowTitle("Webmacs")
+
+    def dump_state(self):
+        return {
+            "geometry": self.geometry().getRect(),
+            "window-state": int(self.windowState()),
+        }
+
+    def restore_state(self, data, version):
+        self.setGeometry(QRect(*data["geometry"]))
+        self.setWindowState(Qt.WindowStates(data["window-state"]))
