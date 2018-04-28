@@ -14,7 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, \
-    QTableView, QHeaderView, QApplication, QSizePolicy
+    QTableView, QHeaderView, QApplication, QSizePolicy, QFrame
 from PyQt5.QtGui import QPainter
 from PyQt5.QtCore import pyqtSignal as Signal, \
     QEvent, QSortFilterProxyModel, QRegExp, Qt, QModelIndex
@@ -30,6 +30,7 @@ class Popup(QTableView):
     def __init__(self, window, buffer_input):
         QTableView.__init__(self, window)
         self.setVisible(False)
+        self.setFrameStyle(QFrame.Box)
         self._window = window
         self._buffer_input = buffer_input
         window.installEventFilter(self)
@@ -48,7 +49,7 @@ class Popup(QTableView):
     def _resize(self, size):
         # size is calculated given the window and the minibuffer input
         # geometries
-        h = (24) * min(self._max_visible_items, self.model().rowCount()) + 3
+        h = (24) * min(self._max_visible_items, self.model().rowCount())
         w = size.width()
         y = size.height() - h - self._buffer_input.height()
 
