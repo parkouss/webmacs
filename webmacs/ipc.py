@@ -17,7 +17,7 @@ import os
 import json
 import struct
 import logging
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
+from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, Qt
 from PyQt5.QtNetwork import QLocalServer, QLocalSocket
 
 
@@ -139,3 +139,12 @@ def ipc_dispatch(data):
     if url:
         view = win.current_webview()
         view.setBuffer(create_buffer(url))
+
+    # this is quite hard to raise a window. The following works fine
+    # for me with gnome 3.
+    flags = win.windowFlags()
+    win.setWindowFlags(flags | Qt.Popup)
+    win.raise_()
+    win.activateWindow()
+    win.setWindowFlags(flags)
+    win.show()
