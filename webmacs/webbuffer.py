@@ -36,18 +36,18 @@ from .mode import get_mode, Mode, get_auto_modename_for_url
 DelayedLoadingUrl = namedtuple("DelayedLoadingUrl", ("url", "title"))
 
 
-def close_buffer(wb, keep_one=True):
-    if keep_one and len(BUFFERS) < 2:
-        return  # can't close if there is only one buffer left
-
+def close_buffer(wb):
     view = wb.view()
     if view:
         # buffer is currently visible, search for a buffer that is not visible
         # yet to put it in the view
         invisibles = [b for b in BUFFERS if not b.view()]
         if not invisibles:
-            # all buffers have views, so close the view of our buffer first
-            view.main_window.close_view(view)
+            if len(view.main_window.webviews()) > 1:
+                # we can close the current view if it is not alone
+                view.main_window.close_view(view)
+            else:
+                return
         else:
             # associate the first buffer that does not have any view yet
             view.setBuffer(invisibles[0])
