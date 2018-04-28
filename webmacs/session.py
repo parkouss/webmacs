@@ -17,7 +17,7 @@ import json
 import logging
 import os
 
-from .import BUFFERS, windows
+from .import BUFFERS, windows, current_window
 from .webbuffer import create_buffer, QUrl, DelayedLoadingUrl
 from .window import Window
 
@@ -46,11 +46,19 @@ def _session_load(stream):
             ))
 
     if version > 0:
-        # only one window supported for now
-        wdata = data["windows"][0]
-        cwin = Window()
-        cwin.restore_state(wdata, version)
-        cwin.show()
+        def create_window(wdata):
+            win = Window()
+            win.restore_state(wdata, version)
+            win.show()
+
+        current_index = data.get("current-window", 0)
+        for i, wdata in enumerate(data["windows"]):
+            if i != current_index:
+                create_window(wdata)
+
+        # create the current last, so it has focus and is on top
+        create_window(data["windows"][current_index])
+
     else:
         cwin = Window()
         cwin.showMaximized()
@@ -69,7 +77,8 @@ def _session_save(stream):
     json.dump({
         "version": FORMAT_VERSION,
         "urls": urls,
-        "windows": [w.dump_state() for w in windows()]
+        "windows": [w.dump_state() for w in windows()],
+        "current-window": windows().index(current_window()),
     }, stream)
 
 
