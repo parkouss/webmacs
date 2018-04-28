@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- Fixed closing buffer in some circumstances using C-k from the
+  switch-buffer command.
+- Improved position of the minibuffer popup, removing empty pixels
+  between the popup and the input.
 - Fixed using i-search when caret browsing is enabled
 - improve using multiple views, fixing a lot of bugs around that (keyboard
   focus lost, crash using switch-buffer on an already displayed buffer, ...)
@@ -23,6 +27,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- added basic support for multiple windows. New commands added: **make-window**,
+  **other-window**, **close-window**, **close-other-window**.
 - saving and restoring web views in session
 - saving and restoring window position and state in session
 - added a variable **webview-stylesheet** to customize the above view style.
