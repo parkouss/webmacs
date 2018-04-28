@@ -27,6 +27,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- Under X11, if the --instance is passed at the command line, the
+  WM_CLASS property is set to "webmacs-{instance}".
 - added basic support for multiple windows. New commands added: **make-window**,
   **other-window**, **close-window**, **close-other-window**.
 - saving and restoring web views in session

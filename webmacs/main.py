@@ -133,7 +133,12 @@ def main():
             print(msg)
         return
 
-    app = Application(["webmacs"])
+    app = Application([
+        # The first argument passed to the QApplication args defines
+        # the x11 property WM_CLASS.
+        "webmacs" if not opts.instance
+        else "webmacs-%s" % opts.instance
+    ])
     server = IpcServer(opts.instance)
     atexit.register(server.cleanup)
 
