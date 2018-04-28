@@ -27,6 +27,7 @@ from ..keyboardhandler import current_prefix_arg, send_key_event, \
 from .. import BUFFERS, windows
 from ..mode import MODES
 from ..variables import VARIABLES
+from ..window import Window
 
 
 class CommandsListPrompt(Prompt):
@@ -134,6 +135,52 @@ def split_window_bottom(ctx):
     view = win.create_webview_on_bottom()
     view.setBuffer(_get_or_create_buffer(win))
     view.set_current()
+
+
+@define_command("make-window")
+def create_window(ctx):
+    """
+    Create a new window and focus it.
+    """
+    win = Window()
+    win.current_webview().setBuffer(_get_or_create_buffer(ctx.window))
+    win.show()
+    win.activateWindow()
+
+
+@define_command("other-window")
+def other_window(ctx):
+    """
+    Switch to the next window.
+    """
+    if len(windows()) <= 1:
+        return False
+    iterwindows = itertools.cycle(windows())
+    while True:
+        win = next(iterwindows)
+        if win == ctx.window:
+            next(iterwindows).activateWindow()
+            return True
+
+
+@define_command("close-window")
+def close_window(ctx):
+    """
+    Close the current window, unless there is only one left.
+    """
+    # first activate the next view
+    if other_window(ctx):
+        ctx.window.close()
+
+
+@define_command("close-other-windows")
+def close_other_windows(ctx):
+    """
+    Close all windows except the current one.
+    """
+    for win in windows():
+        if win != ctx.window:
+            win.close()
 
 
 @define_command("other-view")

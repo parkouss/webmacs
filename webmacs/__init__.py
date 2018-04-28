@@ -60,6 +60,7 @@ class WindowsHandler(QObject):
                 if self._on_last_window_closing():
                     return True
             self.windows.remove(window)
+            window.deleteLater()
             if window == self.current_window:
                 self.current_window = None
 
