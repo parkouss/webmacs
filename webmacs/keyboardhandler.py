@@ -38,10 +38,8 @@ class LocalKeymapSetter(QObject):
             return True
         return False
 
-    def set_enabled_minibuffer(self, enabled):
-        self.enabled_minibuffer = enabled
-
     def minibuffer_input_focus_changed(self, mb, enabled):
+        self.enabled_minibuffer = enabled
         if enabled:
             set_local_keymap(mb.keymap())
         else:
@@ -52,7 +50,7 @@ class LocalKeymapSetter(QObject):
                 set_local_keymap(buff.active_keymap())
 
     def view_focus_changed(self, view, enabled):
-        if enabled:
+        if enabled and not self.enabled_minibuffer:
             # fixes issue were a raw qwebenginepage comes here. To
             # reproduce, have two opened buffers, then C-x 2, C-x 3.
             if hasattr(view.buffer(), "active_keymap"):

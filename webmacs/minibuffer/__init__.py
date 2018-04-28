@@ -148,14 +148,10 @@ class MinibufferInput(QLineEdit):
         if t == QEvent.KeyPress:
             if KEY_EATER.event_filter(self, evt):
                 return True
-        elif t == QEvent.FocusIn:
-            LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, True)
-        elif t == QEvent.FocusOut:
-            LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, False)
         elif t == QEvent.Show:
-            LOCAL_KEYMAP_SETTER.set_enabled_minibuffer(True)
+            LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, True)
         elif t == QEvent.Hide:
-            LOCAL_KEYMAP_SETTER.set_enabled_minibuffer(False)
+            LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, False)
         return QLineEdit.event(self, evt)
 
     def set_completer_model(self, completer_model):
