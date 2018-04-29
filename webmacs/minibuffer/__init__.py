@@ -189,9 +189,9 @@ class MinibufferInput(QLineEdit):
         else:
             self._popup.popup()
 
-    def show_completions(self, filter_text=""):
+    def show_completions(self, filter_text=None):
         self._show_completions(
-            filter_text if filter_text else self.text(), True)
+            filter_text if filter_text is not None else self.text(), True)
 
     def _on_completion_activated(self, index, hide_popup=True):
         if hide_popup:

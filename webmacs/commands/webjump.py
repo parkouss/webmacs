@@ -22,6 +22,8 @@ from PyQt5.QtCore import QUrl, pyqtSlot as Slot, \
 from PyQt5.QtNetwork import QNetworkRequest
 
 from ..minibuffer.prompt import Prompt, PromptTableModel, PromptHistory
+from ..minibuffer.keymap import KEYMAP as MINIBUF_KEYMAP
+from .. keymaps import Keymap
 from ..commands import define_command
 from .. import current_buffer
 from ..application import app
@@ -123,14 +125,26 @@ class WebJumpRequestCompleter(WebJumpCompleter):
         self.deleteLater()
 
 
+WEBJUMP_PROMPT_KEYMAP = Keymap("webjump-minibuffer", parent=MINIBUF_KEYMAP)
+
+@WEBJUMP_PROMPT_KEYMAP.define_key("Tab")
+def wb_complete(ctx):
+    input = ctx.minibuffer.input()
+    if not input.popup().isVisible():
+        input.show_completions()
+    else:
+        input.complete()
+        ctx.minibuffer.prompt()._text_edited(input.text())
+
+
 class WebJumpPrompt(Prompt):
     label = "url/webjump:"
     complete_options = {
-        "autocomplete": True,
         "match": Prompt.SimpleMatch
     }
     history = PromptHistory()
     force_new_buffer = False
+    keymap = WEBJUMP_PROMPT_KEYMAP
 
     def completer_model(self):
         data = []
@@ -172,8 +186,7 @@ class WebJumpPrompt(Prompt):
             model = self._wc_model
             self._active_webjump = WEBJUMPS[first_word]
             # set matching strategy
-            self.minibuffer.input().set_match(
-                Prompt.SimpleMatch if self._active_webjump.protocol else None)
+            self.minibuffer.input().set_match(None)
             self.start_completion(self._active_webjump)
         else:
             # didn't find a webjump, go back to matching
