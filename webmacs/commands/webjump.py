@@ -196,6 +196,7 @@ class WebJumpPrompt(Prompt):
         self._wb_model = minibuffer.input().completer_model()
         self._active_webjump = None
         self._completer = None
+        self._popup_sel_model = None
 
     def eventFilter(self, obj, event):
         # call _text_edited on backspace release, as this is not reported by
@@ -231,6 +232,22 @@ class WebJumpPrompt(Prompt):
         if m_input.completer_model() != model:
             m_input.popup().hide()
             m_input.set_completer_model(model)
+            if self._popup_sel_model:
+                self._popup_sel_model.selectionChanged.disconnect(
+                    self._popup_selection_changed
+                )
+                self._popup_sel_model = None
+            if wj:
+                m_input.popup().selectionModel()\
+                               .selectionChanged.connect(
+                                   self._popup_selection_changed
+                               )
+
+    def _popup_selection_changed(self, _sel, _desel):
+        # try to abort any completion if the user select something in
+        # the popup
+        if self._completer:
+            self._completer.abort()
 
     def _text_edited(self, text):
         # search for a matching webjump
