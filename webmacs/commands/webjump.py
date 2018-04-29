@@ -70,12 +70,13 @@ def define_webjump(name, url, doc="", complete_fn=None, protocol=False):
 
     """
     allow_args = "%s" in url
-    WEBJUMPS[name.strip()] = WebJump(name.strip(), url,
-                                     doc,
-                                     allow_args,
-                                     complete_fn if complete_fn else
-                                     lambda x: [],
-                                     protocol)
+    WEBJUMPS[name.strip()] = WebJump(
+        name.strip(), url,
+        doc,
+        allow_args,
+        complete_fn or empty_completer,
+        protocol
+    )
 
 
 def define_protocol(name, doc="", complete_fn=None):
@@ -94,38 +95,66 @@ def set_default(name):
 
 
 class WebJumpCompleter(QObject):
-    complete = Signal(list)
+    completed = Signal(list)
+
+    def complete(self, text):
+        raise NotImplementedError
 
     def abort(self):
         pass
 
 
+class SyncWebJumpCompleter(WebJumpCompleter):
+    def __init__(self, complete_fn):
+        WebJumpCompleter.__init__(self)
+        self.complete_fn = complete_fn
+
+    def complete(self, text):
+        self.completed.emit(self.complete_fn(text))
+
+
+def empty_completer():
+    return SyncWebJumpCompleter(lambda _: [])
+
+
 class WebJumpRequestCompleter(WebJumpCompleter):
     def __init__(self, url, extract_completions_fn):
         WebJumpCompleter.__init__(self)
+        self.url = url
+        self.extract_completions_fn = extract_completions_fn
+        self.reply = None
+
+    def complete(self, text):
+        if not text:
+            self.completed.emit([])
+            return
+        url = self.url % str(QUrl.toPercentEncoding(text), "utf-8")
         req = QNetworkRequest(QUrl(url))
         self.reply = app().network_manager.get(req)
-        self.extract_completions_fn = extract_completions_fn
         self.reply.finished.connect(self._on_reply_finished)
 
     def abort(self):
-        self.reply.abort()
+        if self.reply:
+            self.reply.abort()
 
     def _on_reply_finished(self):
         if self.reply.error() == self.reply.NoError:
             try:
                 completions = self.extract_completions_fn(self.reply.readAll())
             except Exception:
-                logging.exception("Error when trying to extract completions from %s"
-                                  % self.reply.url().toString())
+                logging.exception(
+                    "Error when trying to extract completions from %s"
+                    % self.reply.url().toString()
+                )
                 completions = []
-            self.complete.emit(completions)
+            self.completed.emit(completions)
 
         self.reply.deleteLater()
-        self.deleteLater()
+        self.reply = None
 
 
 WEBJUMP_PROMPT_KEYMAP = Keymap("webjump-minibuffer", parent=MINIBUF_KEYMAP)
+
 
 @WEBJUMP_PROMPT_KEYMAP.define_key("Tab")
 def wb_complete(ctx):
@@ -176,47 +205,52 @@ class WebJumpPrompt(Prompt):
                 self._text_edited(self.minibuffer.input().text())
         return Prompt.eventFilter(self, obj, event)
 
-    def _text_edited(self, text):
-        # reset the active webjump
-        self._active_webjump = None
+    def _set_active_webjump(self, wj):
+        if self._active_webjump == wj:
+            return
 
+        if self._active_webjump:
+            if self._completer:
+                self._completer.completed.disconnect(self._got_completions)
+                self._completer.abort()
+                self._completer.deleteLater()
+                self._completer = None
+
+        m_input = self.minibuffer.input()
+        if wj:
+            self._completer = wj.complete_fn()
+            self._completer.completed.connect(self._got_completions)
+            # set matching strategy
+            m_input.set_match(None)
+            model = self._wc_model
+        else:
+            m_input.set_match(Prompt.SimpleMatch)
+            model = self._wb_model
+
+        self._active_webjump = wj
+        if m_input.completer_model() != model:
+            m_input.popup().hide()
+            m_input.set_completer_model(model)
+
+    def _text_edited(self, text):
         # search for a matching webjump
         first_word = text.split(" ")[0].split("://")[0]
         if first_word in [w for w in WEBJUMPS if len(w) < len(text)]:
-            model = self._wc_model
-            self._active_webjump = WEBJUMPS[first_word]
-            # set matching strategy
-            self.minibuffer.input().set_match(None)
+            self._set_active_webjump(WEBJUMPS[first_word])
             self.start_completion(self._active_webjump)
         else:
             # didn't find a webjump, go back to matching
             # webjump/bookmark/history
-            self.minibuffer.input().set_match(Prompt.SimpleMatch)
-            model = self._wb_model
-
-        if self.minibuffer.input().completer_model() != model:
-            self.minibuffer.input().popup().hide()
-            self.minibuffer.input().set_completer_model(model)
+            self._set_active_webjump(None)
 
     def start_completion(self, webjump):
-        if self._completer:
-            self._completer.complete.disconnect(self._got_completions)
-            self._completer.abort()
         text = self.minibuffer.input().text()
         prefix = webjump.name + ("://" if webjump.protocol else " ")
-        completer = webjump.complete_fn(text[len(prefix):])
-        if completer:
-            if isinstance(completer, WebJumpCompleter):
-                completer.complete.connect(self._got_completions)
-                self._completer = completer
-            else:
-                self._got_completions(completer)
-        else:
-            self._got_completions(())
+        self._completer.abort()
+        self._completer.complete(text[len(prefix):])
 
     @Slot(list)
     def _got_completions(self, data):
-        self._completer = None
         if self._active_webjump:
             self._wc_model.setStringList(data)
             text = self.minibuffer.input().text()

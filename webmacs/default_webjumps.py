@@ -15,27 +15,19 @@
 
 import json
 
-from PyQt5.QtCore import QUrl
-
 from .commands.webjump import define_webjump, define_protocol, \
-    webjump_default, WebJumpRequestCompleter
+    webjump_default, WebJumpRequestCompleter, SyncWebJumpCompleter
 from .minibuffer.prompt import FSModel
 from .scheme_handlers.webmacs import PAGES as webmacs_pages
 
 
 # ----------- doc example
 
-def complete_google(text):
-    if not text:
-        return None
-
-    url = ("https://www.google.com/complete/search?client=firefox&q="
-           + str(QUrl.toPercentEncoding(text), "utf-8"))
-
-    def extract_completions(response):
-        return json.loads(str(response, "utf-8"))[1]
-
-    return WebJumpRequestCompleter(url, extract_completions)
+def complete_google():
+    return WebJumpRequestCompleter(
+        "https://www.google.com/complete/search?client=firefox&q=%s",
+        lambda response: json.loads(str(response, "utf-8"))[1]
+    )
 
 
 define_webjump("google",
@@ -54,16 +46,18 @@ def complete_fs():
         return [model.data(model.index(i, 0))
                 for i in range(model.rowCount())]
 
-    return _complete
+    return SyncWebJumpCompleter(_complete)
 
 
 define_protocol("file",
                 "Local uris",
-                complete_fn=complete_fs())
+                complete_fn=complete_fs)
 
 
-def complete_pages(text):
-    return [p for p in webmacs_pages if text in p]
+def complete_pages():
+    return SyncWebJumpCompleter(
+        lambda text: [p for p in webmacs_pages if text in p]
+    )
 
 
 define_protocol("webmacs",
@@ -73,14 +67,18 @@ define_protocol("webmacs",
 
 def complete_protocol(protocol):
 
-    def complete(text):
-        completer = complete_google(protocol + text)
+    def complete():
+        completer = complete_google()
         extract_fn = completer.extract_completions_fn
+        complete = completer.complete
 
         completer.extract_completions_fn \
             = lambda data: [r[len(protocol):]
                             for r in extract_fn(data)
                             if r.startswith(protocol)]
+
+        completer.complete \
+            = lambda text: complete(protocol + text)
         return completer
     return complete
 
@@ -94,17 +92,11 @@ define_protocol("https",
                 complete_fn=complete_protocol("https://"))
 
 
-def complete_duckduckgo(text):
-    if not text:
-        return None
-    url = ("https://www.duckduckgo.com/ac/?q={}&type=list".format(
-        str(QUrl.toPercentEncoding(text), "utf-8"))
+def complete_duckduckgo():
+    return WebJumpRequestCompleter(
+        "https://www.duckduckgo.com/ac/?q=%s&type=list",
+        lambda response: json.loads(str(response, "utf-8"))[1]
     )
-
-    def extract_completions(response):
-        return json.loads(str(response, "utf-8"))[1]
-
-    return WebJumpRequestCompleter(url, extract_completions)
 
 
 define_webjump("duckduckgo",
