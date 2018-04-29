@@ -17,8 +17,8 @@ import json
 
 from PyQt5.QtCore import QUrl
 
-from .commands.webjump import define_webjump, define_protocol, webjump_default
-from urllib.request import urlopen
+from .commands.webjump import define_webjump, define_protocol, \
+    webjump_default, WebJumpRequestCompleter
 from .minibuffer.prompt import FSModel
 from .scheme_handlers.webmacs import PAGES as webmacs_pages
 
@@ -27,11 +27,15 @@ from .scheme_handlers.webmacs import PAGES as webmacs_pages
 
 def complete_google(text):
     if not text:
-        return []
+        return None
+
     url = ("https://www.google.com/complete/search?client=firefox&q="
            + str(QUrl.toPercentEncoding(text), "utf-8"))
-    with urlopen(url) as conn:
-        return json.loads(str(conn.read(), "latin1"))[1]
+
+    def extract_completions(response):
+        return json.loads(str(response, "utf-8"))[1]
+
+    return WebJumpRequestCompleter(url, extract_completions)
 
 
 define_webjump("google",
@@ -67,35 +71,40 @@ define_protocol("webmacs",
                 complete_fn=complete_pages)
 
 
-def complete_http(text):
-    s = [r[7:] for r in complete_google(
-        "http://"+text) if r.startswith("http://"+text)]
-    return s
+def complete_protocol(protocol):
 
+    def complete(text):
+        completer = complete_google(protocol + text)
+        extract_fn = completer.extract_completions_fn
 
-def complete_https(text):
-    s = [r[8:] for r in complete_google(
-        "https://"+text) if r.startswith("https://"+text)]
-    return s
+        completer.extract_completions_fn \
+            = lambda data: [r[len(protocol):]
+                            for r in extract_fn(data)
+                            if r.startswith(protocol)]
+        return completer
+    return complete
 
 
 define_protocol("http",
                 "web sites",
-                complete_fn=complete_http)
+                complete_fn=complete_protocol("http://"))
 
 define_protocol("https",
                 "secure web sites",
-                complete_fn=complete_https)
+                complete_fn=complete_protocol("https://"))
 
 
 def complete_duckduckgo(text):
     if not text:
-        return []
+        return None
     url = ("https://www.duckduckgo.com/ac/?q={}&type=list".format(
         str(QUrl.toPercentEncoding(text), "utf-8"))
     )
-    with urlopen(url) as conn:
-        return json.loads(str(conn.read(), "utf-8"))[1]
+
+    def extract_completions(response):
+        return json.loads(str(response, "utf-8"))[1]
+
+    return WebJumpRequestCompleter(url, extract_completions)
 
 
 define_webjump("duckduckgo",

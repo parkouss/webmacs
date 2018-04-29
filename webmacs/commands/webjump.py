@@ -13,13 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 import re
+import logging
 from collections import namedtuple
 
-from PyQt5.QtCore import QUrl, QThread, pyqtSlot as Slot, \
+from PyQt5.QtCore import QUrl, pyqtSlot as Slot, \
     pyqtSignal as Signal, QStringListModel, QObject, QEvent, Qt
-
+from PyQt5.QtNetwork import QNetworkRequest
 
 from ..minibuffer.prompt import Prompt, PromptTableModel, PromptHistory
 from ..commands import define_command
@@ -91,18 +91,36 @@ def set_default(name):
     webjump_default.set_value(name)
 
 
-class CompletionReceiver(QObject):
-    got_completions = Signal(list)
+class WebJumpCompleter(QObject):
+    complete = Signal(list)
 
-    @Slot(object, str, str)
-    def get_completions(self, w, name, text):
-        try:
-            completions = w.complete_fn(text)
-        except Exception:
-            logging.exception("Can not autocomplete for the webjump.")
-            completions = []
-        else:
-            self.got_completions.emit(completions)
+    def abort(self):
+        pass
+
+
+class WebJumpRequestCompleter(WebJumpCompleter):
+    def __init__(self, url, extract_completions_fn):
+        WebJumpCompleter.__init__(self)
+        req = QNetworkRequest(QUrl(url))
+        self.reply = app().network_manager.get(req)
+        self.extract_completions_fn = extract_completions_fn
+        self.reply.finished.connect(self._on_reply_finished)
+
+    def abort(self):
+        self.reply.abort()
+
+    def _on_reply_finished(self):
+        if self.reply.error() == self.reply.NoError:
+            try:
+                completions = self.extract_completions_fn(self.reply.readAll())
+            except Exception:
+                logging.exception("Error when trying to extract completions from %s"
+                                  % self.reply.url().toString())
+                completions = []
+            self.complete.emit(completions)
+
+        self.reply.deleteLater()
+        self.deleteLater()
 
 
 class WebJumpPrompt(Prompt):
@@ -112,8 +130,6 @@ class WebJumpPrompt(Prompt):
         "match": Prompt.SimpleMatch
     }
     history = PromptHistory()
-
-    ask_completions = Signal(object, str, str)
     force_new_buffer = False
 
     def completer_model(self):
@@ -135,15 +151,8 @@ class WebJumpPrompt(Prompt):
         minibuffer.input().installEventFilter(self)
         self._wc_model = QStringListModel()
         self._wb_model = minibuffer.input().completer_model()
-        self._cthread = QThread(app())
-        self._creceiver = CompletionReceiver()
-        self._creceiver.moveToThread(self._cthread)
-        self._completion_timer = 0
         self._active_webjump = None
-        self._cthread.finished.connect(self._cthread.deleteLater)
-        self.ask_completions.connect(self._creceiver.get_completions)
-        self._creceiver.got_completions.connect(self._got_completions)
-        self._cthread.start()
+        self._completer = None
 
     def eventFilter(self, obj, event):
         # call _text_edited on backspace release, as this is not reported by
@@ -165,9 +174,7 @@ class WebJumpPrompt(Prompt):
             # set matching strategy
             self.minibuffer.input().set_match(
                 Prompt.SimpleMatch if self._active_webjump.protocol else None)
-            if self._completion_timer != 0:
-                self.killTimer(self._completion_timer)
-            self._completion_timer = self.startTimer(10)
+            self.start_completion(self._active_webjump)
         else:
             # didn't find a webjump, go back to matching
             # webjump/bookmark/history
@@ -178,18 +185,25 @@ class WebJumpPrompt(Prompt):
             self.minibuffer.input().popup().hide()
             self.minibuffer.input().set_completer_model(model)
 
-    def timerEvent(self, _):
-        if self._active_webjump:
-            text = self.minibuffer.input().text()
-            prefix = self._active_webjump.name + \
-                ("://" if self._active_webjump.protocol else " ")
-            self.ask_completions.emit(
-                self._active_webjump, prefix, text[len(prefix):])
-            self.killTimer(self._completion_timer)
-            self._completion_timer = 0
+    def start_completion(self, webjump):
+        if self._completer:
+            self._completer.complete.disconnect(self._got_completions)
+            self._completer.abort()
+        text = self.minibuffer.input().text()
+        prefix = webjump.name + ("://" if webjump.protocol else " ")
+        completer = webjump.complete_fn(text[len(prefix):])
+        if completer:
+            if isinstance(completer, WebJumpCompleter):
+                completer.complete.connect(self._got_completions)
+                self._completer = completer
+            else:
+                self._got_completions(completer)
+        else:
+            self._got_completions(())
 
     @Slot(list)
     def _got_completions(self, data):
+        self._completer = None
         if self._active_webjump:
             self._wc_model.setStringList(data)
             text = self.minibuffer.input().text()
@@ -200,7 +214,6 @@ class WebJumpPrompt(Prompt):
     def close(self):
         Prompt.close(self)
         self.minibuffer.input().removeEventFilter(self)
-        self._cthread.quit()
         # not sure if those are required;
         self._wb_model.deleteLater()
         self._wc_model.deleteLater()
@@ -277,24 +290,12 @@ def get_url(prompt):
             return webjump.url % ''
 
         else:
-            # we found a webjump, now look for a single completion
-            try:
-                completions = [c for c in webjump.complete_fn(
-                    args[1]) if c.startswith(args[1])]
-            except Exception:
-                logging.exception("Can not autocomplete for the webjump.")
-                completions = []
-
-            # found a single completion
-            if len(completions) == 1:
-                return webjump.url % completions[0]
+            # format the url as entered
+            if webjump.protocol:
+                return value
             else:
-                # not using the completions, format the url as entered
-                if webjump.protocol:
-                    return value
-                else:
-                    return webjump.url % str(QUrl.toPercentEncoding(args[1]),
-                                             "utf-8")
+                return webjump.url % str(QUrl.toPercentEncoding(args[1]),
+                                         "utf-8")
 
     # Look for a bookmark
     bookmarks = {name: url

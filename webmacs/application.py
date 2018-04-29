@@ -22,6 +22,7 @@ from PyQt5.QtCore import pyqtSlot as Slot
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtNetwork import QNetworkAccessManager
 
 from . import require
 from .version import opengl_vendor
@@ -135,6 +136,8 @@ class Application(QApplication):
         self.installEventFilter(LOCAL_KEYMAP_SETTER)
 
         self.setQuitOnLastWindowClosed(False)
+
+        self.network_manager = QNetworkAccessManager(self)
 
         _app_requires()
 
