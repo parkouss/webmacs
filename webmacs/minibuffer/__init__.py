@@ -49,7 +49,8 @@ class Popup(QTableView):
     def _resize(self, size):
         # size is calculated given the window and the minibuffer input
         # geometries
-        h = (24) * min(self._max_visible_items, self.model().rowCount())
+        h = (24) * min(self._max_visible_items, self.model().rowCount()) + (
+            2 * self.lineWidth())
         w = size.width()
         y = size.height() - h - self._buffer_input.height()
 
