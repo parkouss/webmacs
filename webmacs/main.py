@@ -23,9 +23,7 @@ import atexit
 
 from PyQt5.QtNetwork import QAbstractSocket
 
-from .application import Application, app as _app
 from .ipc import IpcServer
-from .session import session_load, session_save
 
 
 def signal_wakeup(app):
@@ -98,14 +96,19 @@ def init(opts):
 
     :param opts: the result of the parsed command line.
     """
-    app = _app()
-    app.aboutToQuit.connect(lambda: session_save(app.profile))
-    session_load(app.profile, opts)
+    from .application import app
+    from .session import session_load, session_save
+
+    a = app()
+    a.aboutToQuit.connect(lambda: session_save(a.profile))
+    session_load(a.profile, opts)
 
 
 def _handle_user_init_error(msg):
     import traceback
-    conf_path = _app().conf_path()
+    from .application import app
+
+    conf_path = app().conf_path()
     stack_size = 0
     tbs = traceback.extract_tb(sys.exc_info()[2])
     for i, t in enumerate(tbs):
@@ -132,6 +135,10 @@ def main():
         if msg:
             print(msg)
         return
+
+    # Delay loading after command line parsing and ipc checking.
+    # Loading qwebengine stuff takes a couple of seconds...
+    from .application import Application
 
     app = Application([
         # The first argument passed to the QApplication args defines
