@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+- **breaking change**. The completion\_fn argument in define\_webjump has
+  changed, see the documentation about that.
+- improved webjump completions in multiple ways.
 - switching buffers now tries its best to keep the current scroll and cursor
   position, so that coming back to a previous buffer feels more natural. This
   is in part implemented by keeping one internal qt webengineview per buffer.
