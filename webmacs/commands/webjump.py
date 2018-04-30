@@ -59,12 +59,11 @@ def define_webjump(name, url, doc="", complete_fn=None, protocol=False):
 
     :param name: the name of the webjump.
     :param url: the url of the webjump. If the url contains "%s", it is
-                assumed that it as a variable part.
+        assumed that it as a variable part.
     :param doc: associated documentation for the webjump.
-    :param complete_fn: a function that provides autocompletion. The
-                        function takes one parameter, the current
-                        text, and must returns a list of strings (the
-                        possible completions)
+    :param complete_fn: a function that should create a suitable
+        :class:`WebJumpCompleter` to provide auto-completion, or None if there
+        is no completion support for this webjump.
     :param protocol: True if the webjump should be treated as the protocol
                      part of a URI (eg: file://)
 
@@ -95,16 +94,43 @@ def set_default(name):
 
 
 class WebJumpCompleter(QObject):
+    """
+    Provides auto-completion in webjumps.
+
+    An instance is created automatically when required, and lives while the
+    webjump is active. When a key is entered in the minibuffer input, the
+    method :meth:`complete` is called with the current text, asking for
+    completion.
+
+    The signal `completed` must be then be emitted with the list of possible
+    completions.
+
+    Note there is no underlying thread in the completion framework.
+    """
     completed = Signal(list)
 
     def complete(self, text):
+        """Must be implemented by subclasses."""
         raise NotImplementedError
 
     def abort(self):
+        """
+        Called when the completion request should be aborted.
+
+        Subclasses should implement this if possible.
+        """
         pass
 
 
 class SyncWebJumpCompleter(WebJumpCompleter):
+    """
+    A simple completer that provides completion given a function.
+
+    This completer will block the ui, use it with care.
+
+    :param complete_fn: a function that takes the current string, and must
+        returns the possible completions as a list of strings.
+    """
     def __init__(self, complete_fn):
         WebJumpCompleter.__init__(self)
         self.complete_fn = complete_fn
@@ -118,17 +144,30 @@ def empty_completer():
 
 
 class WebJumpRequestCompleter(WebJumpCompleter):
-    def __init__(self, url, extract_completions_fn):
+    """
+    A completer that execute a web request to provide completion.
+
+    This completer will not block the ui.
+
+    :param url_fn: a function that takes the text to complete, and returns an
+        url that will provide completion. The returns can be none if no url is
+        suitable for the given text.
+    :param extract_completions_fn: a function that takes the bytes of the
+        request reply, and must convert it to the completions (a string list).
+    """
+    def __init__(self, url_fn, extract_completions_fn):
         WebJumpCompleter.__init__(self)
-        self.url = url
+        self.url_fn = url_fn
         self.extract_completions_fn = extract_completions_fn
         self.reply = None
 
     def complete(self, text):
-        if not text:
+        url = self.url_fn(text)
+        if not url:
             self.completed.emit([])
             return
-        url = self.url % str(QUrl.toPercentEncoding(text), "utf-8")
+        elif not isinstance(url, QUrl):
+            url = QUrl(url)
         req = QNetworkRequest(QUrl(url))
         self.reply = app().network_manager.get(req)
         self.reply.finished.connect(self._on_reply_finished)

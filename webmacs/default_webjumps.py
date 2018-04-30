@@ -15,6 +15,8 @@
 
 import json
 
+from PyQt5.QtCore import QUrl
+
 from .commands.webjump import define_webjump, define_protocol, \
     webjump_default, WebJumpRequestCompleter, SyncWebJumpCompleter
 from .minibuffer.prompt import FSModel
@@ -24,8 +26,15 @@ from .scheme_handlers.webmacs import PAGES as webmacs_pages
 # ----------- doc example
 
 def complete_google():
+    def url_fn(text):
+        if not text:
+            return None
+        return (
+            "https://www.google.com/complete/search?client=firefox&q="
+            + str(QUrl.toPercentEncoding(text), "utf-8"))
+
     return WebJumpRequestCompleter(
-        "https://www.google.com/complete/search?client=firefox&q=%s",
+        url_fn,
         lambda response: json.loads(str(response, "utf-8"))[1]
     )
 
@@ -70,15 +79,15 @@ def complete_protocol(protocol):
     def complete():
         completer = complete_google()
         extract_fn = completer.extract_completions_fn
-        complete = completer.complete
+        url_fn = completer.url_fn
 
         completer.extract_completions_fn \
             = lambda data: [r[len(protocol):]
                             for r in extract_fn(data)
                             if r.startswith(protocol)]
 
-        completer.complete \
-            = lambda text: complete(protocol + text)
+        completer.url_fn \
+            = lambda text: url_fn(protocol + text)
         return completer
     return complete
 
@@ -93,8 +102,16 @@ define_protocol("https",
 
 
 def complete_duckduckgo():
+    def url_fn(text):
+        if not text:
+            return None
+        return (
+            "https://www.duckduckgo.com/ac/?q=%s&type=list"
+            % str(QUrl.toPercentEncoding(text), "utf-8")
+        )
+
     return WebJumpRequestCompleter(
-        "https://www.duckduckgo.com/ac/?q=%s&type=list",
+        url_fn,
         lambda response: json.loads(str(response, "utf-8"))[1]
     )
 
