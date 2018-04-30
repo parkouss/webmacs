@@ -15,7 +15,7 @@
 
 import logging
 
-from PyQt5.QtCore import QUrl, pyqtSlot as Slot, QEventLoop
+from PyQt5.QtCore import QUrl, pyqtSlot as Slot
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 from PyQt5.QtWebChannel import QWebChannel
 from collections import namedtuple
@@ -36,21 +36,25 @@ from .mode import get_mode, Mode, get_auto_modename_for_url
 DelayedLoadingUrl = namedtuple("DelayedLoadingUrl", ("url", "title"))
 
 
-def close_buffer(wb, keep_one=True):
-    if keep_one and len(BUFFERS) < 2:
-        return  # can't close if there is only one buffer left
-
+def close_buffer(wb):
     view = wb.view()
     if view:
         # buffer is currently visible, search for a buffer that is not visible
         # yet to put it in the view
         invisibles = [b for b in BUFFERS if not b.view()]
         if not invisibles:
-            # all buffers have views, so close the view of our buffer first
-            view.window.close_view(view)
+            if len(view.main_window.webviews()) > 1:
+                # we can close the current view if it is not alone
+                view.main_window.close_view(view)
+            else:
+                return
         else:
             # associate the first buffer that does not have any view yet
             view.setBuffer(invisibles[0])
+
+    internal_view = wb.internal_view()
+    if internal_view:
+        internal_view.deleteLater()
 
     app().download_manager().detach_buffer(wb)
     BUFFERS.remove(wb)
@@ -100,6 +104,14 @@ class WebBuffer(QWebEnginePage):
                 self.__delay_loading_url = url
             else:
                 self.load(url)
+
+    def internal_view(self):
+        return QWebEnginePage.view(self)
+
+    def view(self):
+        iv = self.internal_view()
+        if iv:
+            return iv.view()
 
     @property
     def mode(self):
@@ -216,10 +228,10 @@ class WebBuffer(QWebEnginePage):
 
     @Slot("QWebEngineFullScreenRequest")
     def _on_full_screen_requested(self, request):
-        view = self.view()
-        if not view:
+        internal_view = self.internal_view()
+        if not internal_view:
             return
-        if view.request_fullscreen(request.toggleOn()):
+        if internal_view.request_fullscreen(request.toggleOn()):
             request.accept()
 
     def createWindow(self, type):
@@ -259,20 +271,13 @@ class WebBuffer(QWebEnginePage):
             return
 
         # ask authentication credentials
-        loop = QEventLoop()
         prompt = AskPasswordPrompt(autofill, self)
         current_minibuffer().do_prompt(prompt)
 
-        def save_auth():
-            data = self.__authentication_data = FormData(url, prompt.username,
-                                                         prompt.password, None)
-            authenticator.setUser(data.username)
-            authenticator.setPassword(data.password)
-            loop.quit()
-
-        prompt.closed.connect(save_auth)
-
-        loop.exec_()
+        data = self.__authentication_data = FormData(url, prompt.username,
+                                                     prompt.password, None)
+        authenticator.setUser(data.username)
+        authenticator.setPassword(data.password)
 
     def certificateError(self, error):
         url = "{}:{}".format(error.url().host(), error.url().port(80))
@@ -280,25 +285,18 @@ class WebBuffer(QWebEnginePage):
         if db.is_ignored(url):
             return True
 
-        loop = QEventLoop()
         prompt = YesNoPrompt("[certificate error] {} - ignore ? "
                              .format(error.errorDescription()))
         current_minibuffer().do_prompt(prompt)
 
-        prompt.closed.connect(loop.quit)
-        loop.exec_()
         if prompt.yes:
             db.ignore(url)
         return prompt.yes
 
     def javaScriptConfirm(self, url, msg):
-        loop = QEventLoop()
-        prompt = YesNoPrompt("[js-confirm] {} ".format(msg))
-        current_minibuffer().do_prompt(prompt)
-
-        prompt.closed.connect(loop.quit)
-        loop.exec_()
-        return prompt.yes
+        return current_minibuffer().do_prompt(
+            YesNoPrompt("[js-confirm] {} ".format(msg))
+        )
 
     def javaScriptAlert(self, url, msg):
         msg = "[js-alert] {}".format(msg)
@@ -310,7 +308,7 @@ class WebBuffer(QWebEnginePage):
     def main_window(self):
         view = self.view()
         if view:
-            return view.window
+            return view.main_window
 
     def update_title(self, title=None):
         if self == current_buffer():
@@ -385,3 +383,4 @@ KEYMAP.define_key("C-p", "send-key-up")
 KEYMAP.define_key("p", "send-key-up")
 KEYMAP.define_key("C-f", "send-key-right")
 KEYMAP.define_key("C-b", "send-key-left")
+KEYMAP.define_key("C-g", "buffer-unselect")

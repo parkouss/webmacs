@@ -17,7 +17,7 @@ import os
 import collections
 
 from PyQt5.QtCore import QObject, QAbstractTableModel, QModelIndex, Qt, \
-    pyqtSlot as Slot, pyqtSignal as Signal, QRegExp
+    pyqtSlot as Slot, pyqtSignal as Signal, QRegExp, QEventLoop
 
 from PyQt5.QtGui import QRegExpValidator
 
@@ -95,6 +95,11 @@ class PromptTableModel(QAbstractTableModel):
             return QModelIndex()
 
 
+def _prompt_exec(prompt, loop):
+    # mocked in tests to not block.
+    loop.exec_()
+
+
 class Prompt(QObject):
     label = ""
     complete_options = {}
@@ -143,9 +148,14 @@ class Prompt(QObject):
         buffer_input.returnPressed.disconnect(self._on_edition_finished)
         buffer_input.completion_activated.disconnect(
             self._on_completion_activated)
+
+        view = minibuffer.parent().current_webview()
         # calling setFocus() on the view is required, else the view is scrolled
         # to the top automatically. But we don't even get a focus in event;
-        minibuffer.parent().current_web_view().setFocus()
+        view.internal_view().setFocus()
+        # and to not lose the keyboard focus
+        view.show_focused(True)
+
         buffer_input.hide()
         buffer_input.set_mark(False)
         c_model = buffer_input.completer_model()
@@ -172,6 +182,13 @@ class Prompt(QObject):
             history.push(self.value())
         self.close()
         self.finished.emit()
+
+    def exec_(self, minibuffer):
+        self.enable(minibuffer)
+        loop = QEventLoop()
+        self.closed.connect(loop.quit)
+        _prompt_exec(self, loop)
+        return self.value()
 
 
 class PromptHistory(object):
@@ -233,20 +250,21 @@ class YesNoPrompt(Prompt):
     def __init__(self, label, parent=None):
         Prompt.__init__(self, parent)
         self.label = label + "[y/n]"
-        self.yes = None
+        self.yes = False
 
     def enable(self, minibuffer):
         set_global_keymap_enabled(False)  # disable any global keychord
         Prompt.enable(self, minibuffer)
         buffer_input = minibuffer.input()
 
-        validator = QRegExpValidator(QRegExp("[yYnN]"), self)
+        validator = QRegExpValidator(QRegExp("[yYnN]"), buffer_input)
         buffer_input.setValidator(validator)
         buffer_input.textEdited.connect(self._on_text_edited)
+
+    def value(self):
+        return self.yes
 
     def _on_text_edited(self, text):
         self.yes = text in ('y', 'Y')
         self.close()
-        buffer_input = self.minibuffer.input()
-        buffer_input.validator().deleteLater()
         set_global_keymap_enabled(True)

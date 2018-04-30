@@ -14,7 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, \
-    QTableView, QHeaderView, QApplication, QSizePolicy
+    QTableView, QHeaderView, QApplication, QSizePolicy, QFrame
 from PyQt5.QtGui import QPainter
 from PyQt5.QtCore import pyqtSignal as Signal, \
     QEvent, QSortFilterProxyModel, QRegExp, Qt, QModelIndex
@@ -30,6 +30,7 @@ class Popup(QTableView):
     def __init__(self, window, buffer_input):
         QTableView.__init__(self, window)
         self.setVisible(False)
+        self.setFrameStyle(QFrame.Box)
         self._window = window
         self._buffer_input = buffer_input
         window.installEventFilter(self)
@@ -48,7 +49,8 @@ class Popup(QTableView):
     def _resize(self, size):
         # size is calculated given the window and the minibuffer input
         # geometries
-        h = (24) * min(self._max_visible_items, self.model().rowCount()) + 3
+        h = (24) * min(self._max_visible_items, self.model().rowCount()) + (
+            2 * self.lineWidth())
         w = size.width()
         y = size.height() - h - self._buffer_input.height()
 
@@ -147,14 +149,10 @@ class MinibufferInput(QLineEdit):
         if t == QEvent.KeyPress:
             if KEY_EATER.event_filter(self, evt):
                 return True
-        elif t == QEvent.FocusIn:
-            LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, True)
-        elif t == QEvent.FocusOut:
-            LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, False)
         elif t == QEvent.Show:
-            LOCAL_KEYMAP_SETTER.set_enabled_minibuffer(True)
+            LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, True)
         elif t == QEvent.Hide:
-            LOCAL_KEYMAP_SETTER.set_enabled_minibuffer(False)
+            LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, False)
         return QLineEdit.event(self, evt)
 
     def set_completer_model(self, completer_model):
@@ -191,9 +189,9 @@ class MinibufferInput(QLineEdit):
         else:
             self._popup.popup()
 
-    def show_completions(self, filter_text=""):
+    def show_completions(self, filter_text=None):
         self._show_completions(
-            filter_text if filter_text else self.text(), True)
+            filter_text if filter_text is not None else self.text(), True)
 
     def _on_completion_activated(self, index, hide_popup=True):
         if hide_popup:
@@ -346,9 +344,9 @@ class Minibuffer(QWidget):
         self.close_prompt()
         self._prompt = prompt
         if prompt:
-            prompt.enable(self)
             prompt.closed.connect(self._prompt_closed)
             prompt.closed.connect(prompt.deleteLater)
+            return prompt.exec_(self)
 
     def close_prompt(self):
         if self._prompt:

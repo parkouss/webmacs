@@ -69,12 +69,11 @@ setup(
 Work in progress.
 ''',
     packages=find_packages(),
-    install_requires=["dateparser", "jinja2"],
+    install_requires=["dateparser", "jinja2", "pygments"],
     tests_require=["pytest"],
     cmdclass={'test': PyTest},
     entry_points={"console_scripts": ["webmacs = webmacs.main:main"]},
     package_data={"webmacs": [
-        "app_style.css",
         "scripts/*.js",
         "scheme_handlers/webmacs/js/*.js",
         "scheme_handlers/webmacs/templates/*.html",

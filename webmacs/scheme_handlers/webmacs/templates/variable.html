@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Variable {{variable.name}}{% endblock %}
+{% block content %}
+<h1>Variable <strong>{{variable.name}}</strong></h1>
+
+<p>Its current value is <pre>{{variable.value}}.</pre></p>
+
+<p>{{variable.doc}}</p>
+
+See <a href="webmacs://variables">all variables</a>.
+{% endblock %}

@@ -5,11 +5,11 @@
 <h1>Webmacs variables</h1>
 <table>
   <tr>
-    <th>name</th><th>value</th><th>documentation</th>
+    <th>name</th><th>documentation</th>
   </tr>
 {% for name, variable in variables|dictsort %}
   <tr>
-    <td>{{name}}</td><td>{{variable.value}}</td><td>{{variable.doc}}</td>
+    <td><a href="webmacs://variable/{{name}}">{{name}}</a></td><td>{{variable.doc}}</td>
   </tr>
   {% endfor %}
 </table>

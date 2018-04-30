@@ -34,10 +34,6 @@ function registerWebmacs(w) {
         }
     }, true);
 
-    window.onfocus = function() {
-        __webmacsHandler__.onBufferFocus();
-    };
-
     if (self != top) {return;}
 
     // force the focus on the current web content

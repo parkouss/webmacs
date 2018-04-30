@@ -13,8 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtCore import QStringListModel, QModelIndex, \
-    QEventLoop, QTimer
+from PyQt5.QtCore import QStringListModel, QModelIndex
 import itertools
 
 from . import define_command, COMMANDS
@@ -23,9 +22,12 @@ from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
 from ..webbuffer import create_buffer
 from ..keymaps import Keymap, KeyPress
-from ..keyboardhandler import current_prefix_arg, send_key_event
+from ..keyboardhandler import current_prefix_arg, send_key_event, \
+    local_keymap, KEY_EATER, CallHandler
 from .. import BUFFERS, windows
 from ..mode import MODES
+from ..variables import VARIABLES
+from ..window import Window
 
 
 class CommandsListPrompt(Prompt):
@@ -35,9 +37,6 @@ class CommandsListPrompt(Prompt):
         "complete-empty": True,
     }
     history = PromptHistory()
-
-    def validate(self, name):
-        return name
 
     def completer_model(self):
         model = QStringListModel(self)
@@ -98,7 +97,7 @@ def _get_or_create_buffer(win):
     for awin in windows():
         for view in awin.webviews():
             visible_buffers.append(view.buffer())
-    current_buffer = win.current_web_view().buffer()
+    current_buffer = win.current_webview().buffer()
     buffers = [b for b in BUFFERS
                if b not in visible_buffers
                or b == current_buffer]
@@ -138,6 +137,52 @@ def split_window_bottom(ctx):
     view.set_current()
 
 
+@define_command("make-window")
+def create_window(ctx):
+    """
+    Create a new window and focus it.
+    """
+    win = Window()
+    win.current_webview().setBuffer(_get_or_create_buffer(ctx.window))
+    win.show()
+    win.activateWindow()
+
+
+@define_command("other-window")
+def other_window(ctx):
+    """
+    Switch to the next window.
+    """
+    if len(windows()) <= 1:
+        return False
+    iterwindows = itertools.cycle(windows())
+    while True:
+        win = next(iterwindows)
+        if win == ctx.window:
+            next(iterwindows).activateWindow()
+            return True
+
+
+@define_command("close-window")
+def close_window(ctx):
+    """
+    Close the current window, unless there is only one left.
+    """
+    # first activate the next view
+    if other_window(ctx):
+        ctx.window.close()
+
+
+@define_command("close-other-windows")
+def close_other_windows(ctx):
+    """
+    Close all windows except the current one.
+    """
+    for win in windows():
+        if win != ctx.window:
+            win.close()
+
+
 @define_command("other-view")
 def other_view(ctx):
     """
@@ -153,7 +198,7 @@ def close_view(ctx):
     Close the current view.
     """
     window = ctx.window
-    window.close_view(window.current_web_view())
+    window.close_view(window.current_webview())
 
 
 @define_command("maximise-view")
@@ -210,7 +255,7 @@ class VisitedLinksPrompt(Prompt):
     def get_buffer(self):
         if self.new_buffer:
             buf = create_buffer()
-            view = self.ctx.window.current_web_view()
+            view = self.ctx.window.current_webview()
             view.setBuffer(buf)
         else:
             buf = self.ctx.buffer
@@ -268,7 +313,7 @@ def open_bookmark(ctx):
     """
     Prompt to open a bookmark.
     """
-    visited_links_history(ctx.prompt)
+    visited_links_history(ctx)
 
 
 class BookmarkAddPrompt(Prompt):
@@ -290,21 +335,14 @@ def bookmark_add(ctx):
     minibuff = ctx.minibuffer
     url = ctx.prompt.value()
 
-    def doit():
-        loop = QEventLoop()
-        otherprompt = Prompt()
-        otherprompt.label = "bookmark's name: "
-        minibuff.do_prompt(otherprompt)
-        otherprompt.closed.connect(loop.quit)
-        loop.exec_()
+    otherprompt = Prompt(ctx)
+    otherprompt.label = "bookmark's name: "
+    name = minibuff.do_prompt(otherprompt)
 
-        name = otherprompt.value()
-        if name:
-            app().bookmarks().set(url, name)
-            minibuff.show_info("Bookmark {} created."
-                               .format(name))
-
-    QTimer.singleShot(0, doit)
+    if name:
+        app().bookmarks().set(url, name)
+        minibuff.show_info("Bookmark {} created."
+                           .format(name))
 
 
 class ModesPrompt(Prompt):
@@ -402,3 +440,103 @@ def version(ctx):
     Display version information.
     """
     _open_url(ctx, "webmacs://version")
+
+
+class VariableListPrompt(Prompt):
+    label = "describe variable: "
+    complete_options = {
+        "match": Prompt.FuzzyMatch,
+        "complete-empty": True,
+    }
+    history = PromptHistory()
+
+    def completer_model(self):
+        model = QStringListModel(self)
+        model.setStringList(sorted(VARIABLES))
+        return model
+
+
+@define_command("describe-variable", prompt=VariableListPrompt)
+def describe_variable(ctx):
+    """
+    Prompt for a variable name to describe.
+    """
+    variable = ctx.prompt.value()
+    if variable in VARIABLES:
+        buffer = create_buffer("webmacs://variable/%s" % variable)
+        ctx.view.setBuffer(buffer)
+
+
+class DescribeCommandsListPrompt(CommandsListPrompt):
+    label = "describe command: "
+    history = PromptHistory()
+
+
+@define_command("describe-command", prompt=DescribeCommandsListPrompt)
+def describe_command(ctx):
+    """
+    Prompt for a command name to describe.
+    """
+    command = ctx.prompt.value()
+    if command in COMMANDS:
+        buffer = create_buffer("webmacs://command/%s" % command)
+        ctx.view.setBuffer(buffer)
+
+
+class ReportCallHandler(CallHandler):
+    def __init__(self, prompt):
+        CallHandler.__init__(self)
+        self.prompt = prompt
+        self.key_presses = []
+
+    def keys_as_text(self):
+        return " - ".join(str(k) for k in self.key_presses)
+
+    def no_call(self, sender, keymap, keypress):
+        self.key_presses.append(keypress)
+        self.prompt.close()
+        self.prompt.minibuffer.show_info("No such key: %s"
+                                         % self.keys_as_text())
+
+    def partial_call(self, sender, keymap, keypress):
+        self.key_presses.append(keypress)
+        self.prompt.minibuffer.input().setText("%s -"
+                                               % self.keys_as_text())
+
+    def call(self, sender, keymap, keypress, command):
+        self.key_presses.append(keypress)
+        if not isinstance(command, str):
+            command = "{}:{}".format(command.__module__,
+                                     command.__name__)
+        self.prompt.called_with = {
+            "command": command,
+            "key": self.keys_as_text(),
+            "keymap": keymap.name or "unknown",
+        }
+        self.prompt.finished.emit()
+        self.prompt.close()
+
+
+class BindingPrompt(Prompt):
+    label = "describe key: "
+
+    def enable(self, minibuffer):
+        self.keymap = local_keymap()
+        Prompt.enable(self, minibuffer)
+        self.orig_handler = KEY_EATER.call_handler
+        KEY_EATER.set_call_handler(ReportCallHandler(self))
+
+    def close(self):
+        KEY_EATER.set_call_handler(self.orig_handler)
+        Prompt.close(self)
+
+
+@define_command("describe-key", prompt=BindingPrompt)
+def describe_binding(ctx):
+    """
+    Retrieve the command called by the given binding.
+    """
+    url = "webmacs://key/{key}?command={command}&keymap={keymap}".format(
+        **ctx.prompt.called_with
+    )
+    ctx.view.setBuffer(create_buffer(url))

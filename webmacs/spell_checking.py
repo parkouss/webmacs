@@ -124,10 +124,12 @@ class SpellCheckingUpdater(object):
 
 
 class SpellCheckingUpdateRunner(Runner):
-    def __init__(self, path):
-        Runner.__init__(self)
+    description = "spell checking update"
+
+    def __init__(self, path, **kwargs):
+        Runner.__init__(self, **kwargs)
         self.path = path
 
-    def run(self):
+    def run_in_thread(self):
         spcu = SpellCheckingUpdater(self.path)
         spcu.update()

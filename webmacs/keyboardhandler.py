@@ -38,22 +38,23 @@ class LocalKeymapSetter(QObject):
             return True
         return False
 
-    def set_enabled_minibuffer(self, enabled):
-        self.enabled_minibuffer = enabled
-
     def minibuffer_input_focus_changed(self, mb, enabled):
+        self.enabled_minibuffer = enabled
         if enabled:
             set_local_keymap(mb.keymap())
         else:
             if not mb.popup().isVisible():
                 # when the minibuffer input is hidden, enable its view's
                 # buffer
-                buff = mb.parent().parent().current_web_view().buffer()
+                buff = mb.parent().parent().current_webview().buffer()
                 set_local_keymap(buff.active_keymap())
 
     def view_focus_changed(self, view, enabled):
-        if enabled:
-            set_local_keymap(view.buffer().active_keymap())
+        if enabled and not self.enabled_minibuffer:
+            # fixes issue were a raw qwebenginepage comes here. To
+            # reproduce, have two opened buffers, then C-x 2, C-x 3.
+            if hasattr(view.buffer(), "active_keymap"):
+                set_local_keymap(view.buffer().active_keymap())
 
     def web_content_edit_focus_changed(self, buff, enabled):
         if enabled:
@@ -79,6 +80,10 @@ class LocalKeymapSetter(QObject):
         if old_km == local_keymap():
             set_local_keymap(buffer.active_keymap())
 
+    def buffer_opened_in_view(self, buffer):
+        if not self.enabled_minibuffer:
+            set_local_keymap(buffer.active_keymap())
+
 
 LOCAL_KEYMAP_SETTER = LocalKeymapSetter()
 
@@ -88,8 +93,8 @@ class KeyEater(object):
     Handle Qt keypresses events.
     """
     def __init__(self):
+        self.set_call_handler(CallHandler())
         self._keypresses = []
-        self._commands = COMMANDS
         self._local_key_map = None
         self._use_global_keymap = True
         self.universal_key = KeyPress.from_str("C-u")
@@ -99,6 +104,9 @@ class KeyEater(object):
         for i in "1234567890":
             self._allowed_universal_keys[CHAR2KEY[i]] \
                 = lambda: self._num_update_prefix_arg(i)
+
+    def set_call_handler(self, call_handler):
+        self.call_handler = call_handler
 
     def set_local_key_map(self, keymap):
         if keymap != self._local_key_map:
@@ -175,22 +183,30 @@ class KeyEater(object):
             if len(self._keypresses) > 1:
                 self._show_info_kbd(" is undefined.")
             self._keypresses = []
+            self.call_handler.no_call(sender, keymap, keypress)
             return False
 
         if result.complete:
             self._show_info_kbd()
-            try:
-                self._call_command(sender, keypress, result.command)
-            except Exception:
-                logging.exception("Error calling command:")
             self._keypresses = []
             self._reset_prefix_arg = True
+            try:
+                self.call_handler.call(sender, keymap, keypress,
+                                       result.command)
+            except Exception:
+                logging.exception("Error calling command:")
         else:
             self._show_info_kbd(" -")
+            self.call_handler.partial_call(sender, keymap, keypress)
 
         return result is not None
 
-    def _call_command(self, sender, keypress, command):
+
+class CallHandler(object):
+    def __init__(self):
+        self._commands = COMMANDS
+
+    def call(self, sender, keymap, keypress, command):
         if isinstance(command, str):
             try:
                 command = self._commands[command]
@@ -198,6 +214,12 @@ class KeyEater(object):
                 raise KeyError("No such command: %s" % command)
 
         command(CommandContext(sender, keypress))
+
+    def no_call(self, sender, keymap, keypress):
+        pass
+
+    def partial_call(self, sender, keymap, keypress):
+        pass
 
 
 KEY_EATER = KeyEater()

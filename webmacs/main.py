@@ -23,10 +23,6 @@ import atexit
 
 from PyQt5.QtNetwork import QAbstractSocket
 
-from .webbuffer import create_buffer
-from .application import Application, app as _app
-from .window import Window
-from . import WINDOWS_HANDLER, current_window
 from .ipc import IpcServer
 
 
@@ -78,6 +74,9 @@ def parse_args(argv=None):
                         default="critical",
                         choices=("info", "warning", "error", "critical"))
 
+    parser.add_argument("-i", "--instance",
+                        help="Create or reuse a named webmacs instance.")
+
     parser.add_argument("url", nargs="?",
                         help="url to open")
 
@@ -97,18 +96,19 @@ def init(opts):
 
     :param opts: the result of the parsed command line.
     """
-    app = _app()
-    window = current_window()
-    if opts.url or not app.profile.load_session():
-        buffer = create_buffer(opts.url or "http://duckduckgo.com/")
-        window.current_web_view().setBuffer(buffer)
+    from .application import app
+    from .session import session_load, session_save
 
-    window.showMaximized()
+    a = app()
+    a.aboutToQuit.connect(lambda: session_save(a.profile))
+    session_load(a.profile, opts)
 
 
 def _handle_user_init_error(msg):
     import traceback
-    conf_path = _app().conf_path()
+    from .application import app
+
+    conf_path = app().conf_path()
     stack_size = 0
     tbs = traceback.extract_tb(sys.exc_info()[2])
     for i, t in enumerate(tbs):
@@ -125,7 +125,7 @@ def main():
     setup_logging(getattr(logging, opts.log_level.upper()),
                   getattr(logging, opts.webcontent_log_level.upper()))
 
-    conn = IpcServer.check_server_connection()
+    conn = IpcServer.check_server_connection(opts.instance)
 
     if conn:
         conn.send_data(opts.__dict__)
@@ -136,13 +136,18 @@ def main():
             print(msg)
         return
 
-    app = Application(["webmacs"])
-    server = IpcServer()
-    atexit.register(server.cleanup)
+    # Delay loading after command line parsing and ipc checking.
+    # Loading qwebengine stuff takes a couple of seconds...
+    from .application import Application
 
-    window = Window()
-    # register the window as being the current one
-    WINDOWS_HANDLER.current_window = window
+    app = Application([
+        # The first argument passed to the QApplication args defines
+        # the x11 property WM_CLASS.
+        "webmacs" if not opts.instance
+        else "webmacs-%s" % opts.instance
+    ])
+    server = IpcServer(opts.instance)
+    atexit.register(server.cleanup)
 
     # load a user init module if any
     try:

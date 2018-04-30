@@ -15,10 +15,10 @@
 
 import importlib
 
-from PyQt5.QtCore import QObject, QEvent
+from PyQt5.QtCore import QObject, QEvent, QTimer
 
 
-__version__ = '0.2'
+__version__ = '0.3'
 
 
 # access to every opened buffers
@@ -40,6 +40,13 @@ class WindowsHandler(QObject):
         self.windows = []
         self.current_window = None
 
+    def _on_last_window_closing(self):
+        # last window is closed, do not remove it from the list but exit the
+        # application. This is required from proper session saving.
+        from .application import app
+        app().quit()
+        return True
+
     def register_window(self, window):
         window.installEventFilter(self)
         self.windows.append(window)
@@ -49,7 +56,11 @@ class WindowsHandler(QObject):
         if t == QEvent.WindowActivate:
             self.current_window = window
         elif t == QEvent.Close:
+            if len(self.windows) == 1:
+                if self._on_last_window_closing():
+                    return True
             self.windows.remove(window)
+            window.deleteLater()
             if window == self.current_window:
                 self.current_window = None
 
@@ -79,7 +90,9 @@ def current_buffer():
     """
     Returns the current buffer.
     """
-    return current_window().current_web_view().buffer()
+    w = current_window()
+    if w:
+        return w.current_webview().buffer()
 
 
 def buffers():
@@ -91,14 +104,28 @@ def current_minibuffer():
     """
     Returns the current minibuffer.
     """
-    return current_window().minibuffer()
+    w = current_window()
+    if w:
+            return w.minibuffer()
 
 
 def minibuffer_show_info(text):
     """
     Display text information in the current minibuffer.
     """
-    current_minibuffer().show_info(text)
+    minibuffer = current_minibuffer()
+    if minibuffer:
+            minibuffer.show_info(text)
+
+
+def call_later(fn, msec=0):
+    """
+    Call the given function after the given time interval.
+
+    If msec is 0, the function call is still delayed to the next handling of
+    events in the qt event loop.
+    """
+    QTimer.singleShot(msec, fn)
 
 
 class CommandContext(object):
@@ -116,7 +143,7 @@ class CommandContext(object):
     def window(self):
         view = self.view
         if view:
-            return view.window
+            return view.main_window
 
     @property
     def minibuffer(self):

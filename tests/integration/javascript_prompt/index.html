@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>inside iframe</title>
+    <script type="text/javascript">
+      function fillResult(result) {
+        document.getElementById('result').textContent = result;
+      }
+
+      function getContent(clear) {
+        var res = document.getElementById('result');
+        return res.textContent;
+      }
+    </script>
+  </head>
+  <body>
+    
+    <div id="result"></div>
+    <br/>
+
+    <button onclick="fillResult(window.confirm('hello there'))">prompt</button>
+    <button onclick="window.alert('hello there')">alert</button>
+  </body>
+</html>

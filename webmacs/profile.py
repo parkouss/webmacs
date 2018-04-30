@@ -101,18 +101,6 @@ class Profile(object):
         inject_js(os.path.join(THIS_DIR, "scripts", "caret_browsing.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "textzoom.js"))
 
-    def load_session(self):
-        from .session import Session
-        if os.path.exists(self.session_file):
-            with open(self.session_file, "r") as f:
-                Session.load(f).apply()
-                return True
-
-    def save_session(self):
-        from .session import Session
-        with open(self.session_file, "w") as f:
-            Session().save(f)
-
 
 def default_profile():
     return Profile("default")

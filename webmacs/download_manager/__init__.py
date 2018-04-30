@@ -15,8 +15,7 @@
 
 import json
 
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, QEventLoop, \
-    pyqtSignal as Signal
+from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 
 from PyQt5.QtWebEngineWidgets import QWebEngineDownloadItem
 
@@ -139,10 +138,6 @@ class DownloadManager(QObject):
             state = state_str(dl.state())
             minibuff.show_info("[{}] download: {}".format(state, dl.path()))
 
-        loop = QEventLoop()
-        prompt.finished.connect(loop.quit)
         dl.finished.connect(finished)
 
         minibuff.do_prompt(prompt)
-
-        loop.exec_()

@@ -212,9 +212,15 @@ def open_external_editor(ctx):
 
 @define_command("content-edit-undo")
 def undo(ctx):
+    """
+    Undo the last editing action.
+    """
     ctx.buffer.triggerAction(WebBuffer.Undo)
 
 
 @define_command("content-edit-redo")
 def redo(ctx):
+    """
+    Redo the last editing action.
+    """
     ctx.buffer.triggerAction(WebBuffer.Redo)

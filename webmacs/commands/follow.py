@@ -92,7 +92,7 @@ class FollowPrompt(HintPrompt):
     hint_selector = SELECTOR_CLICKABLE
 
     def enable(self, minibuffer):
-        self.new_buffer = PromptNewBuffer()
+        self.new_buffer = PromptNewBuffer(self.ctx)
         if self.new_buffer:
             self.hint_selector = SELECTOR_LINK
         HintPrompt.enable(self, minibuffer)

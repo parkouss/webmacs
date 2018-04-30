@@ -4,6 +4,7 @@
 {% block content %}
 <h1>Keymap {{name}}:</h1>
 <table>
+<pre>{{keymap.doc}}<pre>
 {% for prefix, command in bindings|sort %}
 <tr>
   <td>{{prefix}}</td>

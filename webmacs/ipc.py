@@ -17,7 +17,7 @@ import os
 import json
 import struct
 import logging
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
+from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, Qt
 from PyQt5.QtNetwork import QLocalServer, QLocalSocket
 
 
@@ -72,22 +72,26 @@ class IPcReader(QObject):
 
 class IpcServer(QObject):
     @classmethod
-    def get_sock_name(cls):
-        return "webmacs.ipc"
+    def get_sock_name(cls, instance):
+        if instance is None:
+            return "webmacs.ipc"
+        return "webmacs.{}.ipc".format(instance)
 
     @classmethod
-    def check_server_connection(cls):
+    def check_server_connection(cls, instance=None):
         sock = QLocalSocket()
-        sock.connectToServer(cls.get_sock_name())
+        sock.connectToServer(cls.get_sock_name(instance))
         if sock.waitForConnected(1000):
             return IPcReader(sock)
         return None
 
-    def __init__(self):
+    def __init__(self, instance=None):
         QObject.__init__(self)
+        sock_name = self.get_sock_name(instance)
+        QLocalServer.removeServer(sock_name)
         self._server = QLocalServer()
         self._server.newConnection.connect(self._on_new_connection)
-        if not self._server.listen(self.get_sock_name()):
+        if not self._server.listen(sock_name):
             logging.error("Can not start ipc: %s"
                           % self._server.errorString())
         self._readers = {}
@@ -133,5 +137,14 @@ def ipc_dispatch(data):
     win = current_window()
     url = data.get("url")
     if url:
-        view = win.current_web_view()
+        view = win.current_webview()
         view.setBuffer(create_buffer(url))
+
+    # this is quite hard to raise a window. The following works fine
+    # for me with gnome 3.
+    flags = win.windowFlags()
+    win.setWindowFlags(flags | Qt.Popup)
+    win.raise_()
+    win.activateWindow()
+    win.setWindowFlags(flags)
+    win.show()

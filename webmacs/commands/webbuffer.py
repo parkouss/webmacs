@@ -121,8 +121,18 @@ def switch_buffer(ctx):
     """
     selected = ctx.prompt.index()
     if selected.row() >= 0:
-        view = ctx.window.current_web_view()
-        view.setBuffer(selected.internalPointer())
+        view = ctx.window.current_webview()
+        buffer = selected.internalPointer()
+        if view.buffer() == buffer:
+            # swith to the same buffer, nothing to do
+            return
+        if buffer.view():
+            # swap buffers if the buffer is already displayed
+            otherbuffer = view.buffer()
+            view.setBuffer(None)
+            otherview = buffer.view()
+            otherview.setBuffer(otherbuffer)
+        view.setBuffer(buffer)
 
 
 @define_command("go-forward")
@@ -317,3 +327,11 @@ def text_zoom_reset(ctx):
     ctx.buffer.runJavaScript("textzoom.resetChangeFont();",
                              QWebEngineScript.ApplicationWorld,
                              _show_info_text_zoom(ctx))
+
+
+@define_command("buffer-unselect")
+def buffer_unselect(ctx):
+    """
+    Unselect selection in the current web buffer.
+    """
+    ctx.buffer.triggerAction(WebBuffer.Unselect)
