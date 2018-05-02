@@ -30,6 +30,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- added two variables to customize how webmacs starts: **home-page** and
+  **home-page-in-new-window**.
+- added a command to restore previous session (windows and buffers),
+  **restore-session**.
 - Under X11, if the --instance is passed at the command line, the
   WM_CLASS property is set to "webmacs-{instance}".
 - added basic support for multiple windows. New commands added: **make-window**,
