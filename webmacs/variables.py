@@ -80,3 +80,27 @@ def set(name, value):
              :class:`VariableConditionError` if the value is incorrect.
     """
     get_variable(name).set_value(value)
+
+
+define_variable(
+    "home-page",
+    "Defines the url to use when webmacs starts. If set to the empty"
+    " string, the last session will be loaded. You can set it to"
+    " 'about:blank' if you want an empty page.",
+    "",
+    conditions=(
+        condition(lambda v: isinstance(v, str),
+                  "Must be an instance of string"),
+    ),
+)
+
+define_variable(
+    "home-page-in-new-window",
+    "Use the home page when creating a new window with *make-window*."
+    " Default to False.",
+    False,
+    conditions=(
+        condition(lambda v: isinstance(v, bool),
+                  "Must be True or False"),
+    ),
+)
