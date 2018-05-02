@@ -14,9 +14,10 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import logging
 
 from .import BUFFERS, windows, current_window
-from .webbuffer import create_buffer, QUrl, DelayedLoadingUrl
+from .webbuffer import create_buffer, QUrl, DelayedLoadingUrl, close_buffer
 from .window import Window
 
 
@@ -80,6 +81,18 @@ def _session_save(stream):
     }, stream)
 
 
+def session_clean():
+    # clean every opened buffers and windows
+    for window in windows():
+        window.quit_if_last_closed = False
+        window.close()
+        for view in window.webviews():
+            view.setBuffer(None)
+
+    for buffer in BUFFERS:
+        close_buffer(buffer)
+
+
 def session_load(session_file):
     """
     Try to load the session, given the profile.
@@ -87,8 +100,14 @@ def session_load(session_file):
     Must be called at application startup, when no buffers nor views is set up
     already.
     """
-    with open(session_file, "r") as f:
-        _session_load(f)
+    try:
+        with open(session_file, "r") as f:
+            _session_load(f)
+    except Exception:
+        logging.exception("Unable to load the session from %s.",
+                          session_file)
+        session_clean()
+        raise
 
 
 def session_save(session_file):

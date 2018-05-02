@@ -13,8 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtCore import QStringListModel, QModelIndex
 import itertools
+import os
+from PyQt5.QtCore import QStringListModel, QModelIndex
 
 from . import define_command, COMMANDS
 from ..minibuffer import Prompt, KEYMAP
@@ -27,6 +28,7 @@ from ..keyboardhandler import current_prefix_arg, send_key_event, \
 from .. import BUFFERS, windows, variables
 from ..mode import MODES
 from ..window import Window
+from ..session import session_clean, session_load
 
 
 class CommandsListPrompt(Prompt):
@@ -544,3 +546,21 @@ def describe_binding(ctx):
         **ctx.prompt.called_with
     )
     ctx.view.setBuffer(create_buffer(url))
+
+
+@define_command("restore-session")
+def restore_session(ctx):
+    """
+    Restore windows and buffers from the previous sessions.
+    """
+    session_file = app().profile.session_file
+    if not os.path.exists(session_file):
+        ctx.minibuffer.show_info("Error: No session file found.")
+
+    session_clean()
+    try:
+        session_load(session_file)
+    except:
+        w = Window()
+        w.current_webview().setBuffer("about:blank")
+        w.show()

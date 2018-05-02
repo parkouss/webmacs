@@ -122,8 +122,6 @@ def init(opts):
         try:
             session_load(session_file)
         except Exception:
-            logging.exception("Unable to load the session (%s)",
-                              a.profile.session_file)
             create_window("http://duckduckgo.com/")
 
 
