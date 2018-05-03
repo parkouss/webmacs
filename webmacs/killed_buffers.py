@@ -15,17 +15,39 @@
 
 import collections
 from PyQt5.QtCore import QDataStream, QByteArray, QIODevice
+from . import variables
 
-KILLED_BUFFERS = collections.deque()
 
+max_size = variables.define_variable(
+    "revive-buffers-limit",
+    "The maximum number of killed buffers that can be revived."
+    " If set to a negative number, there is no limit. Default to 10.",
+    10,
+    conditions=(
+        variables.condition(lambda v: isinstance(v, int),
+                            "Must be an int"),
+    ),
+    callbacks=(
+        lambda v: KilledBuffer.update_max_size(v.value)
+    )
+)
 
 class KilledBuffer(object):
+    all = collections.deque(maxlen=max_size.value)
+
+    @classmethod
+    def update_max_size(cls, nb):
+        new_all = collections.deque(maxlen=nb if nb >= 0 else None)
+        for item in reversed(cls.all):
+            new_all.appendleft(item)
+        cls.all = new_all
+
     def __init__(self, url, title, icon, history_data):
         self.url = url
         self.title = title
         self.icon = icon
         self.history_data = history_data
-        KILLED_BUFFERS.appendleft(self)
+        self.all.appendleft(self)
 
     @classmethod
     def from_buffer(cls, buff):
@@ -44,4 +66,4 @@ class KilledBuffer(object):
         buff.load(self.url)
         stream = QDataStream(self.history_data, QIODevice.ReadOnly)
         stream >> buff.history()
-        KILLED_BUFFERS.remove(self)
+        self.all.remove(self)

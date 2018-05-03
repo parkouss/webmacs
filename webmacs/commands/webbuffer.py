@@ -19,7 +19,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineScript
 from ..commands import define_command
 from ..minibuffer import Prompt, KEYMAP
 from ..webbuffer import WebBuffer, close_buffer, create_buffer
-from ..killed_buffers import KILLED_BUFFERS
+from ..killed_buffers import KilledBuffer
 from .. import BUFFERS
 from ..keymaps import Keymap
 
@@ -341,7 +341,7 @@ def buffer_unselect(ctx):
 class KilledBufferTableModel(QAbstractTableModel):
     def __init__(self):
         QAbstractTableModel.__init__(self)
-        self._buffers = list(KILLED_BUFFERS)
+        self._buffers = list(KilledBuffer.all)
 
     def rowCount(self, index=QModelIndex()):
         return len(self._buffers)
@@ -382,7 +382,7 @@ class KilledBufferListPrompt(Prompt):
 
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
-        if KILLED_BUFFERS:
+        if KilledBuffer.all:
             minibuffer.input().popup().selectRow(0)
 
 
