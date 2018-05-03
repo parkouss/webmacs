@@ -82,6 +82,7 @@ class WebBuffer(QWebEnginePage):
         hooks.webbuffer_created(self)
 
         self.fullScreenRequested.connect(self._on_full_screen_requested)
+        self.featurePermissionRequested.connect(self._on_feature_requested)
         self._content_handler = WebContentHandler(self)
         channel = QWebChannel(self)
         channel.registerObject("contentHandler", self._content_handler)
@@ -233,6 +234,26 @@ class WebBuffer(QWebEnginePage):
             return
         if internal_view.request_fullscreen(request.toggleOn()):
             request.accept()
+
+    @Slot(QUrl, QWebEnginePage.Feature)
+    def _on_feature_requested(self, url, feature):
+        features = ("Geolocation", "MediaAudioCapture", "MediaVideoCapture",
+                    "MediaAudioVideoCapture", "MouseLock",
+                    "DesktopVideoCapture", "DesktopAudioVideoCapture")
+
+        feature_name = None
+        for name in features:
+            if getattr(QWebEnginePage, name, None) == feature:
+                feature_name = name
+                break
+
+        permission = QWebEnginePage.PermissionDeniedByUser
+        if feature_name:
+            prompt = YesNoPrompt("Allow enabling feature {} for {}?"
+                                 .format(feature_name, url.toString()))
+            if current_minibuffer().do_prompt(prompt):
+                permission = QWebEnginePage.PermissionGrantedByUser
+        self.setFeaturePermission(url, feature, permission)
 
     def createWindow(self, type):
         buffer = create_buffer()
