@@ -123,15 +123,25 @@ Hint.prototype.serialize = function() {
 
 class HintFrame {
     constructor(frame) {
-        this.frame = frame
+        this.frame = frame;
     }
 
     remove() {
-        post_message(this.frame.contentWindow, "hints.clearBrowserObjects", null);
+        post_message(this.frame.contentWindow, "hints.select_clear", null);
     }
 }
 
 class Hinter {
+    constructor() {
+        this.options = {
+            hint_background: "red",
+            hint_color: "white",
+            background: "yellow",
+            background_active: "#88FF00",
+            text_color: "black"
+        };
+    }
+
     init(selector) {
         this.selector = selector;
         this.xres = document.evaluate(selector, document, xpath_lookup_namespace,
@@ -139,8 +149,9 @@ class Hinter {
                                       null);
         this.fragment = document.createDocumentFragment();
         this.index = 0;
-        this.iframes_ranges = [];
-        this.hints = {};
+        this.hints = [];
+        this.activeHint = null;
+        this.__traversedHint = null;
     }
 
     next(hint_index) {
@@ -149,9 +160,6 @@ class Hinter {
             return;
         }
 
-        if (this.iframes_ranges.length > 0) {
-            this.iframes_ranges[this.iframes_ranges.length - 1].end = hint_index;
-        }
         for (; this.index < this.xres.snapshotLength; this.index++) {
             let obj = this.xres.snapshotItem(this.index);
             let rect = rectElementInViewport(obj, window);
@@ -159,20 +167,19 @@ class Hinter {
                 continue;
             }
             if (obj.tagName == "IFRAME") {
-                // console.log(window.frames[0].frames[0]);
-                this.iframes_ranges.push({frame: obj, start: hint_index});
                 post_message(obj.contentWindow, "hints.select_in_iframe_start",
                              {selector: this.selector, hint_index: hint_index});
+                this.hints.push(new HintFrame(obj));
                 this.index+=1;
                 return;
             }
             hint_index += 1;
-            var hint = new Hint(obj, hints,
+            var hint = new Hint(obj, this,
                                 (rect.left + window.scrollX) + "px",
                                 (rect.top + window.scrollY) + "px",
                                 hint_index
                                );
-            this.hints[hint_index] = hint;
+            this.hints.push(hint);
             this.fragment.appendChild(hint.hint);
         }
         document.documentElement.appendChild(this.fragment);
@@ -180,7 +187,6 @@ class Hinter {
         if (self !== top) {
             post_message(parent, "hints.select_in_iframe_end", hint_index)
         }
-        console.log(this.iframes_ranges)
     }
 
     clear() {
@@ -188,15 +194,146 @@ class Hinter {
         if (this.hints === null) {
             return;
         }
-
-        for (var name in this.hints) {
-            this.hints[name].remove();
-        }
-        for (var iframe of this.iframes_ranges) {
-            post_message(iframe.frame.contentWindow, "hints.select_clear", null);
+        for (var hint of this.hints) {
+            hint.remove();
         }
         this.hints = null;
-        this.iframes_ranges = null;
+    }
+
+    setCurrentActiveHint(hint, prevent) {
+        let prevHint = this.activeHint;
+        if (hint) {
+            this.activeHint = hint;
+            hint.refresh();
+            post_webmacs_message("_browserObjectActivated", [hint.serialize()]);
+        } else if (this.__traversedHint) {
+            // we are traversing down, and we found the hint to activate. so we
+            // register at this level the frame that contains the active hint.
+            this.activeHint = this.__traversedHint;
+            this.__traversedHint = null;
+        } else {
+            this.activeHint = null;
+        }
+        if (prevHint && prevHint instanceof Hint) {
+            prevHint.refresh();
+        }
+        if (!prevent && self !== top) {
+            post_message(parent, "hints.hintActivated");
+        }
+        return prevHint;
+    }
+
+    clearFrameSelection() {
+        let prevHint = this.activeHint;
+        this.activeHint = null;
+        if (prevHint instanceof Hint) {
+            prevHint.refresh();
+        } else {
+            post_message(prevHint.frame.contentWindow, "hints.clearFrameSelection");
+        }
+    }
+
+    _traverse(hint, way) {
+        if (hint instanceof Hint) {
+            if (hint.isVisible()) {
+                this.setCurrentActiveHint(hint);
+                return true;
+            }
+        } else {
+            this.__traversedHint = hint;
+            post_message(hint.frame.contentWindow, "hints.activateFirstHint",
+                         way);
+            return true;
+        }
+    }
+
+    activateFirstHint(way) {
+        let index;
+        if (this.__traversedHint !== null) {
+            // we are traversing already
+            index = this.hints.indexOf(this.__traversedHint) + way;
+        } else if (this.activeHint) {
+            if (this.activeHint instanceof HintFrame) {
+                // if we have an active hint in a frame, go down there
+                index = this.hints.indexOf(this.activeHint);
+            } else {
+                index = this.hints.indexOf(this.activeHint) + way;
+            }
+        } else {
+            // default index depends on the way, it is the first or the
+            // last index.
+            index = (way == 1) ? 0 : this.hints.length - 1;
+        }
+
+        this.__traversedHint = null;
+        if (way === 1) {
+            for (; index < this.hints.length; index++) {
+                if (this._traverse(this.hints[index], way)) {
+                    return
+                }
+            }
+        } else {
+            for (; index >= 0; index--) {
+                if (this._traverse(this.hints[index], way)) {
+                    return
+                }
+            }
+        }
+
+        // no visible hint found, let's continue with the parent
+        this.__traversedHint = null;
+        this.setCurrentActiveHint(null, true);
+        if (self !== top) {
+            post_message(parent, "hints.activateFirstHint", way);
+        }
+    }
+
+    activateNextHint(backward) {
+        this.activateFirstHint(backward ? -1 : 1);
+    }
+
+    followCurrentLink() {
+        if (this.activeHint) {
+            if (this.activeHint instanceof Hint) {
+                clickLike(this.activeHint.obj);
+            } else {
+                post_message(this.activeHint.frame.contentWindow,
+                             "hints.followCurrentLink");
+            }
+        }
+    }
+
+    selectVisibleHint(index) {
+        var frameHint = null;
+        this.__traversedHint = null;
+        for (var hint of this.hints) {
+            if (hint instanceof Hint) {
+                let nb = parseInt(hint.hint.textContent);
+                if (nb === index) {
+                    let prev = this.setCurrentActiveHint(hint);
+                    // to clear any other hint on a subframe
+                    if (prev instanceof HintFrame) {
+                        this.activeHint = prev;
+                        this.clearFrameSelection();
+                        this.activeHint = hint;
+                    }
+                    return;
+                } else if (nb > index) {
+                    if (frameHint) {
+                        this.__traversedHint = frameHint;
+                        post_message(frameHint.frame.contentWindow,
+                                     "hints.selectVisibleHint", index);
+                    }
+                    return;
+                }
+            } else {
+                frameHint = hint;
+            }
+        }
+        this.__traversedHint = null;
+        if (self === top) {
+            this.setCurrentActiveHint(null);
+        }
     }
 }
 
@@ -234,6 +371,7 @@ HintManager.prototype.selectBrowserObjects = function(selector, hint_index) {
     // Object.assign(this.options, options || {});
     hinter.init(selector);
     hinter.next(hint_index || 0);
+    hinter.activateFirstHint(1);
     // this.setActiveHint((this.hints.length > 0) ? this.hints[0] : null);
 }
 
@@ -258,32 +396,11 @@ HintManager.prototype.visibleHints = function() {
 }
 
 HintManager.prototype.selectVisibleHint = function(index) {
-    for (let hint of this.visibleHints()) {
-        if (hint.hint.textContent == index) {
-            this.setActiveHint(hint);
-            return;
-        }
-    }
-    this.setActiveHint(null);
+    hinter.selectVisibleHint(parseInt(index));
 }
 
 HintManager.prototype.activateNextHint = function(backward) {
-    let visibles = this.visibleHints();
-    if (visibles.length == 0) {
-        return;
-    }
-    let pos = visibles.indexOf(this.activeHint);
-    if (pos == -1) {
-        this.setActiveHint(visibles[backward ? visibles.length - 1 : 0]);
-        return;
-    }
-    pos = pos + (backward ? -1 : 1);
-    if (pos < 0) {
-        pos = visibles.length - 1;
-    } else if (pos >= visibles.length) {
-        pos = 0;
-    }
-    this.setActiveHint(visibles[pos]);
+    hinter.activateNextHint(backward);
 }
 
 HintManager.prototype.filterSelection = function(text) {
@@ -341,11 +458,22 @@ if (self === top) {
     //     register_message_handler("hints.register_hints", register_hints);
     // });
 } else {
-    register_message_handler("hints.select_in_iframe_start",
-                             args => hints.selectBrowserObjects(args.selector,
-                                                                args.hint_index));
+    register_message_handler("hints.select_in_iframe_start", function(args) {
+        hinter.init(args.selector);
+        hinter.next(args.hint_index);
+    });
     register_message_handler("hints.select_clear",
-                             _ => hinter.clear())
+                             _ => hinter.clear());
+    register_message_handler("hints.clearFrameSelection",
+                             _ => hinter.clearFrameSelection());
 }
 register_message_handler("hints.select_in_iframe_end",
                          hint_index => hinter.next(hint_index));
+register_message_handler("hints.activateFirstHint",
+                         args => hinter.activateFirstHint(args));
+register_message_handler("hints.hintActivated",
+                         _ => hinter.setCurrentActiveHint());
+register_message_handler("hints.followCurrentLink",
+                         _ => hinter.followCurrentLink());
+register_message_handler("hints.selectVisibleHint",
+                         index => hinter.selectVisibleHint(index));
