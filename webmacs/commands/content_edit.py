@@ -53,7 +53,7 @@ def cancel(ctx):
     if ctx.buffer.hasSelection():
         run_js(ctx, "textedit.clear_mark();")
     else:
-        run_js(ctx, "textedit.getActiveElement().blur();")
+        run_js(ctx, "textedit.blur();")
     ctx.buffer.set_text_edit_mark(False)
 
 

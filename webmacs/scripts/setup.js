@@ -31,7 +31,7 @@ MESSAGE_HANDLERS = {};
   name: the message name.
   args: the message parameters.
 */
-function post_message(w, name, args) {
+window.post_message = function(w, name, args) {
     w.postMessage({
         webmacsid: WEBMACS_SECURE_ID,
         name: name,
@@ -54,7 +54,7 @@ window.addEventListener("message", function(e) {
 /*
   register a message handler in the current frame.
 */
-function register_message_handler(name, func) {
+window.register_message_handler = function(name, func) {
     MESSAGE_HANDLERS[name] = func;
 }
 
@@ -64,7 +64,7 @@ function register_message_handler(name, func) {
   This use post_message if we are not on the main_frame, as only the main frame
   posses the __webmacsHandler__ web channel object.
 */
-function post_webmacs_message(name, args) {
+window.post_webmacs_message = function(name, args) {
     if (self === top) {
         __webmacsHandler__[name].apply(__webmacsHandler__, args);
     } else {
@@ -95,6 +95,11 @@ if (self === top) {
     // for post_webmacs_message to works when called from iframes.
     register_message_handler("onTextFocus",
                              args => post_webmacs_message("onTextFocus", args))
+    register_message_handler("copyToClipboard",
+                             args => post_webmacs_message("copyToClipboard",
+                                                          args))
+    register_message_handler("openExternalEditor",
+                             args => post_webmacs_message("openExternalEditor", args))
 
     // and now, register the web channel on the top frame.
     function registerWebmacs(w) {

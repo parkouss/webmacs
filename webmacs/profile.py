@@ -102,7 +102,8 @@ class Profile(object):
             script_transform=lambda src: src.replace("{{WEBMACS_SECURE_ID}}",
                                                      str(id(self))))
         inject_js(os.path.join(THIS_DIR, "scripts", "hint.js"))
-        inject_js(os.path.join(THIS_DIR, "scripts", "textedit.js"))
+        inject_js(os.path.join(THIS_DIR, "scripts", "textedit.js"),
+                  sub_frames=True)
         inject_js(os.path.join(THIS_DIR, "scripts", "autofill.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "caret_browsing.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "textzoom.js"))
