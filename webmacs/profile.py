@@ -102,6 +102,8 @@ class Profile(object):
             contentjs.append(f.read())
         with open(os.path.join(THIS_DIR, "scripts", "textedit.js")) as f:
             contentjs.append(f.read())
+        with open(os.path.join(THIS_DIR, "scripts", "hint.js")) as f:
+            contentjs.append(f.read())
 
         script = QWebEngineScript()
         script.setInjectionPoint(QWebEngineScript.DocumentCreation)
@@ -110,7 +112,6 @@ class Profile(object):
         script.setRunsOnSubFrames(True)
         self.q_profile.scripts().insert(script)
 
-        inject_js(os.path.join(THIS_DIR, "scripts", "hint.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "autofill.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "caret_browsing.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "textzoom.js"))

@@ -50,13 +50,13 @@ function escapeRegExp(str) {
     return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
 
-function Hint(obj, manager, left, top) {
+function Hint(obj, manager, left, top, index) {
     this.obj = obj;
     this.objBackground = obj.style.background;
     this.objColor = obj.style.color;
     obj.style.background = manager.options.background;
     obj.style.color = manager.options.text_color;
-    this.index = manager.hints.length + 1;
+    this.index = index;
     var hint = document.createElement("span");
     hint.textContent = this.index;
     hint.style.background = manager.options.hint_background;
@@ -121,6 +121,87 @@ Hint.prototype.serialize = function() {
     });
 }
 
+class HintFrame {
+    constructor(frame) {
+        this.frame = frame
+    }
+
+    remove() {
+        post_message(this.frame.contentWindow, "hints.clearBrowserObjects", null);
+    }
+}
+
+class Hinter {
+    init(selector) {
+        this.selector = selector;
+        this.xres = document.evaluate(selector, document, xpath_lookup_namespace,
+                                      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+                                      null);
+        this.fragment = document.createDocumentFragment();
+        this.index = 0;
+        this.iframes_ranges = [];
+        this.hints = {};
+    }
+
+    next(hint_index) {
+        // has been cleared.
+        if (this.hints === null) {
+            return;
+        }
+
+        if (this.iframes_ranges.length > 0) {
+            this.iframes_ranges[this.iframes_ranges.length - 1].end = hint_index;
+        }
+        for (; this.index < this.xres.snapshotLength; this.index++) {
+            let obj = this.xres.snapshotItem(this.index);
+            let rect = rectElementInViewport(obj, window);
+            if (!rect) {
+                continue;
+            }
+            if (obj.tagName == "IFRAME") {
+                // console.log(window.frames[0].frames[0]);
+                this.iframes_ranges.push({frame: obj, start: hint_index});
+                post_message(obj.contentWindow, "hints.select_in_iframe_start",
+                             {selector: this.selector, hint_index: hint_index});
+                this.index+=1;
+                return;
+            }
+            hint_index += 1;
+            var hint = new Hint(obj, hints,
+                                (rect.left + window.scrollX) + "px",
+                                (rect.top + window.scrollY) + "px",
+                                hint_index
+                               );
+            this.hints[hint_index] = hint;
+            this.fragment.appendChild(hint.hint);
+        }
+        document.documentElement.appendChild(this.fragment);
+
+        if (self !== top) {
+            post_message(parent, "hints.select_in_iframe_end", hint_index)
+        }
+        console.log(this.iframes_ranges)
+    }
+
+    clear() {
+        // has been cleared.
+        if (this.hints === null) {
+            return;
+        }
+
+        for (var name in this.hints) {
+            this.hints[name].remove();
+        }
+        for (var iframe of this.iframes_ranges) {
+            post_message(iframe.frame.contentWindow, "hints.select_clear", null);
+        }
+        this.hints = null;
+        this.iframes_ranges = null;
+    }
+}
+
+var hinter = new Hinter();
+
 function HintManager() {
     this.hints = [];
     this.options = {
@@ -134,11 +215,11 @@ function HintManager() {
 }
 
 // took from conkeror
-const XHTML_NS = "http://www.w3.org/1999/xhtml";
-const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
-const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
-const XLINK_NS = "http://www.w3.org/1999/xlink";
-const SVG_NS = "http://www.w3.org/2000/svg";
+XHTML_NS = "http://www.w3.org/1999/xhtml";
+XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+MATHML_NS = "http://www.w3.org/1998/Math/MathML";
+XLINK_NS = "http://www.w3.org/1999/xlink";
+SVG_NS = "http://www.w3.org/2000/svg";
 
 function xpath_lookup_namespace (prefix) {
     return {
@@ -149,37 +230,11 @@ function xpath_lookup_namespace (prefix) {
     }[prefix] || null;
 }
 
-HintManager.prototype.selectBrowserObjecsInWindow = function(w, selector) {
-    var doc = w.document;
-    let xres = doc.evaluate (selector, doc, xpath_lookup_namespace,
-                             XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-    let scrollX = window.scrollX;
-    let scrollY = window.scrollY;
-    let fragment = doc.createDocumentFragment();
-
-    for (var j = 0; j < xres.snapshotLength; j++) {
-        let obj = xres.snapshotItem(j);
-        let rect = rectElementInViewport(obj, w);
-        if (!rect) {
-            continue;
-        }
-        if (obj.tagName == "IFRAME") {
-            this.selectBrowserObjecsInWindow(obj.contentWindow, selector);
-            continue;
-        }
-        var hint = new Hint(obj, this,
-                            (rect.left + scrollX) + "px",
-                            (rect.top + scrollY) + "px");
-        this.hints.push(hint);
-        fragment.appendChild(hint.hint);
-    }
-    doc.documentElement.appendChild(fragment);
-}
-
-HintManager.prototype.selectBrowserObjects = function(selector, options) {
-    Object.assign(this.options, options || {});
-    this.selectBrowserObjecsInWindow(window, selector);
-    this.setActiveHint((this.hints.length > 0) ? this.hints[0] : null);
+HintManager.prototype.selectBrowserObjects = function(selector, hint_index) {
+    // Object.assign(this.options, options || {});
+    hinter.init(selector);
+    hinter.next(hint_index || 0);
+    // this.setActiveHint((this.hints.length > 0) ? this.hints[0] : null);
 }
 
 HintManager.prototype.setActiveHint = function(hint) {
@@ -272,10 +327,25 @@ HintManager.prototype.filterSelection = function(text) {
 }
 
 HintManager.prototype.clearBrowserObjects = function() {
-    for (let hint of this.hints) {
-        hint.remove();
-    }
-    this.hints = [];
+    hinter.clear();
 }
 
 var hints = new HintManager();
+
+if (self === top) {
+    // var all_hints = [];
+
+    // function register_hints() {};
+
+    // window.addEventListener("load", function() {
+    //     register_message_handler("hints.register_hints", register_hints);
+    // });
+} else {
+    register_message_handler("hints.select_in_iframe_start",
+                             args => hints.selectBrowserObjects(args.selector,
+                                                                args.hint_index));
+    register_message_handler("hints.select_clear",
+                             _ => hinter.clear())
+}
+register_message_handler("hints.select_in_iframe_end",
+                         hint_index => hinter.next(hint_index));
