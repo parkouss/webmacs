@@ -96,14 +96,21 @@ class Profile(object):
             self.q_profile.scripts().insert(script)
 
         inject_js(":/qtwebchannel/qwebchannel.js")
-        inject_js(
-            os.path.join(THIS_DIR, "scripts", "setup.js"),
-            sub_frames=True,
-            script_transform=lambda src: src.replace("{{WEBMACS_SECURE_ID}}",
-                                                     str(id(self))))
+
+        contentjs = ["WEBMACS_SECURE_ID = {};".format(str(id(self)))]
+        with open(os.path.join(THIS_DIR, "scripts", "setup.js")) as f:
+            contentjs.append(f.read())
+        with open(os.path.join(THIS_DIR, "scripts", "textedit.js")) as f:
+            contentjs.append(f.read())
+
+        script = QWebEngineScript()
+        script.setInjectionPoint(QWebEngineScript.DocumentCreation)
+        script.setSourceCode("\n".join(contentjs))
+        script.setWorldId(QWebEngineScript.ApplicationWorld)
+        script.setRunsOnSubFrames(True)
+        self.q_profile.scripts().insert(script)
+
         inject_js(os.path.join(THIS_DIR, "scripts", "hint.js"))
-        inject_js(os.path.join(THIS_DIR, "scripts", "textedit.js"),
-                  sub_frames=True)
         inject_js(os.path.join(THIS_DIR, "scripts", "autofill.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "caret_browsing.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "textzoom.js"))

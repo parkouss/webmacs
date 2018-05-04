@@ -156,17 +156,14 @@ textedit._external_editor_finish = function(args) {
 }
 
 if (self !== top) {
-    window.addEventListener("load", function() {
-        register_message_handler("textedit.clear_mark", textedit.clear_mark);
-        register_message_handler("textedit.blur", textedit.blur);
-        register_message_handler("textedit.copy_text", textedit.copy_text);
-        register_message_handler("textedit.select_text", textedit.select_text);
-        register_message_handler("textedit.upcase_word", textedit.upcase_word);
-        register_message_handler("textedit.downcase_word",
-                                 textedit.downcase_word);
-        register_message_handler("textedit.external_editor_open",
-                                 textedit.external_editor_open);
-        register_message_handler("textedit.external_editor_finish",
-                                 textedit._external_editor_finish);
-    })
+    register_message_handler("textedit.clear_mark", textedit.clear_mark);
+    register_message_handler("textedit.blur", textedit.blur);
+    register_message_handler("textedit.copy_text", textedit.copy_text);
+    register_message_handler("textedit.select_text", textedit.select_text);
+    register_message_handler("textedit.upcase_word", textedit.upcase_word);
+    register_message_handler("textedit.downcase_word", textedit.downcase_word);
+    register_message_handler("textedit.external_editor_open",
+                             textedit.external_editor_open);
+    register_message_handler("textedit.external_editor_finish",
+                             textedit._external_editor_finish);
 }

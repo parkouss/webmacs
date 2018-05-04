@@ -13,10 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-
-// a somewhat secure id to validate message sent with window.postMessage
-// Its real value is injected from the python side.
-WEBMACS_SECURE_ID = {{WEBMACS_SECURE_ID}};
 // per frame handlers for the message sent with window.postMessage.
 MESSAGE_HANDLERS = {};
 
@@ -31,7 +27,7 @@ MESSAGE_HANDLERS = {};
   name: the message name.
   args: the message parameters.
 */
-window.post_message = function(w, name, args) {
+function post_message(w, name, args) {
     w.postMessage({
         webmacsid: WEBMACS_SECURE_ID,
         name: name,
@@ -54,7 +50,7 @@ window.addEventListener("message", function(e) {
 /*
   register a message handler in the current frame.
 */
-window.register_message_handler = function(name, func) {
+function register_message_handler(name, func) {
     MESSAGE_HANDLERS[name] = func;
 }
 
@@ -64,7 +60,7 @@ window.register_message_handler = function(name, func) {
   This use post_message if we are not on the main_frame, as only the main frame
   posses the __webmacsHandler__ web channel object.
 */
-window.post_webmacs_message = function(name, args) {
+function post_webmacs_message(name, args) {
     if (self === top) {
         __webmacsHandler__[name].apply(__webmacsHandler__, args);
     } else {
