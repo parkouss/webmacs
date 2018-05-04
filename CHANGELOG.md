@@ -30,6 +30,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- added a **revive-buffer** command, bound to **C-x r** in the global keymap.
+  This allow to reopen a previously closed buffer.
+- added the **revive-buffers-limit** variable, to specify how many buffers might
+  be revived. This defaults to 10.
+- added basic handling of web features to enable video, audio from javascript.
 - added two variables to customize how webmacs starts: **home-page** and
   **home-page-in-new-window**.
 - added a command to restore previous session (windows and buffers),
