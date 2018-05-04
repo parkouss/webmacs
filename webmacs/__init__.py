@@ -18,7 +18,7 @@ import importlib
 from PyQt5.QtCore import QObject, QEvent, QTimer
 
 
-__version__ = '0.3'
+__version__ = '0.4'
 
 
 # access to every opened buffers

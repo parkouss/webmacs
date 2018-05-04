@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [0.4] - 2018-05-04
+
 ### Fixed
 
 - Fixed closing buffer in some circumstances using C-k from the
