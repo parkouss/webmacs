@@ -80,10 +80,13 @@ class Profile(object):
         self.update_spell_checking()
 
         def inject_js(filepath, ipoint=QWebEngineScript.DocumentCreation,
-                      iid=QWebEngineScript.ApplicationWorld, sub_frames=False):
+                      iid=QWebEngineScript.ApplicationWorld, sub_frames=False,
+                      script_transform=None):
             f = QFile(filepath)
             assert f.open(QFile.ReadOnly | QFile.Text)
             src = QTextStream(f).readAll()
+            if script_transform:
+                src = script_transform(src)
 
             script = QWebEngineScript()
             script.setInjectionPoint(ipoint)
@@ -93,8 +96,11 @@ class Profile(object):
             self.q_profile.scripts().insert(script)
 
         inject_js(":/qtwebchannel/qwebchannel.js")
-        inject_js(os.path.join(THIS_DIR, "scripts", "setup.js"),
-                  sub_frames=True)
+        inject_js(
+            os.path.join(THIS_DIR, "scripts", "setup.js"),
+            sub_frames=True,
+            script_transform=lambda src: src.replace("{{WEBMACS_SECURE_ID}}",
+                                                     str(id(self))))
         inject_js(os.path.join(THIS_DIR, "scripts", "hint.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "textedit.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "autofill.js"))
