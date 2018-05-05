@@ -335,6 +335,75 @@ class Hinter {
             this.setCurrentActiveHint(null);
         }
     }
+
+    frameFilterSelection(args) {
+        let hint_index = args.hint_index;
+
+        // match everything when text selector is empty
+        let match_hint = hint => true;
+
+        if (args.text) {
+            // else, we fuzzy-match on the hint text
+            let parts = args.text.split(/\s+/).map(escapeRegExp);
+            let re = new RegExp(".*" + parts.join(".*") + ".*", "i");
+            match_hint = function(hint) {
+                let text = hint.text();
+                if (text !== null) {
+                    return (text.match(re) !== null);
+                }
+                return false;
+            };
+        }
+
+        for (let index = args.index; index < this.hints.length; index++) {
+            let hint = this.hints[index];
+            if (hint instanceof HintFrame) {
+                // iframe, let's go down
+                post_message(hint.frame.contentWindow, "hints.frameFilterSelection", {
+                    text: args.text,
+                    index: 0,
+                    parent_index: index,
+                    hint_index: hint_index
+                });
+                return;
+            }
+
+            // else see if we match the hint, and update its visibility
+            if (match_hint(hint)) {
+                hint_index +=1;
+                hint.setVisible(true);
+                hint.hint.textContent = hint_index;
+            } else {
+                hint.setVisible(false);
+                if (hint == this.activeHint) {
+                    this.clearFrameSelection();
+                }
+            }
+        }
+
+        if (self !== top) {
+            // if we are in a sub frame, we call back the parent so he will
+            // continue.
+            post_message(parent, "hints.frameFilterSelection", {
+                text: args.text,
+                index: args.parent_index + 1,
+                hint_index: hint_index
+            });
+        } else {
+            // else if we lose the selection, put it back to the first hint.
+            if (this.activeHint === null) {
+                this.activateFirstHint(1);
+            }
+        }
+    }
+
+    filterSelection(text) {
+        this.frameFilterSelection({
+            text: text,
+            index: 0,
+            hint_index: 0,
+        });
+    }
 }
 
 var hinter = new Hinter();
@@ -404,43 +473,7 @@ HintManager.prototype.activateNextHint = function(backward) {
 }
 
 HintManager.prototype.filterSelection = function(text) {
-    let i = 0;
-    if (!text) {
-        for (let hint of this.hints) {
-            i = i+1;
-            hint.setVisible(true);
-            hint.hint.textContent = i;
-        }
-        return;
-    }
-    let activeHintRemoved = false;
-    let firstHint = null;
-    var parts = text.split(/\s+/).map(escapeRegExp);
-    var re = new RegExp(".*" + parts.join(".*") + ".*", "i");
-    for (let hint of this.hints) {
-        let matched = false;
-        text = hint.text();
-        if (text !== null) {
-            matched = (text.match(re) !== null);
-        }
-
-        if (matched) {
-            i = i+1;
-            hint.setVisible(true);
-            hint.hint.textContent = i;
-            if (! firstHint) {
-                firstHint = hint;
-            }
-        } else {
-            hint.setVisible(false);
-            if (hint == this.activeHint) {
-                activeHintRemoved = true;
-            }
-        }
-    }
-    if (activeHintRemoved && firstHint) {
-        this.setActiveHint(firstHint);
-    }
+    hinter.filterSelection(text);
 }
 
 HintManager.prototype.clearBrowserObjects = function() {
@@ -477,3 +510,5 @@ register_message_handler("hints.followCurrentLink",
                          _ => hinter.followCurrentLink());
 register_message_handler("hints.selectVisibleHint",
                          index => hinter.selectVisibleHint(index));
+register_message_handler("hints.frameFilterSelection",
+                         args => hinter.frameFilterSelection(args));
