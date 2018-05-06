@@ -206,17 +206,19 @@ class Hinter {
     }
 
     frameUpActivateHint(indexes) {
-        let index = indexes.shift();
-        let hint = this.hints[index];
+        let hint = null;
+        if (indexes !== null) {
+            let index = indexes.shift();
+            hint = this.hints[index];
+        }
         let prev = this.activeHint;
 
 
         if (hint === prev) {
             return hint;
         }
-        if (prev) {
-            this.clearFrameSelection();
-        }
+        this.clearFrameSelection();
+
         this.activeHint = hint;
         if (top != self) {
             post_message(parent, "hints.frameUpActivateHint", indexes);
@@ -226,11 +228,15 @@ class Hinter {
 
     clearFrameSelection() {
         let prevHint = this.activeHint;
+        if (! prevHint) {
+            return;
+        }
         this.activeHint = null;
         if (prevHint instanceof Hint) {
             prevHint.refresh();
         } else {
-            post_message(prevHint.frame.contentWindow, "hints.clearFrameSelection");
+            post_message(prevHint.frame.contentWindow,
+                         "hints.clearFrameSelection");
         }
     }
 
@@ -403,7 +409,7 @@ class Hinter {
             } else {
                 hint.setVisible(false);
                 if (hint == this.activeHint) {
-                    this.clearFrameSelection();
+                    this.setCurrentActiveHint(null);
                 }
             }
         }
