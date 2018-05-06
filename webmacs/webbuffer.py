@@ -219,7 +219,7 @@ class WebBuffer(QWebEnginePage):
 
     def focus_active_browser_object(self):
         current_buffer().runJavaScript(
-            "hinter.followCurrentLink();",
+            "hints.followCurrentLink();",
             QWebEngineScript.ApplicationWorld)
 
     def select_visible_hint(self, hint_id):

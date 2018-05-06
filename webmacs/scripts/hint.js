@@ -184,11 +184,17 @@ class Hinter {
         document.documentElement.appendChild(this.fragment);
 
         if (self !== top) {
-            post_message(parent, "hints.select_in_iframe_end", hint_index)
+            post_message(parent, "hints.select_in_iframe_end", hint_index);
         }
     }
 
-    clear() {
+    selectBrowserObjects(selector) {
+        this.init(selector);
+        this.next(0);
+        this.activateNextHint(false);
+    }
+
+    clearBrowserObjects() {
         // has been cleared.
         if (this.hints === null) {
             return;
@@ -354,7 +360,7 @@ class Hinter {
         }
     }
     selectVisibleHint(index) {
-        this.frameSelectVisibleHint({index: index, parent_indexes: []});
+        this.frameSelectVisibleHint({index: parseInt(index), parent_indexes: []});
     }
 
     frameFilterSelection(args) {
@@ -427,19 +433,7 @@ class Hinter {
     }
 }
 
-var hinter = new Hinter();
-
-function HintManager() {
-    this.hints = [];
-    this.options = {
-        hint_background: "red",
-        hint_color: "white",
-        background: "yellow",
-        background_active: "#88FF00",
-        text_color: "black"
-    };
-    this.activeHint = null;
-}
+var hints = new Hinter();
 
 // took from conkeror
 XHTML_NS = "http://www.w3.org/1999/xhtml";
@@ -457,82 +451,27 @@ function xpath_lookup_namespace (prefix) {
     }[prefix] || null;
 }
 
-HintManager.prototype.selectBrowserObjects = function(selector, hint_index) {
-    // Object.assign(this.options, options || {});
-    hinter.init(selector);
-    hinter
-    hinter.next(hint_index || 0);
-    hinter.activateNextHint(false);
-    // this.setActiveHint((this.hints.length > 0) ? this.hints[0] : null);
-}
-
-HintManager.prototype.setActiveHint = function(hint) {
-    var prevActive = this.activeHint;
-    this.activeHint = hint;
-    if (prevActive) { prevActive.refresh(); }
-    if (hint) {
-        hint.refresh();
-        __webmacsHandler__._browserObjectActivated(hint.serialize());
-    }
-}
-
-HintManager.prototype.visibleHints = function() {
-    let visibles = [];
-    for (let hint of this.hints) {
-        if (hint.isVisible()) {
-            visibles.push(hint);
-        }
-    }
-    return visibles;
-}
-
-HintManager.prototype.selectVisibleHint = function(index) {
-    hinter.selectVisibleHint(parseInt(index));
-}
-
-HintManager.prototype.activateNextHint = function(backward) {
-    hinter.activateNextHint(backward);
-}
-
-HintManager.prototype.filterSelection = function(text) {
-    hinter.filterSelection(text);
-}
-
-HintManager.prototype.clearBrowserObjects = function() {
-    hinter.clear();
-}
-
-var hints = new HintManager();
-
-if (self === top) {
-    // var all_hints = [];
-
-    // function register_hints() {};
-
-    // window.addEventListener("load", function() {
-    //     register_message_handler("hints.register_hints", register_hints);
-    // });
-} else {
+if (self !== top) {
     register_message_handler("hints.select_in_iframe_start", function(args) {
-        hinter.init(args.selector);
-        hinter.next(args.hint_index);
+        hints.init(args.selector);
+        hints.next(args.hint_index);
     });
     register_message_handler("hints.select_clear",
-                             _ => hinter.clear());
+                             _ => hints.clearBrowserObjects());
     register_message_handler("hints.clearFrameSelection",
-                             _ => hinter.clearFrameSelection());
+                             _ => hints.clearFrameSelection());
     register_message_handler("hints.frameSelectVisibleHint",
-                             args => hinter.frameSelectVisibleHint(args));
+                             args => hints.frameSelectVisibleHint(args));
 }
 register_message_handler("hints.select_in_iframe_end",
-                         hint_index => hinter.next(hint_index));
+                         hint_index => hints.next(hint_index));
 register_message_handler("hints.frameActivateNextHint",
-                         args => hinter.frameActivateNextHint(args));
+                         args => hints.frameActivateNextHint(args));
 register_message_handler("hints.hintActivated",
-                         _ => hinter.setCurrentActiveHint());
+                         _ => hints.setCurrentActiveHint());
 register_message_handler("hints.followCurrentLink",
-                         _ => hinter.followCurrentLink());
+                         _ => hints.followCurrentLink());
 register_message_handler("hints.frameFilterSelection",
-                         args => hinter.frameFilterSelection(args));
+                         args => hints.frameFilterSelection(args));
 register_message_handler("hints.frameUpActivateHint",
-                         args => hinter.frameUpActivateHint(args));
+                         args => hints.frameUpActivateHint(args));
