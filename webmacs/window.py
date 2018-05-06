@@ -43,6 +43,7 @@ class Window(QWidget):
         self._layout.addWidget(self._minibuffer)
 
         self.fullscreen_window = None
+        self.quit_if_last_closed = True
 
         WINDOWS_HANDLER.register_window(self)
 

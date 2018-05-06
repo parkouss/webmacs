@@ -15,10 +15,9 @@
 
 import json
 import logging
-import os
 
 from .import BUFFERS, windows, current_window
-from .webbuffer import create_buffer, QUrl, DelayedLoadingUrl
+from .webbuffer import create_buffer, QUrl, DelayedLoadingUrl, close_buffer
 from .window import Window
 
 
@@ -82,30 +81,38 @@ def _session_save(stream):
     }, stream)
 
 
-def session_load(profile, opts):
+def session_clean():
+    # clean every opened buffers and windows
+    for window in windows():
+        window.quit_if_last_closed = False
+        window.close()
+        for view in window.webviews():
+            view.setBuffer(None)
+
+    for buffer in BUFFERS:
+        close_buffer(buffer)
+
+
+def session_load(session_file):
     """
     Try to load the session, given the profile.
 
     Must be called at application startup, when no buffers nor views is set up
     already.
     """
-    if not opts.url and os.path.exists(profile.session_file):
-        try:
-            with open(profile.session_file, "r") as f:
-                _session_load(f)
-                return True
-        except Exception:
-            logging.exception("Unable to load the session (%s)",
-                              profile.session_file)
-    window = Window()
-    buffer = create_buffer(opts.url or "http://duckduckgo.com/")
-    window.current_webview().setBuffer(buffer)
-    window.showMaximized()
+    try:
+        with open(session_file, "r") as f:
+            _session_load(f)
+    except Exception:
+        logging.exception("Unable to load the session from %s.",
+                          session_file)
+        session_clean()
+        raise
 
 
-def session_save(profile):
+def session_save(session_file):
     """
     Save the session for the given profile.
     """
-    with open(profile.session_file, "w") as f:
+    with open(session_file, "w") as f:
         _session_save(f)

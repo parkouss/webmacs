@@ -18,7 +18,7 @@ import importlib
 from PyQt5.QtCore import QObject, QEvent, QTimer
 
 
-__version__ = '0.3'
+__version__ = '0.5'
 
 
 # access to every opened buffers
@@ -56,7 +56,7 @@ class WindowsHandler(QObject):
         if t == QEvent.WindowActivate:
             self.current_window = window
         elif t == QEvent.Close:
-            if len(self.windows) == 1:
+            if window.quit_if_last_closed and len(self.windows) == 1:
                 if self._on_last_window_closing():
                     return True
             self.windows.remove(window)

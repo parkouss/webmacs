@@ -20,6 +20,7 @@ import logging
 import imp
 import sys
 import atexit
+import os
 
 from PyQt5.QtNetwork import QAbstractSocket
 
@@ -98,10 +99,30 @@ def init(opts):
     """
     from .application import app
     from .session import session_load, session_save
+    from .variables import get
+    from .window import Window
+    from .webbuffer import create_buffer
 
     a = app()
-    a.aboutToQuit.connect(lambda: session_save(a.profile))
-    session_load(a.profile, opts)
+    a.aboutToQuit.connect(lambda: session_save(a.profile.session_file))
+
+    def create_window(url):
+        w = Window()
+        buff = create_buffer(url)
+        w.current_webview().setBuffer(buff)
+        w.showMaximized()
+
+    home_page = get("home-page")
+    session_file = a.profile.session_file
+    if home_page:
+        create_window(home_page)
+    elif opts.url:
+        create_window(opts.url)
+    elif os.path.exists(session_file):
+        try:
+            session_load(session_file)
+        except Exception:
+            create_window("http://duckduckgo.com/")
 
 
 def _handle_user_init_error(msg):

@@ -13,8 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtCore import QStringListModel, QModelIndex
 import itertools
+import os
+from PyQt5.QtCore import QStringListModel, QModelIndex
 
 from . import define_command, COMMANDS
 from ..minibuffer import Prompt, KEYMAP
@@ -24,10 +25,10 @@ from ..webbuffer import create_buffer
 from ..keymaps import Keymap, KeyPress
 from ..keyboardhandler import current_prefix_arg, send_key_event, \
     local_keymap, KEY_EATER, CallHandler
-from .. import BUFFERS, windows
+from .. import BUFFERS, windows, variables
 from ..mode import MODES
-from ..variables import VARIABLES
 from ..window import Window
+from ..session import session_clean, session_load
 
 
 class CommandsListPrompt(Prompt):
@@ -143,7 +144,12 @@ def create_window(ctx):
     Create a new window and focus it.
     """
     win = Window()
-    win.current_webview().setBuffer(_get_or_create_buffer(ctx.window))
+    home_page = variables.get("home-page")
+    win.current_webview().setBuffer(
+        create_buffer(home_page)
+        if home_page and variables.get("home-page-in-new-window")
+        else _get_or_create_buffer(ctx.window)
+    )
     win.show()
     win.activateWindow()
 
@@ -452,7 +458,7 @@ class VariableListPrompt(Prompt):
 
     def completer_model(self):
         model = QStringListModel(self)
-        model.setStringList(sorted(VARIABLES))
+        model.setStringList(sorted(variables.VARIABLES))
         return model
 
 
@@ -462,7 +468,7 @@ def describe_variable(ctx):
     Prompt for a variable name to describe.
     """
     variable = ctx.prompt.value()
-    if variable in VARIABLES:
+    if variable in variables.VARIABLES:
         buffer = create_buffer("webmacs://variable/%s" % variable)
         ctx.view.setBuffer(buffer)
 
@@ -540,3 +546,21 @@ def describe_binding(ctx):
         **ctx.prompt.called_with
     )
     ctx.view.setBuffer(create_buffer(url))
+
+
+@define_command("restore-session")
+def restore_session(ctx):
+    """
+    Restore windows and buffers from the previous sessions.
+    """
+    session_file = app().profile.session_file
+    if not os.path.exists(session_file):
+        ctx.minibuffer.show_info("Error: No session file found.")
+
+    session_clean()
+    try:
+        session_load(session_file)
+    except:
+        w = Window()
+        w.current_webview().setBuffer("about:blank")
+        w.show()

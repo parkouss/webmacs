@@ -22,7 +22,8 @@ from collections import namedtuple
 
 from .keymaps import BUFFER_KEYMAP as KEYMAP
 from . import hooks
-from . import BUFFERS, current_minibuffer, minibuffer_show_info, current_buffer
+from . import BUFFERS, current_minibuffer, minibuffer_show_info, \
+    current_buffer, call_later
 from .content_handler import WebContentHandler
 from .application import app
 from .minibuffer.prompt import YesNoPrompt
@@ -30,6 +31,7 @@ from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .mode import get_mode, Mode, get_auto_modename_for_url
+from .killed_buffers import KilledBuffer
 
 
 # a tuple of QUrl, str to delay loading of a page.
@@ -58,6 +60,7 @@ def close_buffer(wb):
 
     app().download_manager().detach_buffer(wb)
     BUFFERS.remove(wb)
+    KilledBuffer.from_buffer(wb)
     wb.deleteLater()
     hooks.webbuffer_closed(wb)
     return True
@@ -82,6 +85,7 @@ class WebBuffer(QWebEnginePage):
         hooks.webbuffer_created(self)
 
         self.fullScreenRequested.connect(self._on_full_screen_requested)
+        self.featurePermissionRequested.connect(self._on_feature_requested)
         self._content_handler = WebContentHandler(self)
         channel = QWebChannel(self)
         channel.registerObject("contentHandler", self._content_handler)
@@ -238,9 +242,32 @@ class WebBuffer(QWebEnginePage):
         if internal_view.request_fullscreen(request.toggleOn()):
             request.accept()
 
+    @Slot(QUrl, QWebEnginePage.Feature)
+    def _on_feature_requested(self, url, feature):
+        features = ("Geolocation", "MediaAudioCapture", "MediaVideoCapture",
+                    "MediaAudioVideoCapture", "MouseLock",
+                    "DesktopVideoCapture", "DesktopAudioVideoCapture")
+
+        feature_name = None
+        for name in features:
+            if getattr(QWebEnginePage, name, None) == feature:
+                feature_name = name
+                break
+
+        permission = QWebEnginePage.PermissionDeniedByUser
+        if feature_name:
+            prompt = YesNoPrompt("Allow enabling feature {} for {}?"
+                                 .format(feature_name, url.toString()))
+            if current_minibuffer().do_prompt(prompt):
+                permission = QWebEnginePage.PermissionGrantedByUser
+        self.setFeaturePermission(url, feature, permission)
+
     def createWindow(self, type):
         buffer = create_buffer()
-        self.view().setBuffer(buffer)
+        view = self.view()
+        # this is required to to not lose the keyboard focus.
+        call_later(lambda: view.internal_view().setFocus())
+        view.setBuffer(buffer)
         return buffer
 
     def finished(self):

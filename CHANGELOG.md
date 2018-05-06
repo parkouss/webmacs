@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- The keyboard is not anymore lost when a new buffer is opened from javascript.
+
+## [0.4] - 2018-05-04
+
+### Fixed
+
 - Fixed closing buffer in some circumstances using C-k from the
   switch-buffer command.
 - Improved position of the minibuffer popup, removing empty pixels
@@ -30,6 +36,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- added a **revive-buffer** command, bound to **C-x r** in the global keymap.
+  This allow to reopen a previously closed buffer.
+- added the **revive-buffers-limit** variable, to specify how many buffers might
+  be revived. This defaults to 10.
+- added basic handling of web features to enable video, audio from javascript.
+- added two variables to customize how webmacs starts: **home-page** and
+  **home-page-in-new-window**.
+- added a command to restore previous session (windows and buffers),
+  **restore-session**.
 - Under X11, if the --instance is passed at the command line, the
   WM_CLASS property is set to "webmacs-{instance}".
 - added basic support for multiple windows. New commands added: **make-window**,

@@ -18,7 +18,8 @@ from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from ..commands import define_command
 from ..minibuffer import Prompt, KEYMAP
-from ..webbuffer import WebBuffer, close_buffer
+from ..webbuffer import WebBuffer, close_buffer, create_buffer
+from ..killed_buffers import KilledBuffer
 from .. import BUFFERS
 from ..keymaps import Keymap
 
@@ -335,3 +336,65 @@ def buffer_unselect(ctx):
     Unselect selection in the current web buffer.
     """
     ctx.buffer.triggerAction(WebBuffer.Unselect)
+
+
+class KilledBufferTableModel(QAbstractTableModel):
+    def __init__(self):
+        QAbstractTableModel.__init__(self)
+        self._buffers = list(KilledBuffer.all)
+
+    def rowCount(self, index=QModelIndex()):
+        return len(self._buffers)
+
+    def columnCount(self, index=QModelIndex()):
+        return 2
+
+    def data(self, index, role=Qt.DisplayRole):
+        killed_buff = index.internalPointer()
+        if not killed_buff:
+            return
+
+        col = index.column()
+        if role == Qt.DisplayRole:
+            if col == 0:
+                return killed_buff.url.toString()
+            else:
+                return killed_buff.title
+        elif role == Qt.DecorationRole and col == 0:
+            return killed_buff.icon
+
+    def index(self, row, col, parent=QModelIndex()):
+        try:
+            return self.createIndex(row, col, self._buffers[row])
+        except IndexError:
+            return QModelIndex()
+
+
+class KilledBufferListPrompt(Prompt):
+    label = "buffer to revive:"
+    complete_options = {
+        "match": Prompt.FuzzyMatch,
+        "complete-empty": True,
+    }
+
+    def completer_model(self):
+        return KilledBufferTableModel()
+
+    def enable(self, minibuffer):
+        Prompt.enable(self, minibuffer)
+        if KilledBuffer.all:
+            minibuffer.input().popup().selectRow(0)
+
+
+@define_command("revive-buffer", prompt=KilledBufferListPrompt)
+def revive_buffer(ctx):
+    """
+    Revive a previously killed buffer in the current view.
+    """
+    selected = ctx.prompt.index()
+    if selected.row() >= 0:
+        killed_buffer = selected.internalPointer()
+        buff = create_buffer()
+        killed_buffer.revive(buff)
+
+        ctx.window.current_webview().setBuffer(buff)
