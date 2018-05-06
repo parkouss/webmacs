@@ -22,7 +22,8 @@ from collections import namedtuple
 
 from .keymaps import BUFFER_KEYMAP as KEYMAP
 from . import hooks
-from . import BUFFERS, current_minibuffer, minibuffer_show_info, current_buffer
+from . import BUFFERS, current_minibuffer, minibuffer_show_info, \
+    current_buffer, call_later
 from .content_handler import WebContentHandler
 from .application import app
 from .minibuffer.prompt import YesNoPrompt
@@ -259,7 +260,10 @@ class WebBuffer(QWebEnginePage):
 
     def createWindow(self, type):
         buffer = create_buffer()
-        self.view().setBuffer(buffer)
+        view = self.view()
+        # this is required to to not lose the keyboard focus.
+        call_later(lambda: view.internal_view().setFocus())
+        view.setBuffer(buffer)
         return buffer
 
     def finished(self):

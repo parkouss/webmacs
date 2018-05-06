@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+
+- The keyboard is not anymore lost when a new buffer is opened from javascript.
+
 ## [0.4] - 2018-05-04
 
 ### Fixed
