@@ -151,7 +151,6 @@ class Hinter {
         this.index = 0;
         this.hints = [];
         this.activeHint = null;
-        this.__traversedHint = null;
     }
 
     next(hint_index) {
@@ -205,8 +204,9 @@ class Hinter {
         let hint = this.hints[index];
         let prev = this.activeHint;
 
+
         if (hint === prev) {
-            return;
+            return hint;
         }
         if (prev) {
             this.clearFrameSelection();
@@ -215,29 +215,7 @@ class Hinter {
         if (top != self) {
             post_message(parent, "hints.frameUpActivateHint", indexes);
         }
-    }
-
-    setCurrentActiveHint(hint, prevent) {
-        let prevHint = this.activeHint;
-        if (hint) {
-            this.activeHint = hint;
-            hint.refresh();
-            post_webmacs_message("_browserObjectActivated", [hint.serialize()]);
-        } else if (this.__traversedHint) {
-            // we are traversing down, and we found the hint to activate. so we
-            // register at this level the frame that contains the active hint.
-            this.activeHint = this.__traversedHint;
-            this.__traversedHint = null;
-        } else {
-            this.activeHint = null;
-        }
-        if (prevHint && prevHint instanceof Hint) {
-            prevHint.refresh();
-        }
-        if (!prevent && self !== top) {
-            post_message(parent, "hints.hintActivated");
-        }
-        return prevHint;
+        return hint;
     }
 
     clearFrameSelection() {
@@ -250,18 +228,21 @@ class Hinter {
         }
     }
 
+    setCurrentActiveHint(indexes) {
+        let hint = this.frameUpActivateHint(indexes);
+        if (hint) {
+            // refresh the hint style to make it appear activated.
+            hint.refresh();
+            post_webmacs_message("_browserObjectActivated", [hint.serialize()]);
+        }
+    }
+
     frameActivateNextHint(args) {
         let traverse = function(hinter, index) {
             let hint = hinter.hints[index];
             if (hint instanceof Hint) {
                 if (hint.isVisible()) {
-                    // mark this hint as activated, and each hint frame in the
-                    // upper frames too.
-                    hinter.frameUpActivateHint([index].concat(args.parent_indexes));
-                    // refresh the hint style to make it appear activated.
-                    hint.refresh();
-                    // and send hint info to the browser
-                    post_webmacs_message("_browserObjectActivated", [hint.serialize()]);
+                    hinter.setCurrentActiveHint([index].concat(args.parent_indexes));
                     return true;
                 }
             } else {
@@ -345,37 +326,35 @@ class Hinter {
         }
     }
 
-    selectVisibleHint(index) {
-        var frameHint = null;
-        this.__traversedHint = null;
-        for (var hint of this.hints) {
+    frameSelectVisibleHint(args) {
+        let frameHint = null;
+        let index = args.index;
+
+        for (let hint_index=0; hint_index < this.hints.length; hint_index++) {
+            let hint = this.hints[hint_index];
             if (hint instanceof Hint) {
                 let nb = parseInt(hint.hint.textContent);
                 if (nb === index) {
-                    let prev = this.setCurrentActiveHint(hint);
-                    // to clear any other hint on a subframe
-                    if (prev instanceof HintFrame) {
-                        this.activeHint = prev;
-                        this.clearFrameSelection();
-                        this.activeHint = hint;
-                    }
+                    this.setCurrentActiveHint([hint_index].concat(args.parent_indexes));
                     return;
                 } else if (nb > index) {
                     if (frameHint) {
-                        this.__traversedHint = frameHint;
-                        post_message(frameHint.frame.contentWindow,
-                                     "hints.selectVisibleHint", index);
+                        post_message(
+                            frameHint.window,
+                            "hints.frameSelectVisibleHint", {
+                                index: index,
+                                parent_indexes: [frameHint.index].concat(args.parent_indexes)
+                            });
                     }
                     return;
                 }
             } else {
-                frameHint = hint;
+                frameHint = {window: hint.frame.contentWindow, index: hint_index};
             }
         }
-        this.__traversedHint = null;
-        if (self === top) {
-            this.setCurrentActiveHint(null);
-        }
+    }
+    selectVisibleHint(index) {
+        this.frameSelectVisibleHint({index: index, parent_indexes: []});
     }
 
     frameFilterSelection(args) {
@@ -542,6 +521,8 @@ if (self === top) {
                              _ => hinter.clear());
     register_message_handler("hints.clearFrameSelection",
                              _ => hinter.clearFrameSelection());
+    register_message_handler("hints.frameSelectVisibleHint",
+                             args => hinter.frameSelectVisibleHint(args));
 }
 register_message_handler("hints.select_in_iframe_end",
                          hint_index => hinter.next(hint_index));
@@ -551,8 +532,6 @@ register_message_handler("hints.hintActivated",
                          _ => hinter.setCurrentActiveHint());
 register_message_handler("hints.followCurrentLink",
                          _ => hinter.followCurrentLink());
-register_message_handler("hints.selectVisibleHint",
-                         index => hinter.selectVisibleHint(index));
 register_message_handler("hints.frameFilterSelection",
                          args => hinter.frameFilterSelection(args));
 register_message_handler("hints.frameUpActivateHint",
