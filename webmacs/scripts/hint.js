@@ -50,76 +50,80 @@ function escapeRegExp(str) {
     return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
 
-function Hint(obj, manager, left, top, index) {
-    this.obj = obj;
-    this.objBackground = obj.style.background;
-    this.objColor = obj.style.color;
-    obj.style.background = manager.options.background;
-    obj.style.color = manager.options.text_color;
-    this.index = index;
-    var hint = document.createElement("span");
-    hint.textContent = this.index;
-    hint.style.background = manager.options.hint_background;
-    hint.style.color = manager.options.hint_color;
-    hint.style.position = "absolute";
-    hint.style.zIndex = "2147483647";
-    hint.style.left = left;
-    hint.style.top = top;
-    this.hint = hint;
-    this.manager = manager;
-}
-
-Hint.prototype.text = function() {
-    if (this.obj.textContent) {
-        return this.obj.textContent;
+class Hint {
+    constructor(obj, manager, left, top, index) {
+        this.obj = obj;
+        this.objBackground = obj.style.background;
+        this.objColor = obj.style.color;
+        obj.style.background = manager.options.background;
+        obj.style.color = manager.options.text_color;
+        this.index = index;
+        var hint = document.createElement("span");
+        hint.textContent = this.index;
+        hint.style.background = manager.options.hint_background;
+        hint.style.color = manager.options.hint_color;
+        hint.style.position = "absolute";
+        hint.style.zIndex = "2147483647";
+        hint.style.left = left;
+        hint.style.top = top;
+        this.hint = hint;
+        this.manager = manager;
     }
-    return null;
-}
 
-Hint.prototype.url = function() {
-    if (this.obj.href) {
-        return this.obj.href;
-    }
-    return null;
-}
-
-Hint.prototype.remove = function() {
-    this.obj.style.background = this.objBackground;
-    this.obj.style.color = this.objColor;
-    this.hint.parentNode.removeChild(this.hint);
-}
-
-Hint.prototype.setVisible = function(on) {
-    this.hint.style.display = on ? "initial" : "none";
-    this.refresh();
-}
-
-Hint.prototype.refresh = function() {
-    if (this.isVisible()) {
-        if (this.manager.activeHint == this) {
-            this.obj.style.background = this.manager.options.background_active;
-        } else {
-            this.obj.style.background = this.manager.options.background;
+    text() {
+        if (this.obj.textContent) {
+            return this.obj.textContent;
         }
-        this.obj.style.color = this.manager.options.text_color;
-    } else {
+        return null;
+    }
+
+    url() {
+        if (this.obj.href) {
+            return this.obj.href;
+        }
+        return null;
+    }
+
+    remove() {
         this.obj.style.background = this.objBackground;
         this.obj.style.color = this.objColor;
+        this.hint.parentNode.removeChild(this.hint);
+    }
+
+    setVisible(on) {
+        this.hint.style.display = on ? "initial" : "none";
+        this.refresh();
+    }
+
+    refresh() {
+        if (this.isVisible()) {
+            if (this.manager.activeHint == this) {
+                this.obj.style.background = this.manager.options.background_active;
+            } else {
+                this.obj.style.background = this.manager.options.background;
+            }
+            this.obj.style.color = this.manager.options.text_color;
+        } else {
+            this.obj.style.background = this.objBackground;
+            this.obj.style.color = this.objColor;
+        }
+    }
+
+    isVisible() {
+        return this.hint.style.display != "none";
+    }
+
+    serialize() {
+        return JSON.stringify({
+            nodeName: this.obj.nodeName,
+            text: this.text(),
+            id: this.hint.textContent,
+            url: this.url()
+        });
     }
 }
 
-Hint.prototype.isVisible = function() {
-    return this.hint.style.display != "none";
-}
 
-Hint.prototype.serialize = function() {
-    return JSON.stringify({
-        nodeName: this.obj.nodeName,
-        text: this.text(),
-        id: this.hint.textContent,
-        url: this.url()
-    });
-}
 
 class HintFrame {
     constructor(frame) {
