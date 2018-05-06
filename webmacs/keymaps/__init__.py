@@ -258,7 +258,8 @@ class KeyPress(_KeyPress):
                 super = True
             else:
                 raise Exception(
-                    "Unknown key modifier: %s in key definition %s" % (p, string))
+                    "Unknown key modifier: %s in key definition %s" % (p,
+                                                                       string))
 
         try:
             key = CHAR2KEY[text]
