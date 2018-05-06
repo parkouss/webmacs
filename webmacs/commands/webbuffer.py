@@ -173,7 +173,7 @@ def scroll_page_down(ctx):
     """
     Scroll the current buffer one page down.
     """
-    ctx.buffer.scroll_page(1)
+    ctx.buffer.scroll_page(0.9, smooth=True)
 
 
 @define_command("scroll-page-up")
@@ -181,7 +181,7 @@ def scroll_page_up(ctx):
     """
     Scroll the current buffer one page up.
     """
-    ctx.buffer.scroll_page(-1)
+    ctx.buffer.scroll_page(-0.9, smooth=True)
 
 
 @define_command("scroll-top")
