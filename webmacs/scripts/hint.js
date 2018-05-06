@@ -363,6 +363,9 @@ class Hinter {
         for (let hint_index=0; hint_index < this.hints.length; hint_index++) {
             let hint = this.hints[hint_index];
             if (hint instanceof Hint) {
+                if (! hint.isVisible()) {
+                    continue;
+                }
                 let nb = parseInt(hint.hint.textContent);
                 if (nb === index) {
                     this.setCurrentActiveHint([hint_index].concat(args.parent_indexes));
