@@ -135,6 +135,20 @@ class HintFrame {
     }
 }
 
+
+// took from conkeror
+XPATH_NS = {
+    xhtml: "http://www.w3.org/1999/xhtml",
+    m: "http://www.w3.org/1998/Math/MathML",
+    xul: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul",
+    svg: "http://www.w3.org/2000/svg"
+};
+
+function xpath_lookup_namespace (prefix) {
+    return XPATH_NS[prefix] || null;
+}
+
+
 class Hinter {
     constructor() {
         this.options = {
@@ -444,22 +458,6 @@ class Hinter {
 }
 
 var hints = new Hinter();
-
-// took from conkeror
-XHTML_NS = "http://www.w3.org/1999/xhtml";
-XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
-MATHML_NS = "http://www.w3.org/1998/Math/MathML";
-XLINK_NS = "http://www.w3.org/1999/xlink";
-SVG_NS = "http://www.w3.org/2000/svg";
-
-function xpath_lookup_namespace (prefix) {
-    return {
-        xhtml: XHTML_NS,
-        m: MATHML_NS,
-        xul: XUL_NS,
-        svg: SVG_NS
-    }[prefix] || null;
-}
 
 if (self !== top) {
     register_message_handler("hints.select_in_iframe_start", function(args) {
