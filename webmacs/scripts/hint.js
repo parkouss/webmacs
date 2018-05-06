@@ -300,13 +300,6 @@ class Hinter {
                 // else, activate the next hint
                 if (this.activeHint instanceof Hint) {
                     index += args.way;
-                    // if we are out of bounds, and that this is the main frame,
-                    // just loop.
-                    if (self == top) {
-                        if (index === -1 || index >= this.hints.length) {
-                            index = args.way == 1 ? 0: this.hints.length - 1;
-                        }
-                    }
                 }
             } else {
                 // if no selection, select the first one
@@ -335,6 +328,13 @@ class Hinter {
                 index: args.parent_indexes[0] + args.way,
                 way: args.way
             });
+        } else {
+            // on the main frame, clear the selection and recall this function
+            // to loop.
+            if (this.hints) {
+                this.setCurrentActiveHint(null);
+                this.frameActivateNextHint({way: args.way, parent_indexes: []});
+            }
         }
     }
 
