@@ -475,8 +475,6 @@ register_message_handler("hints.select_in_iframe_end",
                          hint_index => hints.next(hint_index));
 register_message_handler("hints.frameActivateNextHint",
                          args => hints.frameActivateNextHint(args));
-register_message_handler("hints.hintActivated",
-                         _ => hints.setCurrentActiveHint());
 register_message_handler("hints.followCurrentLink",
                          _ => hints.followCurrentLink());
 register_message_handler("hints.frameFilterSelection",
