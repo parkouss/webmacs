@@ -104,6 +104,8 @@ class Profile(object):
             contentjs.append(f.read())
         with open(os.path.join(THIS_DIR, "scripts", "hint.js")) as f:
             contentjs.append(f.read())
+        with open(os.path.join(THIS_DIR, "scripts", "textzoom.js")) as f:
+            contentjs.append(f.read())
 
         script = QWebEngineScript()
         script.setInjectionPoint(QWebEngineScript.DocumentCreation)
@@ -114,7 +116,6 @@ class Profile(object):
 
         inject_js(os.path.join(THIS_DIR, "scripts", "autofill.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "caret_browsing.js"))
-        inject_js(os.path.join(THIS_DIR, "scripts", "textzoom.js"))
 
 
 def default_profile():
