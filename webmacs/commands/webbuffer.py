@@ -258,7 +258,7 @@ def close_other_buffers(ctx):
     if selected.row() >= 0:
         # Get all other buffers and kill them
         for wb in [b for b in BUFFERS if b != selected.internalPointer()]:
-            close_buffer(wb, False)
+            close_buffer(wb)
 
 
 @define_command("select-buffer-content")
