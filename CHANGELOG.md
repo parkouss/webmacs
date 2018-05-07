@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - The **follow** command is now working in cross-origin iframes.
 - Text edition in web pages is now working in cross-origin iframes.
 - Text zoom in web pages is now working in cross-origin iframes.
+- Caret navigation is now working in cross-origin iframes.
 
 ## [0.4] - 2018-05-04
 

@@ -90,12 +90,15 @@ document.addEventListener("focusout", function(e) {
 if (self === top) {
     // for post_webmacs_message to works when called from iframes.
     register_message_handler("onTextFocus",
-                             args => post_webmacs_message("onTextFocus", args))
+                             args => post_webmacs_message("onTextFocus", args));
     register_message_handler("copyToClipboard",
                              args => post_webmacs_message("copyToClipboard",
-                                                          args))
+                                                          args));
     register_message_handler("openExternalEditor",
-                             args => post_webmacs_message("openExternalEditor", args))
+                             args => post_webmacs_message("openExternalEditor",
+                                                          args));
+    register_message_handler("onCaretBrowsing",
+                             args => post_webmacs_message("onCaretBrowsing", args));
 
     // and now, register the web channel on the top frame.
     function registerWebmacs(w) {

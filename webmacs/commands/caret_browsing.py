@@ -35,7 +35,7 @@ def shutdown(ctx):
     """
     Shutdown caret browsing in current buffer.
     """
-    call_js(ctx, "CaretBrowsing.toggle(false);")
+    call_js(ctx, "CaretBrowsing.shutdown();")
 
 
 @define_command("caret-browsing-down")
