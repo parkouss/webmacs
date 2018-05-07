@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Fixed
 
 - The keyboard is not anymore lost when a new buffer is opened from javascript.
+- The **follow** command is now working in cross-origin iframes.
+- Text edition in web pages is now working in cross-origin iframes.
+- Text zoom in web pages is now working in cross-origin iframes.
 
 ## [0.4] - 2018-05-04
 
