@@ -14,7 +14,7 @@
 // along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 // per frame handlers for the message sent with window.postMessage.
-MESSAGE_HANDLERS = {};
+let MESSAGE_HANDLERS = {};
 
 
 /*
