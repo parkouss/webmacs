@@ -58,6 +58,10 @@ class HintPrompt(Prompt):
         )
         minibuffer.input().installEventFilter(self)
 
+    def close(self):
+        self.page.stop_select_browser_objects()
+        Prompt.close(self)
+
     def on_browser_object_activated(self, bo):
         self.browser_object_activated = bo
         self.minibuffer.input().set_right_italic_text(bo.get("url", ""))
