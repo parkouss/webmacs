@@ -371,21 +371,23 @@ class Hinter {
                     this.setCurrentActiveHint([hint_index].concat(args.parent_indexes));
                     return;
                 } else if (nb > index) {
-                    if (frameHint) {
-                        post_message(
-                            frameHint.window,
-                            "hints.frameSelectVisibleHint", {
-                                index: index,
-                                parent_indexes: [frameHint.index].concat(args.parent_indexes)
-                            });
-                    }
-                    return;
+		    break;
                 }
             } else {
                 frameHint = {window: hint.frame.contentWindow, index: hint_index};
             }
         }
+	if (frameHint) {
+	    post_message(
+		frameHint.window,
+		"hints.frameSelectVisibleHint", {
+                    index: index,
+                    parent_indexes: [frameHint.index].concat(args.parent_indexes)
+		}
+	    );
+	}
     }
+
     selectVisibleHint(index) {
         this.frameSelectVisibleHint({index: parseInt(index), parent_indexes: []});
     }
