@@ -94,7 +94,7 @@ def _app_requires():
 class Application(QApplication):
     INSTANCE = None
 
-    def __init__(self, args):
+    def __init__(self, conf_path, args):
         QApplication.__init__(self, args)
         self.__class__.INSTANCE = self
 
@@ -110,7 +110,9 @@ class Application(QApplication):
                 " on your hardware."
             )
 
-        self._setup_conf_paths()
+        self._conf_path = conf_path
+        if not os.path.isdir(self.profiles_path()):
+            os.makedirs(self.profiles_path())
 
         self._interceptor = UrlInterceptor(self)
 
@@ -138,18 +140,6 @@ class Application(QApplication):
         self.setQuitOnLastWindowClosed(False)
 
         self.network_manager = QNetworkAccessManager(self)
-
-        _app_requires()
-
-    def _setup_conf_paths(self):
-        self._conf_path = os.path.join(os.path.expanduser("~"), ".webmacs")
-
-        def mkdir(path):
-            if not os.path.isdir(path):
-                os.makedirs(path)
-
-        mkdir(self.conf_path())
-        mkdir(self.profiles_path())
 
     def conf_path(self):
         return self._conf_path

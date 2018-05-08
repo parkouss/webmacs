@@ -143,6 +143,11 @@ def _handle_user_init_error(msg):
 
 def main():
     opts = parse_args()
+
+    conf_path = os.path.join(os.path.expanduser("~"), ".webmacs")
+    if not os.path.isdir(conf_path):
+        os.makedirs(conf_path)
+
     setup_logging(getattr(logging, opts.log_level.upper()),
                   getattr(logging, opts.webcontent_log_level.upper()))
 
@@ -159,20 +164,13 @@ def main():
 
     # Delay loading after command line parsing and ipc checking.
     # Loading qwebengine stuff takes a couple of seconds...
-    from .application import Application
+    from .application import Application, _app_requires
 
-    app = Application([
-        # The first argument passed to the QApplication args defines
-        # the x11 property WM_CLASS.
-        "webmacs" if not opts.instance
-        else "webmacs-%s" % opts.instance
-    ])
-    server = IpcServer(opts.instance)
-    atexit.register(server.cleanup)
+    _app_requires()
 
     # load a user init module if any
     try:
-        spec = imp.find_module("init", [app.conf_path()])
+        spec = imp.find_module("init", [conf_path])
     except ImportError:
         user_init = None
     else:
@@ -181,7 +179,16 @@ def main():
         except Exception:
             _handle_user_init_error("Error reading the user configuration.")
 
-    # and exectute its init function if there is one
+    app = Application(conf_path, [
+        # The first argument passed to the QApplication args defines
+        # the x11 property WM_CLASS.
+        "webmacs" if not opts.instance
+        else "webmacs-%s" % opts.instance
+    ])
+    server = IpcServer(opts.instance)
+    atexit.register(server.cleanup)
+
+    # execute the user init function if there is one
     if user_init is None or not hasattr(user_init, "init"):
         init(opts)
     else:
