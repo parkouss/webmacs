@@ -81,9 +81,11 @@ AdBlock_matches(AdBlock* self, PyObject *args)
   if (!PyArg_ParseTuple(args, "ss", &url, &domain))
     return NULL;
 
-  Py_BEGIN_ALLOW_THREADS
+  /* I suspect that allowing threads here does create deadlocks,
+   but anyway I am not sure it would be useful to allow them. */
+  /* Py_BEGIN_ALLOW_THREADS */
   result = self->client->matches(url, FONoFilterOption, domain);
-  Py_END_ALLOW_THREADS
+  /* Py_END_ALLOW_THREADS */
 
   if (result) {
     Py_RETURN_TRUE;
