@@ -19,7 +19,8 @@ from PyQt5.QtCore import QObject, QEvent
 
 from .keymaps import KeyPress, global_keymap, CHAR2KEY
 from . import hooks
-from . import COMMANDS, minibuffer_show_info, CommandContext
+from . import COMMANDS, minibuffer_show_info, CommandContext, \
+    current_minibuffer
 from .mode import Mode
 
 
@@ -35,6 +36,10 @@ class LocalKeymapSetter(QObject):
                 QEvent.MouseButtonDblClick,
                 QEvent.MouseButtonRelease,
                 QEvent.MouseMove):
+            if evt.type() in (QEvent.MouseButtonPress,
+                              QEvent.MouseButtonDblClick) \
+                              and current_minibuffer().prompt():
+                current_minibuffer().prompt().flash()
             return True
         return False
 

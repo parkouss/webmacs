@@ -14,15 +14,38 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import itertools
 import collections
 
 from PyQt5.QtCore import QObject, QAbstractTableModel, QModelIndex, Qt, \
-    pyqtSlot as Slot, pyqtSignal as Signal, QRegExp, QEventLoop
+    pyqtSlot as Slot, pyqtSignal as Signal, QRegExp, QEventLoop, \
+    QPropertyAnimation
 
-from PyQt5.QtGui import QRegExpValidator
+from PyQt5.QtGui import QRegExpValidator, QColor
+from PyQt5.QtWidgets import QGraphicsColorizeEffect
 
 from ..keyboardhandler import set_global_keymap_enabled
 from ..keymaps import Keymap
+from .. import variables
+
+
+FLASH_DURATION = variables.define_variable(
+    "minibuffer-flash-duration",
+    "Total duration in seconds of the minibuffer flash animation.",
+    0.3,
+)
+FLASH_COLOR = variables.define_variable(
+    "minibuffer-flash-color",
+    "Color for the minibuffer flash animation. Should be given as"
+    " an hexadecimal string.",
+    "#ff0000",
+)
+FLASH_COUNT = variables.define_variable(
+    "minibuffer-flash-count",
+    "How many flashes should be displayed during the minibuffer"
+    " flash animation.",
+    2,
+)
 
 
 class FSModel(QAbstractTableModel):
@@ -120,6 +143,7 @@ class Prompt(QObject):
         return None
 
     def enable(self, minibuffer):
+        self.__flash = None
         self.__index = QModelIndex()
         self.minibuffer = minibuffer
         minibuffer.label.setText(self.label)
@@ -164,7 +188,41 @@ class Prompt(QObject):
             c_model.deleteLater()
         if self.history:
             self.history.reset()
+        if self.__flash:
+            self.__flash.stop()
+            self.__flash.deleteLater()
         self.closed.emit()
+
+    def flash(self):
+        if self.__flash is None:
+            self.__flash = self._create_flash_animation()
+            if self.__flash:
+                self.__flash.start()
+        elif self.__flash.state() == self.__flash.Stopped:
+            self.__flash.start()
+
+    def _create_flash_animation(self):
+        if FLASH_COUNT.value <= 0 or \
+           FLASH_DURATION.value <= 0:
+            return None
+        minibuff_input = self.minibuffer.input()
+        anim = QPropertyAnimation(minibuff_input,
+                                  b"background_color")
+        base = minibuff_input.property(b"background_color")
+        flash_color = QColor(FLASH_COLOR.value)
+        anim.setDuration(int(FLASH_DURATION.value * 1000))
+
+        step = 1./(FLASH_COUNT.value * 2)
+        pos = step
+        colors = itertools.cycle((flash_color, base))
+
+        anim.setStartValue(base)
+        while pos < 1:
+            anim.setKeyValueAt(pos, next(colors))
+            pos += step
+        anim.setEndValue(base)
+        return anim
+
 
     def _on_completion_activated(self, index):
         self.__index = index
@@ -183,8 +241,10 @@ class Prompt(QObject):
         self.close()
         self.finished.emit()
 
-    def exec_(self, minibuffer):
+    def exec_(self, minibuffer, flash=False):
         self.enable(minibuffer)
+        if flash:
+            self.flash()
         loop = QEventLoop()
         self.closed.connect(loop.quit)
         _prompt_exec(self, loop)

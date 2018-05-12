@@ -253,7 +253,7 @@ class WebBuffer(QWebEnginePage):
         if feature_name:
             prompt = YesNoPrompt("Allow enabling feature {} for {}?"
                                  .format(feature_name, url.toString()))
-            if current_minibuffer().do_prompt(prompt):
+            if current_minibuffer().do_prompt(prompt, flash=True):
                 permission = QWebEnginePage.PermissionGrantedByUser
         self.setFeaturePermission(url, feature, permission)
 
@@ -276,7 +276,7 @@ class WebBuffer(QWebEnginePage):
             sprompt = SavePasswordPrompt(autofill, self,
                                          self.__authentication_data)
             self.__authentication_data = None
-            current_minibuffer().do_prompt(sprompt)
+            current_minibuffer().do_prompt(sprompt, flash=True)
         else:
             autofill.complete_buffer(self, url)
 
@@ -298,7 +298,7 @@ class WebBuffer(QWebEnginePage):
 
         # ask authentication credentials
         prompt = AskPasswordPrompt(autofill, self)
-        current_minibuffer().do_prompt(prompt)
+        current_minibuffer().do_prompt(prompt, flash=True)
 
         data = self.__authentication_data = FormData(url, prompt.username,
                                                      prompt.password, None)
@@ -313,7 +313,7 @@ class WebBuffer(QWebEnginePage):
 
         prompt = YesNoPrompt("[certificate error] {} - ignore ? "
                              .format(error.errorDescription()))
-        current_minibuffer().do_prompt(prompt)
+        current_minibuffer().do_prompt(prompt, flash=True)
 
         if prompt.yes:
             db.ignore(url)
@@ -321,7 +321,8 @@ class WebBuffer(QWebEnginePage):
 
     def javaScriptConfirm(self, url, msg):
         return current_minibuffer().do_prompt(
-            YesNoPrompt("[js-confirm] {} ".format(msg))
+            YesNoPrompt("[js-confirm] {} ".format(msg)),
+            flash=True,
         )
 
     def javaScriptAlert(self, url, msg):

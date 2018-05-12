@@ -17,7 +17,8 @@ from PyQt5.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, \
     QTableView, QHeaderView, QApplication, QSizePolicy, QFrame
 from PyQt5.QtGui import QPainter
 from PyQt5.QtCore import pyqtSignal as Signal, \
-    QEvent, QSortFilterProxyModel, QRegExp, Qt, QModelIndex
+    QEvent, QSortFilterProxyModel, QRegExp, Qt, QModelIndex, \
+    pyqtProperty
 
 from .keymap import KEYMAP
 from .prompt import Prompt
@@ -270,6 +271,16 @@ class MinibufferInput(QLineEdit):
         painter.drawText(self.rect().adjusted(0, 0, -10, 0), Qt.AlignRight,
                          self._right_italic_text)
 
+    @pyqtProperty("QColor")
+    def background_color(self):
+        return self.palette().color(self.backgroundRole())
+
+    @background_color.setter
+    def background_color(self, color):
+        palette = self.palette()
+        palette.setColor(self.backgroundRole(), color)
+        self.setPalette(palette)
+
 
 def _update_minibuffer_height(var):
     for window in windows():
@@ -340,13 +351,13 @@ class Minibuffer(QWidget):
     def prompt(self):
         return self._prompt
 
-    def do_prompt(self, prompt):
+    def do_prompt(self, prompt, **kwargs):
         self.close_prompt()
         self._prompt = prompt
         if prompt:
             prompt.closed.connect(self._prompt_closed)
             prompt.closed.connect(prompt.deleteLater)
-            return prompt.exec_(self)
+            return prompt.exec_(self, **kwargs)
 
     def close_prompt(self):
         if self._prompt:
