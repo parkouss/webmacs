@@ -36,10 +36,23 @@ class LocalKeymapSetter(QObject):
                 QEvent.MouseButtonDblClick,
                 QEvent.MouseButtonRelease,
                 QEvent.MouseMove):
-            if evt.type() in (QEvent.MouseButtonPress,
-                              QEvent.MouseButtonDblClick) \
-                              and current_minibuffer().prompt():
-                current_minibuffer().prompt().flash()
+            minibuff = current_minibuffer()
+            if minibuff:
+                # allow clicks in minibuffer inputs and popup only
+                # note: QWidget.underMouse does not works here.
+                input = minibuff.input()
+                if input.rect().contains(input.mapFromGlobal(evt.globalPos())):
+                    return False
+                else:
+                    popup = input.popup()
+                    if popup.isVisible() and popup.rect().contains(
+                            popup.mapFromGlobal(evt.globalPos())):
+                        return False
+                # else flash the minibuffer on click.
+                if evt.type() in (QEvent.MouseButtonPress,
+                                  QEvent.MouseButtonDblClick) \
+                                  and minibuff.prompt():
+                    minibuff.prompt().flash()
             return True
         return False
 
