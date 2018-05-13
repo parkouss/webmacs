@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- Mouse events are now propagated to the minibuffer input and popup.
 - Fixed a bug that prevented to use multi-modifiers keybindings (e.g., C-M-a)
 - Fixed regression in **close-other-buffers** command.
 - The keyboard is not anymore lost when a new buffer is opened from javascript.
@@ -19,6 +20,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Changed
 
 - Use smooth scroll in **scroll-page-down** and **scroll-page-up**.
+
+### Added
+
+- The minibuffer input now flashes under some circumstances to grab user's
+  attention.
+- Added **minibuffer-flash-duration**, **minibuffer-flash-color**, and
+  **minibuffer-flash-count** variables to customize the flash animation.
 
 ## [0.4] - 2018-05-04
 
