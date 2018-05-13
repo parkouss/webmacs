@@ -43,15 +43,15 @@ class LocalKeymapSetter(QObject):
             return True
         return False
 
-    def minibuffer_input_focus_changed(self, mb, enabled):
+    def minibuffer_input_focus_changed(self, mbi, enabled):
         self.enabled_minibuffer = enabled
         if enabled:
-            set_local_keymap(mb.keymap())
+            set_local_keymap(mbi.keymap())
         else:
-            if not mb.popup().isVisible():
+            if not mbi.isVisible():
                 # when the minibuffer input is hidden, enable its view's
                 # buffer
-                buff = mb.parent().parent().current_webview().buffer()
+                buff = mbi.parent().parent().current_webview().buffer()
                 set_local_keymap(buff.active_keymap())
 
     def view_focus_changed(self, view, enabled):
@@ -64,7 +64,8 @@ class LocalKeymapSetter(QObject):
     def web_content_edit_focus_changed(self, buff, enabled):
         if enabled:
             buff.set_keymap_mode(Mode.KEYMAP_CONTENT_EDIT)
-            set_local_keymap(buff.active_keymap())
+            if not self.enabled_minibuffer:
+                set_local_keymap(buff.active_keymap())
         else:
             buff.set_keymap_mode(Mode.KEYMAP_NORMAL)
             if not self.enabled_minibuffer:
@@ -73,7 +74,8 @@ class LocalKeymapSetter(QObject):
     def caret_browsing_changed(self, buff, enabled):
         if enabled:
             buff.set_keymap_mode(Mode.KEYMAP_CARET_BROWSING)
-            set_local_keymap(buff.active_keymap())
+            if not self.enabled_minibuffer:
+                set_local_keymap(buff.active_keymap())
         else:
             buff.set_keymap_mode(Mode.KEYMAP_NORMAL)
             if not self.enabled_minibuffer:
