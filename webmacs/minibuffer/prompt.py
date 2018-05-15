@@ -18,11 +18,10 @@ import itertools
 import collections
 
 from PyQt5.QtCore import QObject, QAbstractTableModel, QModelIndex, Qt, \
-    pyqtSlot as Slot, pyqtSignal as Signal, QRegExp, QEventLoop, \
-    QPropertyAnimation
+    pyqtSlot as Slot, pyqtSignal as Signal, QEventLoop, QPropertyAnimation, \
+    QEvent
 
-from PyQt5.QtGui import QRegExpValidator, QColor
-from PyQt5.QtWidgets import QGraphicsColorizeEffect
+from PyQt5.QtGui import QColor
 
 from ..keyboardhandler import set_global_keymap_enabled
 from ..keymaps import Keymap
@@ -315,16 +314,27 @@ class YesNoPrompt(Prompt):
     def enable(self, minibuffer):
         set_global_keymap_enabled(False)  # disable any global keychord
         Prompt.enable(self, minibuffer)
-        buffer_input = minibuffer.input()
+        minibuffer.input().installEventFilter(self)
+        minibuffer.input().textEdited.connect(self._on_text_edited)
 
-        validator = QRegExpValidator(QRegExp("[yYnN]"), buffer_input)
-        buffer_input.setValidator(validator)
-        buffer_input.textEdited.connect(self._on_text_edited)
+    def eventFilter(self, obj, evt):
+        if evt.type() in (QEvent.KeyPress, QEvent.KeyRelease,
+                          QEvent.ShortcutOverride):
+            if evt.text() in "yYnN":
+                return False
+            evt.accept()
+            self.flash()
+            return True
+        return False
 
     def value(self):
         return self.yes
 
+    def close(self):
+        self.minibuffer.input().removeEventFilter(self)
+        set_global_keymap_enabled(True)
+        Prompt.close(self)
+
     def _on_text_edited(self, text):
         self.yes = text in ('y', 'Y')
         self.close()
-        set_global_keymap_enabled(True)
