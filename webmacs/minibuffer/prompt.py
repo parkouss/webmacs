@@ -223,7 +223,6 @@ class Prompt(QObject):
         anim.setEndValue(base)
         return anim
 
-
     def _on_completion_activated(self, index):
         self.__index = index
 
@@ -241,14 +240,15 @@ class Prompt(QObject):
         self.close()
         self.finished.emit()
 
-    def exec_(self, minibuffer, flash=False):
+    def exec_(self, minibuffer, flash=False, sync=True):
         self.enable(minibuffer)
         if flash:
             self.flash()
-        loop = QEventLoop()
-        self.closed.connect(loop.quit)
-        _prompt_exec(self, loop)
-        return self.value()
+        if sync:
+            loop = QEventLoop()
+            self.closed.connect(loop.quit)
+            _prompt_exec(self, loop)
+            return self.value()
 
 
 class PromptHistory(object):
