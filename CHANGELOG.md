@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- added a space after the default webjump when calling **search-default**.
 - Mouse events are now propagated to the minibuffer input and popup.
 - Fixed a bug that prevented to use multi-modifiers keybindings (e.g., C-M-a)
 - Fixed regression in **close-other-buffers** command.
@@ -20,6 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Changed
 
 - Use smooth scroll in **scroll-page-down** and **scroll-page-up**.
+- **search-default** now defaults to google.
 
 ### Added
 
