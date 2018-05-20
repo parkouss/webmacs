@@ -121,4 +121,4 @@ define_webjump("duckduckgo",
                "Duckduckgo Search",
                complete_fn=complete_duckduckgo)
 
-webjump_default.set_value("duckduckgo")
+webjump_default.set_value("google")
