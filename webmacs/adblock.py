@@ -27,12 +27,12 @@ from . import variables
 from .runnable import Runner
 
 
-DEFAULT_EASYLIST = (
+DEFAULT_EASYLIST = [
     "https://easylist.to/easylist/easylist.txt",
     # easyprivacy blocks too much right now
     # "https://easylist.to/easylist/easyprivacy.txt",
     "https://easylist.to/easylist/fanboy-annoyance.txt"
-)
+]
 
 adblock_urls_rules = variables.define_variable(
     "adblock-urls-rules",
