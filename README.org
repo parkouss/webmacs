@@ -107,16 +107,17 @@ Documentation is available on [[http://webmacs.readthedocs.io/en/latest/index.ht
 configuration only.
 
 
-* Desired features
+* Website is blocked, turn off the extensions
 
-A lot!
+This message will appear in the browser when the url was filtered by the
+ad-blocker.
 
-- bugs fixes
-- help discovery, like C-h in emacs
-- more bindings
+You can temporarily disable the ad-blocker with *M-x toggle-ad-block* to
+overcome this.
 
-I can't come up with more right now, but there are a lot more for sure.
-
+For a permanent change, edit the *adblock-urls-rules* variable, to remove some
+urls in there. Note if you set this variable to an empty list, the adblocker
+will be completely disabled. See the [[http://webmacs.readthedocs.io/en/latest/user_configuration.html#variables][variables]] section in the documentation.
 
 * Contributions
 
