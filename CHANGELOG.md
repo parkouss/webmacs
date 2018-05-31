@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
-- added a space after the default webjump when calling **search-default**.
+- adblock is fully disabled when the variable **adblock-urls-rules** is set to
+  an empty list.
+- adblock cache is rebuilt when the variable **adblock-urls-rules** has changed.
+- Fixed the **copy-link** command (**c**) when used with the argument 0.
+- Added a space after the default webjump when calling **search-default**.
 - Mouse events are now propagated to the minibuffer input and popup.
 - Fixed a bug that prevented to use multi-modifiers keybindings (e.g., C-M-a)
 - Fixed regression in **close-other-buffers** command.
