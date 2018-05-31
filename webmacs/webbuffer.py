@@ -200,32 +200,32 @@ class WebBuffer(QWebEnginePage):
         self.runJavaScript("window.scrollTo(0, document.body.scrollHeight);")
 
     def start_select_browser_objects(self, selector):
-        current_buffer().runJavaScript(
+        self.runJavaScript(
             "hints.selectBrowserObjects(%r);" % selector,
             QWebEngineScript.ApplicationWorld)
 
     def stop_select_browser_objects(self):
-        current_buffer().runJavaScript(
+        self.runJavaScript(
             "hints.clearBrowserObjects();",
             QWebEngineScript.ApplicationWorld)
 
     def select_nex_browser_object(self, forward=True):
-        current_buffer().runJavaScript(
+        self.runJavaScript(
             "hints.activateNextHint(%s);" % ("false" if forward else "true",),
             QWebEngineScript.ApplicationWorld)
 
     def filter_browser_objects(self, text):
-        current_buffer().runJavaScript(
+        self.runJavaScript(
             "hints.filterSelection(%r);" % text,
             QWebEngineScript.ApplicationWorld)
 
     def focus_active_browser_object(self):
-        current_buffer().runJavaScript(
+        self.runJavaScript(
             "hints.followCurrentLink();",
             QWebEngineScript.ApplicationWorld)
 
     def select_visible_hint(self, hint_id):
-        current_buffer().runJavaScript(
+        self.runJavaScript(
             "hints.selectVisibleHint(%r);" % hint_id,
             QWebEngineScript.ApplicationWorld)
 
