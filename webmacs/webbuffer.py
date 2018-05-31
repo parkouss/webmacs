@@ -287,6 +287,13 @@ class WebBuffer(QWebEnginePage):
 
         self.set_mode(get_auto_modename_for_url(self.url().toString()))
 
+        # We lose the keyboard focus without that with Qt 5.11. Though it
+        # happens quite randomly, but a combination of follow, go back, google
+        # something and the issue happens. I was not seeing this with Qt5.9.
+        view = self.view()
+        if view and view.main_window.current_webview() == view:
+            view.internal_view().setFocus()
+
     def handle_authentication(self, url, authenticator):
         autofill = app().autofill()
         passwords = autofill.auth_passwords_for_url(url)
