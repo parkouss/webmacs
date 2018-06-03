@@ -13,20 +13,27 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..minibuffer.prompt import YesNoPrompt, Prompt
+from ..minibuffer.prompt import YesNoNeverPrompt, Prompt
 from ..keyboardhandler import set_global_keymap_enabled
 
 
-class SavePasswordPrompt(YesNoPrompt):
+class SavePasswordPrompt(YesNoNeverPrompt):
     def __init__(self, autofill, buffer, formdata):
-        YesNoPrompt.__init__(self, "Save password ?", buffer)
+        YesNoNeverPrompt.__init__(self, "Save password ?", buffer)
         self.buffer = buffer
         self.autofill = autofill
         self.formdata = formdata
         self.closed.connect(self.__on_closed)
 
     def __on_closed(self):
+        # late import to avoid cyclic dependencies
+        from . import FormData
         self.deleteLater()
+        if self.never:
+            # save the form with no password or data
+            self.formdata = FormData(
+                url=self.formdata.url, username=self.formdata.username, password=None, data=None)
+            self.autofill.add_form_entry(self.buffer.url(), self.formdata)
         if self.yes:
             self.autofill.add_form_entry(self.buffer.url(), self.formdata)
 

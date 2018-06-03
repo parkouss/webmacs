@@ -348,3 +348,31 @@ class YesNoPrompt(Prompt):
     def _on_text_edited(self, text):
         self.yes = text in ('y', 'Y')
         self.close()
+
+
+class YesNoNeverPrompt(Prompt):
+    keymap = Keymap("yes-no-never")  # an empty keymap
+
+    def __init__(self, label, parent=None):
+        Prompt.__init__(self, parent)
+        self.label = label + "[yes/no/Never]"
+        self.yes = False
+        self.never = False
+
+    def enable(self, minibuffer):
+        set_global_keymap_enabled(False)  # disable any global keychord
+        Prompt.enable(self, minibuffer)
+        buffer_input = minibuffer.input()
+
+        validator = QRegExpValidator(QRegExp("[yYnN]"), buffer_input)
+        buffer_input.setValidator(validator)
+        buffer_input.textEdited.connect(self._on_text_edited)
+
+    def value(self):
+        return self.yes and not self.never
+
+    def _on_text_edited(self, text):
+        self.yes = text in ('y', 'Y')
+        self.never = text == "N"
+        self.close()
+        set_global_keymap_enabled(True)

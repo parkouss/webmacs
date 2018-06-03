@@ -498,3 +498,13 @@ def webbuffer_keymap():
     element in web contents.
     """
     return BUFFER_KEYMAP
+
+
+def content_edit_keymap():
+    """
+    Returns the :class:`Keymap` associated to content editing.
+
+    Local keymap activated when a webcontent field (input, textarea,
+    ...) is focused
+    """
+    return CONTENT_EDIT_KEYMAP
