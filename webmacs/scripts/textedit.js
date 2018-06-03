@@ -14,114 +14,156 @@
 // along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 var textedit = {};
-
-textedit.context = function() {
-    let e = textedit.getActiveElement();
-    return {
-	element: e,
-	sel: e. ownerDocument.getSelection(),
-	isContentEditable: e.isContentEditable
-    }
-}
-
-textedit.getActiveElement = function( doc ){
-    doc = doc || document;
-
-    var elt = doc.activeElement;
-    if (elt.tagName == 'IFRAME') {
-        return getActiveElement(elt.contentWindow.document);
-    }
-    return elt;
-};
-
-textedit.clear_mark = function(ctx) {
-    ctx = ctx || textedit.context();
-    if (! ctx.isContentEditable) {
-	let e = ctx.element;
-	var pos = e.selectionDirection == "forward" ? e.selectionEnd : e.selectionStart;
-	e.setSelectionRange(pos, pos);
-    } else {
-	let sel = ctx.sel;
-	if (! sel.isCollapsed) {
-	    sel.collapse(sel.focusNode, sel.focusOffset);
-	}
-    }
-}
-
-textedit.select_text = function(direction, granularity, ctx) {
-    ctx = ctx || textedit.context();
-    textedit.clear_mark(ctx);
-    ctx.sel.modify("extend", direction, granularity);
-}
-
-textedit.copy_text = function(reset_selection, ctx) {
-    ctx = ctx || textedit.context();
-    let sel = ctx.sel;
-    if (sel.type !== 'Range') {
-	return;
-    }
-    __webmacsHandler__.copyToClipboard(sel.toString());
-    if (reset_selection) {
-	textedit.clear_mark(ctx);
-    }
-}
-
-textedit._change_next_word_case = function(ctx, fn) {
-    ctx = ctx || textedit.context();
-    textedit.select_text('forward', 'word', ctx);
-    if (ctx.isContentEditable) {
-	return;
-    }
-    let e = ctx.element;
-    var pos = e.selectionStart;
-    var txt = e.value;
-    var nextpos = e.selectionEnd;
-    e.value = txt.slice(0, pos) + fn(txt.slice(pos, nextpos))
-	+ txt.slice(nextpos);
-    e.setSelectionRange(nextpos, nextpos);
-}
-
-
-textedit.upcase_word = function(ctx) {
-    textedit._change_next_word_case(ctx, function(t) {
-	return t.toUpperCase();
-    });
-}
-
-textedit.downcase_word = function(ctx) {
-    textedit._change_next_word_case(ctx, function(t) {
-	return t.toLowerCase();
-    });
-}
-
-textedit.capitalize_word = function(ctx) {
-    textedit._change_next_word_case(ctx, function(t) {
-	return t.toLowerCase().replace(/(?:^|\s)\S/g, function(a) {
-	    return a.toUpperCase();
-	});
-    });
-}
-
 textedit.EXTERNAL_EDITOR_REQUESTS = {};
 
-textedit.external_editor_open = function(ctx) {
-    ctx = ctx || textedit.context();
-    var id = new Date().getUTCMilliseconds() + "";
-    let e = ctx.element;
-    let txt = (ctx.isContentEditable) ?
-	e.innerText : e.value;
-    __webmacsHandler__.openExternalEditor(id, txt);
-    textedit.EXTERNAL_EDITOR_REQUESTS[id] = e;
+
+textedit.clear_mark = function() {
+    let elt = document.activeElement;
+    if (elt.tagName == "IFRAME") {
+        post_message(elt.contentWindow, "textedit.clear_mark", null);
+    } else {
+        if (! elt.isContentEditable) {
+	          var pos = elt.selectionDirection == "forward" ? elt.selectionEnd : elt.selectionStart;
+	          elt.setSelectionRange(pos, pos);
+        } else {
+	          let sel = document.getSelection();
+	          if (! sel.isCollapsed) {
+	              sel.collapse(sel.focusNode, sel.focusOffset);
+	          }
+        }
+    }
+}
+
+textedit.blur = function() {
+    let elt = document.activeElement;
+    if (elt.tagName == "IFRAME") {
+        post_message(elt.contentWindow, "textedit.blur", null);
+    } else {
+        elt.blur();
+    }
+}
+
+textedit.copy_text = function(reset_selection) {
+    let elt = document.activeElement;
+    if (elt.tagName == "IFRAME") {
+        post_message(elt.contentWindow, "textedit.copy_text", null);
+    } else {
+        let sel = document.getSelection();
+        if (sel.type !== 'Range') {
+	          return;
+        }
+        post_webmacs_message("copyToClipboard", [sel.toString()]);
+        if (reset_selection) {
+	          textedit.clear_mark();
+        }
+    }
+}
+
+textedit.select_text = function(direction, granularity) {
+    let elt = document.activeElement;
+    if (elt.tagName == "IFRAME") {
+        post_message(elt.contentWindow, "textedit.select_text", null);
+    } else {
+        textedit.clear_mark();
+        document.getSelection().modify("extend", direction, granularity);
+    }
+}
+
+textedit._change_next_word_case = function(fn) {
+    let elt = document.activeElement;
+    textedit.select_text('forward', 'word');
+    if (elt.isContentEditable) {
+	      return;
+    }
+    var pos = elt.selectionStart;
+    var txt = elt.value;
+    var nextpos = elt.selectionEnd;
+    elt.value = txt.slice(0, pos) + fn(txt.slice(pos, nextpos))
+	      + txt.slice(nextpos);
+    elt.setSelectionRange(nextpos, nextpos);
+}
+
+textedit.upcase_word = function() {
+    let elt = document.activeElement;
+    if (elt.tagName == "IFRAME") {
+        post_message(elt.contentWindow, "textedit.upcase_word", null);
+    } else {
+        textedit._change_next_word_case(function(t) {
+	          return t.toUpperCase();
+        });
+    }
+}
+
+textedit.downcase_word = function() {
+    let elt = document.activeElement;
+    if (elt.tagName == "IFRAME") {
+        post_message(elt.contentWindow, "textedit.downcase_word", null);
+    } else {
+        textedit._change_next_word_case(function(t) {
+	          return t.toLowerCase();
+        });
+    }
+}
+
+textedit.capitalize_word = function() {
+    let elt = document.activeElement;
+    if (elt.tagName == "IFRAME") {
+        post_message(elt.contentWindow, "textedit.capitalize_word", null);
+    } else {
+        textedit._change_next_word_case(function(t) {
+	          return t.toLowerCase().replace(/(?:^|\s)\S/g, function(a) {
+	              return a.toUpperCase();
+	          });
+        });
+    }
+}
+
+textedit.external_editor_open = function() {
+    let elt = document.activeElement;
+    if (elt.tagName == "IFRAME") {
+        post_message(elt.contentWindow, "textedit.external_editor_open", null);
+    } else {
+        var id = new Date().getUTCMilliseconds() + "";
+        let txt = (elt.isContentEditable) ?
+	          elt.innerText : elt.value;
+        post_webmacs_message("openExternalEditor", [id, txt]);
+        textedit.EXTERNAL_EDITOR_REQUESTS[id] = elt;
+    }
 }
 
 textedit.external_editor_finish = function(id, content) {
+    let elt = document.activeElement;
+    if (elt.tagName == "IFRAME") {
+        post_message(elt.contentWindow, "textedit.external_editor_finish", [id, content]);
+    } else {
+        textedit._external_editor_finish([id, content]);
+    }
+}
+
+textedit._external_editor_finish = function(args) {
+    let id = args[0];
+    let content = args[1];
+
     if (content !== false) {
-	let e = textedit.EXTERNAL_EDITOR_REQUESTS[id];
-	if (e.isContentEditable) {
-	    e.innerText = content;
-	} else {
-	    e.value = content;
-	}
+	      let e = textedit.EXTERNAL_EDITOR_REQUESTS[id];
+	      if (e.isContentEditable) {
+	          e.innerText = content;
+	      } else {
+	          e.value = content;
+	      }
     }
     delete textedit.EXTERNAL_EDITOR_REQUESTS[id];
+}
+
+if (self !== top) {
+    register_message_handler("textedit.clear_mark", textedit.clear_mark);
+    register_message_handler("textedit.blur", textedit.blur);
+    register_message_handler("textedit.copy_text", textedit.copy_text);
+    register_message_handler("textedit.select_text", textedit.select_text);
+    register_message_handler("textedit.upcase_word", textedit.upcase_word);
+    register_message_handler("textedit.downcase_word", textedit.downcase_word);
+    register_message_handler("textedit.external_editor_open",
+                             textedit.external_editor_open);
+    register_message_handler("textedit.external_editor_finish",
+                             textedit._external_editor_finish);
 }

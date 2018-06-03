@@ -50,232 +50,439 @@ function escapeRegExp(str) {
     return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
 
-function Hint(obj, manager, left, top) {
-    this.obj = obj;
-    this.objBackground = obj.style.background;
-    this.objColor = obj.style.color;
-    obj.style.background = manager.options.background;
-    obj.style.color = manager.options.text_color;
-    this.index = manager.hints.length + 1;
-    var hint = document.createElement("span");
-    hint.textContent = this.index;
-    hint.style.background = manager.options.hint_background;
-    hint.style.color = manager.options.hint_color;
-    hint.style.position = "absolute";
-    hint.style.zIndex = "2147483647";
-    hint.style.left = left;
-    hint.style.top = top;
-    this.hint = hint;
-    this.manager = manager;
-}
-
-Hint.prototype.text = function() {
-    if (this.obj.textContent) {
-        return this.obj.textContent;
+class Hint {
+    constructor(obj, manager, left, top, index) {
+        this.obj = obj;
+        this.objBackground = obj.style.background;
+        this.objColor = obj.style.color;
+        obj.style.background = manager.options.background;
+        obj.style.color = manager.options.text_color;
+        this.index = index;
+        var hint = document.createElement("span");
+        hint.textContent = this.index;
+        hint.style.background = manager.options.hint_background;
+        hint.style.color = manager.options.hint_color;
+        hint.style.position = "absolute";
+        hint.style.zIndex = "2147483647";
+        hint.style.left = left;
+        hint.style.top = top;
+        this.hint = hint;
+        this.manager = manager;
     }
-    return null;
-}
 
-Hint.prototype.url = function() {
-    if (this.obj.href) {
-        return this.obj.href;
-    }
-    return null;
-}
-
-Hint.prototype.remove = function() {
-    this.obj.style.background = this.objBackground;
-    this.obj.style.color = this.objColor;
-    this.hint.parentNode.removeChild(this.hint);
-}
-
-Hint.prototype.setVisible = function(on) {
-    this.hint.style.display = on ? "initial" : "none";
-    this.refresh();
-}
-
-Hint.prototype.refresh = function() {
-    if (this.isVisible()) {
-        if (this.manager.activeHint == this) {
-            this.obj.style.background = this.manager.options.background_active;
-        } else {
-            this.obj.style.background = this.manager.options.background;
+    text() {
+        if (this.obj.textContent) {
+            return this.obj.textContent;
         }
-        this.obj.style.color = this.manager.options.text_color;
-    } else {
+        return null;
+    }
+
+    url() {
+        if (this.obj.href) {
+            return this.obj.href;
+        }
+        return null;
+    }
+
+    remove() {
         this.obj.style.background = this.objBackground;
         this.obj.style.color = this.objColor;
+        this.hint.parentNode.removeChild(this.hint);
+    }
+
+    setVisible(on) {
+        this.hint.style.display = on ? "initial" : "none";
+        this.refresh();
+    }
+
+    refresh() {
+        if (this.isVisible()) {
+            if (this.manager.activeHint == this) {
+                this.obj.style.background = this.manager.options.background_active;
+            } else {
+                this.obj.style.background = this.manager.options.background;
+            }
+            this.obj.style.color = this.manager.options.text_color;
+        } else {
+            this.obj.style.background = this.objBackground;
+            this.obj.style.color = this.objColor;
+        }
+    }
+
+    isVisible() {
+        return this.hint.style.display != "none";
+    }
+
+    serialize() {
+        return JSON.stringify({
+            nodeName: this.obj.nodeName,
+            text: this.text(),
+            id: this.hint.textContent,
+            url: this.url()
+        });
     }
 }
 
-Hint.prototype.isVisible = function() {
-    return this.hint.style.display != "none";
+
+
+class HintFrame {
+    constructor(frame) {
+        this.frame = frame;
+    }
+
+    remove() {
+        post_message(this.frame.contentWindow, "hints.select_clear", null);
+    }
 }
 
-Hint.prototype.serialize = function() {
-    return JSON.stringify({
-        nodeName: this.obj.nodeName,
-        text: this.text(),
-        id: this.hint.textContent,
-        url: this.url()
-    });
-}
-
-function HintManager() {
-    this.hints = [];
-    this.options = {
-        hint_background: "red",
-        hint_color: "white",
-        background: "yellow",
-        background_active: "#88FF00",
-        text_color: "black"
-    };
-    this.activeHint = null;
-}
 
 // took from conkeror
-const XHTML_NS = "http://www.w3.org/1999/xhtml";
-const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
-const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
-const XLINK_NS = "http://www.w3.org/1999/xlink";
-const SVG_NS = "http://www.w3.org/2000/svg";
+XPATH_NS = {
+    xhtml: "http://www.w3.org/1999/xhtml",
+    m: "http://www.w3.org/1998/Math/MathML",
+    xul: "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul",
+    svg: "http://www.w3.org/2000/svg"
+};
 
 function xpath_lookup_namespace (prefix) {
-    return {
-        xhtml: XHTML_NS,
-        m: MATHML_NS,
-        xul: XUL_NS,
-        svg: SVG_NS
-    }[prefix] || null;
+    return XPATH_NS[prefix] || null;
 }
 
-HintManager.prototype.selectBrowserObjecsInWindow = function(w, selector) {
-    var doc = w.document;
-    let xres = doc.evaluate (selector, doc, xpath_lookup_namespace,
-                             XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-    let scrollX = window.scrollX;
-    let scrollY = window.scrollY;
-    let fragment = doc.createDocumentFragment();
 
-    for (var j = 0; j < xres.snapshotLength; j++) {
-        let obj = xres.snapshotItem(j);
-        let rect = rectElementInViewport(obj, w);
-        if (!rect) {
-            continue;
-        }
-        if (obj.tagName == "IFRAME") {
-            this.selectBrowserObjecsInWindow(obj.contentWindow, selector);
-            continue;
-        }
-        var hint = new Hint(obj, this,
-                            (rect.left + scrollX) + "px",
-                            (rect.top + scrollY) + "px");
-        this.hints.push(hint);
-        fragment.appendChild(hint.hint);
+class Hinter {
+    constructor() {
+        this.options = {
+            hint_background: "red",
+            hint_color: "white",
+            background: "yellow",
+            background_active: "#88FF00",
+            text_color: "black"
+        };
     }
-    doc.documentElement.appendChild(fragment);
-}
 
-HintManager.prototype.selectBrowserObjects = function(selector, options) {
-    Object.assign(this.options, options || {});
-    this.selectBrowserObjecsInWindow(window, selector);
-    this.setActiveHint((this.hints.length > 0) ? this.hints[0] : null);
-}
-
-HintManager.prototype.setActiveHint = function(hint) {
-    var prevActive = this.activeHint;
-    this.activeHint = hint;
-    if (prevActive) { prevActive.refresh(); }
-    if (hint) {
-        hint.refresh();
-        __webmacsHandler__._browserObjectActivated(hint.serialize());
+    init(selector) {
+        this.selector = selector;
+        this.xres = document.evaluate(selector, document, xpath_lookup_namespace,
+                                      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+                                      null);
+        this.fragment = document.createDocumentFragment();
+        this.index = 0;
+        this.hints = [];
+        this.activeHint = null;
     }
-}
 
-HintManager.prototype.visibleHints = function() {
-    let visibles = [];
-    for (let hint of this.hints) {
-        if (hint.isVisible()) {
-            visibles.push(hint);
-        }
-    }
-    return visibles;
-}
-
-HintManager.prototype.selectVisibleHint = function(index) {
-    for (let hint of this.visibleHints()) {
-        if (hint.hint.textContent == index) {
-            this.setActiveHint(hint);
+    next(hint_index) {
+        // has been cleared.
+        if (this.hints === null) {
             return;
         }
-    }
-    this.setActiveHint(null);
-}
 
-HintManager.prototype.activateNextHint = function(backward) {
-    let visibles = this.visibleHints();
-    if (visibles.length == 0) {
-        return;
-    }
-    let pos = visibles.indexOf(this.activeHint);
-    if (pos == -1) {
-        this.setActiveHint(visibles[backward ? visibles.length - 1 : 0]);
-        return;
-    }
-    pos = pos + (backward ? -1 : 1);
-    if (pos < 0) {
-        pos = visibles.length - 1;
-    } else if (pos >= visibles.length) {
-        pos = 0;
-    }
-    this.setActiveHint(visibles[pos]);
-}
-
-HintManager.prototype.filterSelection = function(text) {
-    let i = 0;
-    if (!text) {
-        for (let hint of this.hints) {
-            i = i+1;
-            hint.setVisible(true);
-            hint.hint.textContent = i;
+        for (; this.index < this.xres.snapshotLength; this.index++) {
+            let obj = this.xres.snapshotItem(this.index);
+            let rect = rectElementInViewport(obj, window);
+            if (!rect) {
+                continue;
+            }
+            if (obj.tagName == "IFRAME") {
+                post_message(obj.contentWindow, "hints.select_in_iframe_start",
+                             {selector: this.selector, hint_index: hint_index});
+                this.hints.push(new HintFrame(obj));
+                this.index+=1;
+                return;
+            }
+            hint_index += 1;
+            var hint = new Hint(obj, this,
+                                (rect.left + window.scrollX) + "px",
+                                (rect.top + window.scrollY) + "px",
+                                hint_index
+                               );
+            this.hints.push(hint);
+            this.fragment.appendChild(hint.hint);
         }
-        return;
+        document.documentElement.appendChild(this.fragment);
+
+        if (self !== top) {
+            post_message(parent, "hints.select_in_iframe_end", hint_index);
+        }
     }
-    let activeHintRemoved = false;
-    let firstHint = null;
-    var parts = text.split(/\s+/).map(escapeRegExp);
-    var re = new RegExp(".*" + parts.join(".*") + ".*", "i");
-    for (let hint of this.hints) {
-        let matched = false;
-        text = hint.text();
-        if (text !== null) {
-            matched = (text.match(re) !== null);
+
+    selectBrowserObjects(selector) {
+        this.init(selector);
+        this.next(0);
+        this.activateNextHint(false);
+    }
+
+    clearBrowserObjects() {
+        // has been cleared.
+        if (this.hints === null) {
+            return;
+        }
+        for (var hint of this.hints) {
+            hint.remove();
+        }
+        this.hints = null;
+    }
+
+    frameUpActivateHint(indexes) {
+        let hint = null;
+        if (indexes !== null) {
+            let index = indexes.shift();
+            hint = this.hints[index];
+        }
+        let prev = this.activeHint;
+
+
+        if (hint === prev) {
+            return hint;
+        }
+        this.clearFrameSelection();
+
+        this.activeHint = hint;
+        if (top != self) {
+            post_message(parent, "hints.frameUpActivateHint", indexes);
+        }
+        return hint;
+    }
+
+    clearFrameSelection() {
+        let prevHint = this.activeHint;
+        if (! prevHint) {
+            return;
+        }
+        this.activeHint = null;
+        if (prevHint instanceof Hint) {
+            prevHint.refresh();
+        } else {
+            post_message(prevHint.frame.contentWindow,
+                         "hints.clearFrameSelection");
+        }
+    }
+
+    setCurrentActiveHint(indexes) {
+        let hint = this.frameUpActivateHint(indexes);
+        if (hint) {
+            // refresh the hint style to make it appear activated.
+            hint.refresh();
+            post_webmacs_message("_browserObjectActivated", [hint.serialize()]);
+        }
+    }
+
+    frameActivateNextHint(args) {
+        let traverse = function(hinter, index) {
+            let hint = hinter.hints[index];
+            if (hint instanceof Hint) {
+                if (hint.isVisible()) {
+                    hinter.setCurrentActiveHint([index].concat(args.parent_indexes));
+                    return true;
+                }
+            } else {
+                let parent_indexes = args.parent_indexes;
+                // this is a hint frame, so go down that frame
+                post_message(hint.frame.contentWindow,
+                             "hints.frameActivateNextHint", {
+                                 // a list of ordered indexes of the calling
+                                 // frame hint
+                                 parent_indexes: [index].concat(args.parent_indexes),
+                                 way: args.way
+                             });
+                return true;
+            }
+            return false;
+        };
+
+
+        let index = args.index;
+        if (index === undefined) {
+            if (this.activeHint) {
+                // just go down on the current hint if it is a frame
+                index = this.hints.indexOf(this.activeHint);
+
+                // else, activate the next hint
+                if (this.activeHint instanceof Hint) {
+                    index += args.way;
+                }
+            } else {
+                // if no selection, select the first one
+                index = args.way == 1 ? 0: this.hints.length - 1;
+            }
         }
 
-        if (matched) {
-            i = i+1;
-            hint.setVisible(true);
-            hint.hint.textContent = i;
-            if (! firstHint) {
-                firstHint = hint;
+        if (args.way === 1) {
+            for (; index < this.hints.length; index++) {
+                if (traverse(this, index)) {
+                    return;
+                }
             }
         } else {
-            hint.setVisible(false);
-            if (hint == this.activeHint) {
-                activeHintRemoved = true;
+            for (; index >= 0; index--) {
+                if (traverse(this, index)) {
+                    return;
+                }
+            }
+        }
+
+        // we found no selection if we are here
+        if (self !== top) {
+            // recall the parent frame
+            post_message(parent, "hints.frameActivateNextHint", {
+                index: args.parent_indexes[0] + args.way,
+                way: args.way
+            });
+        } else {
+            // on the main frame, clear the selection and recall this function
+            // to loop.
+            if (this.hints) {
+                this.setCurrentActiveHint(null);
+                this.frameActivateNextHint({way: args.way, parent_indexes: []});
             }
         }
     }
-    if (activeHintRemoved && firstHint) {
-        this.setActiveHint(firstHint);
+
+    activateNextHint(backward) {
+        this.frameActivateNextHint({
+            way: backward ? -1 : 1,
+            parent_indexes: [],
+        });
+    }
+
+    followCurrentLink() {
+        if (this.activeHint) {
+            if (this.activeHint instanceof Hint) {
+                clickLike(this.activeHint.obj);
+            } else {
+                post_message(this.activeHint.frame.contentWindow,
+                             "hints.followCurrentLink");
+            }
+        }
+    }
+
+    frameSelectVisibleHint(args) {
+        let frameHint = null;
+        let index = args.index;
+
+        for (let hint_index=0; hint_index < this.hints.length; hint_index++) {
+            let hint = this.hints[hint_index];
+            if (hint instanceof Hint) {
+                if (! hint.isVisible()) {
+                    continue;
+                }
+                let nb = parseInt(hint.hint.textContent);
+                if (nb === index) {
+                    this.setCurrentActiveHint([hint_index].concat(args.parent_indexes));
+                    return;
+                } else if (nb > index) {
+		    break;
+                }
+            } else {
+                frameHint = {window: hint.frame.contentWindow, index: hint_index};
+            }
+        }
+	if (frameHint) {
+	    post_message(
+		frameHint.window,
+		"hints.frameSelectVisibleHint", {
+                    index: index,
+                    parent_indexes: [frameHint.index].concat(args.parent_indexes)
+		}
+	    );
+	}
+    }
+
+    selectVisibleHint(index) {
+        this.frameSelectVisibleHint({index: parseInt(index), parent_indexes: []});
+    }
+
+    frameFilterSelection(args) {
+        let hint_index = args.hint_index;
+
+        // match everything when text selector is empty
+        let match_hint = hint => true;
+
+        if (args.text) {
+            // else, we fuzzy-match on the hint text
+            let parts = args.text.split(/\s+/).map(escapeRegExp);
+            let re = new RegExp(".*" + parts.join(".*") + ".*", "i");
+            match_hint = function(hint) {
+                let text = hint.text();
+                if (text !== null) {
+                    return (text.match(re) !== null);
+                }
+                return false;
+            };
+        }
+
+        for (let index = args.index; index < this.hints.length; index++) {
+            let hint = this.hints[index];
+            if (hint instanceof HintFrame) {
+                // iframe, let's go down
+                post_message(hint.frame.contentWindow, "hints.frameFilterSelection", {
+                    text: args.text,
+                    index: 0,
+                    parent_index: index,
+                    hint_index: hint_index
+                });
+                return;
+            }
+
+            // else see if we match the hint, and update its visibility
+            if (match_hint(hint)) {
+                hint_index +=1;
+                hint.setVisible(true);
+                hint.hint.textContent = hint_index;
+            } else {
+                hint.setVisible(false);
+                if (hint == this.activeHint) {
+                    this.setCurrentActiveHint(null);
+                }
+            }
+        }
+
+        if (self !== top) {
+            // if we are in a sub frame, we call back the parent so he will
+            // continue.
+            post_message(parent, "hints.frameFilterSelection", {
+                text: args.text,
+                index: args.parent_index + 1,
+                hint_index: hint_index
+            });
+        } else {
+            // else if we lose the selection, put it back to the first hint.
+            if (this.activeHint === null) {
+                this.activateNextHint(false);
+            }
+        }
+    }
+
+    filterSelection(text) {
+        this.frameFilterSelection({
+            text: text,
+            index: 0,
+            hint_index: 0,
+        });
     }
 }
 
-HintManager.prototype.clearBrowserObjects = function() {
-    for (let hint of this.hints) {
-        hint.remove();
-    }
-    this.hints = [];
-}
+var hints = new Hinter();
 
-var hints = new HintManager();
+if (self !== top) {
+    register_message_handler("hints.select_in_iframe_start", function(args) {
+        hints.init(args.selector);
+        hints.next(args.hint_index);
+    });
+    register_message_handler("hints.select_clear",
+                             _ => hints.clearBrowserObjects());
+    register_message_handler("hints.clearFrameSelection",
+                             _ => hints.clearFrameSelection());
+    register_message_handler("hints.frameSelectVisibleHint",
+                             args => hints.frameSelectVisibleHint(args));
+}
+register_message_handler("hints.select_in_iframe_end",
+                         hint_index => hints.next(hint_index));
+register_message_handler("hints.frameActivateNextHint",
+                         args => hints.frameActivateNextHint(args));
+register_message_handler("hints.followCurrentLink",
+                         _ => hints.followCurrentLink());
+register_message_handler("hints.frameFilterSelection",
+                         args => hints.frameFilterSelection(args));
+register_message_handler("hints.frameUpActivateHint",
+                         args => hints.frameUpActivateHint(args));

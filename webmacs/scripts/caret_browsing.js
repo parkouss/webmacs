@@ -680,6 +680,9 @@ CaretBrowsing.injectCaretStyles = function() {
 };
 
 CaretBrowsing.setInitialCursor = function() {
+    if (CaretBrowsing.post_message_down("CaretBrowsing.setInitialCursor")) {
+        return;
+    }
     const sel = window.getSelection();
     if (!CaretBrowsing.initiated) {
         if (sel.rangeCount == 0) {
@@ -707,6 +710,13 @@ CaretBrowsing.setInitialCursor = function() {
         }
     }
 };
+
+CaretBrowsing.shutdown = function() {
+    if (CaretBrowsing.post_message_down("CaretBrowsing.shutdown")) {
+        return;
+    }
+    CaretBrowsing.toggle(false);
+}
 
 CaretBrowsing.setAndValidateSelection = function(start, end) {
     const sel = window.getSelection();
@@ -969,7 +979,7 @@ CaretBrowsing.toggle = function(enabled) {
     const obj = {};
     obj.enabled = CaretBrowsing.isEnabled;
     CaretBrowsing.updateIsCaretVisible();
-    __webmacsHandler__.onCaretBrowsing(obj.enabled);
+    post_webmacs_message("onCaretBrowsing", [obj.enabled]);
     if (!obj.enabled) {
         var sel = window.getSelection();
         sel.collapse(sel.focusNode, sel.focusOffset);
@@ -1050,6 +1060,10 @@ window.setTimeout(() => {
 
 
 CaretBrowsing.move = function(direction, granularity) {
+    if (CaretBrowsing.post_message_down("CaretBrowsing.move",
+                                        [direction, granularity])) {
+        return;
+    }
     var sel = window.getSelection();
     var action = CaretBrowsing.markEnabled ? "extend" : "move";
     sel.modify(action, direction, granularity);
@@ -1060,6 +1074,9 @@ CaretBrowsing.move = function(direction, granularity) {
 
 
 CaretBrowsing.toggleMark = function() {
+    if (CaretBrowsing.post_message_down("CaretBrowsing.toggleMark")) {
+        return;
+    }
     CaretBrowsing.markEnabled = !CaretBrowsing.markEnabled;
     if (!CaretBrowsing.markEnabled) {
         var sel = window.getSelection();
@@ -1071,7 +1088,33 @@ CaretBrowsing.toggleMark = function() {
 };
 
 CaretBrowsing.cutSelection = function() {
-    __webmacsHandler__.copyToClipboard(window.getSelection().toString());
+    if (CaretBrowsing.post_message_down("CaretBrowsing.cutSelection")) {
+        return;
+    }
+    post_webmacs_message("copyToClipboard",
+                         [window.getSelection().toString()]);
     // clear the current selection
     if (CaretBrowsing.markEnabled) { CaretBrowsing.toggleMark(); }
 };
+
+CaretBrowsing.post_message_down = function(message_name, arg) {
+    if (document.activeElement.tagName === "IFRAME") {
+        post_message(document.activeElement.contentWindow, message_name, arg);
+        return true;
+    }
+    return false;
+}
+
+if (self !== top) {
+    register_message_handler("CaretBrowsing.setInitialCursor",
+                             CaretBrowsing.setInitialCursor);
+    register_message_handler("CaretBrowsing.shutdown",
+                             CaretBrowsing.shutdown);
+    register_message_handler("CaretBrowsing.move", function (args) {
+        CaretBrowsing.move(args[0], args[1]);
+    });
+    register_message_handler("CaretBrowsing.toggleMark",
+                             CaretBrowsing.toggleMark);
+    register_message_handler("CaretBrowsing.cutSelection",
+                             CaretBrowsing.cutSelection);
+}

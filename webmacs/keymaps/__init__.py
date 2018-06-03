@@ -243,10 +243,10 @@ class KeyPress(_KeyPress):
     @classmethod
     def from_str(cls, string):
         ctrl, alt, super = False, False, False
-        text = string.rpartition("-")[-1]
+        left, _, text = string.rpartition("-")
         if text == "":
             text = "-"
-        parts = string[:-len(text)].split("-")
+        parts = left.split("-")
         for p in parts:
             if p == "":
                 break
@@ -258,7 +258,9 @@ class KeyPress(_KeyPress):
                 super = True
             else:
                 raise Exception(
-                    "Unknown key modifier: %s in key definition %s" % (p, string))
+                    "Unknown key modifier: %s in key definition %s"
+                    % (p, string)
+                )
 
         try:
             key = CHAR2KEY[text]

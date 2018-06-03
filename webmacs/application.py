@@ -26,7 +26,7 @@ from PyQt5.QtNetwork import QNetworkAccessManager
 
 from . import require
 from .version import opengl_vendor
-from .adblock import Adblocker, AdblockUpdateRunner
+from .adblock import Adblocker, AdblockUpdateRunner, adblock_urls_rules
 from .download_manager import DownloadManager
 from .profile import default_profile
 from .minibuffer.right_label import init_minibuffer_right_labels
@@ -50,7 +50,13 @@ THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 class UrlInterceptor(QWebEngineUrlRequestInterceptor):
     def __init__(self, app):
         QWebEngineUrlRequestInterceptor.__init__(self)
-        self._adblock = Adblocker(app.adblock_path()).local_adblock()
+        if not adblock_urls_rules.value:
+            # no adblock rules, just don't create any ad-blocker
+            self._adblock = None
+        else:
+            # else create an initial ad-blocker with the current cache
+            # it might be updated later on if the cache is not up to date
+            self._adblock = Adblocker(app.adblock_path()).local_adblock()
         self._use_adblock = True
 
     @Slot(object)
@@ -63,9 +69,13 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
     def interceptRequest(self, request):
         url = request.requestUrl()
         url_s = url.toString()
-        if self._use_adblock and self._adblock.matches(
+        if (self._use_adblock
+            and self._adblock
+            # see https://github.com/brave/ad-block/issues/93
+            and not url_s.startswith("blob:")
+            and self._adblock.matches(
                 url_s,
-                request.firstPartyUrl().toString(),):
+                request.firstPartyUrl().toString())):
             logging.info("filtered: %s", url_s)
             request.block(True)
 
@@ -94,7 +104,7 @@ def _app_requires():
 class Application(QApplication):
     INSTANCE = None
 
-    def __init__(self, args):
+    def __init__(self, conf_path, args):
         QApplication.__init__(self, args)
         self.__class__.INSTANCE = self
 
@@ -110,7 +120,9 @@ class Application(QApplication):
                 " on your hardware."
             )
 
-        self._setup_conf_paths()
+        self._conf_path = conf_path
+        if not os.path.isdir(self.profiles_path()):
+            os.makedirs(self.profiles_path())
 
         self._interceptor = UrlInterceptor(self)
 
@@ -138,18 +150,6 @@ class Application(QApplication):
         self.setQuitOnLastWindowClosed(False)
 
         self.network_manager = QNetworkAccessManager(self)
-
-        _app_requires()
-
-    def _setup_conf_paths(self):
-        self._conf_path = os.path.join(os.path.expanduser("~"), ".webmacs")
-
-        def mkdir(path):
-            if not os.path.isdir(path):
-                os.makedirs(path)
-
-        mkdir(self.conf_path())
-        mkdir(self.profiles_path())
 
     def conf_path(self):
         return self._conf_path
@@ -179,6 +179,9 @@ class Application(QApplication):
         return self.profile.ignored_certs
 
     def adblock_update(self):
+        if not adblock_urls_rules.value:
+            return
+
         def adblock_thread_finished(error, adblock):
             if adblock:
                 self._interceptor.update_adblock(adblock)

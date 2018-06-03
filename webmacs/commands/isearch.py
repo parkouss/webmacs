@@ -24,6 +24,7 @@ from ..keymaps.caret_browsing import KEYMAP as CARET_BROWSING_KEYMAP
 KEYMAP = Keymap("i-search", MKEYMAP)
 
 
+@KEYMAP.define_key("C-n")
 @KEYMAP.define_key("C-s")
 def search_next(ctx):
     prompt = ctx.minibuffer.prompt()
@@ -31,6 +32,7 @@ def search_next(ctx):
     prompt.find_text()
 
 
+@KEYMAP.define_key("C-p")
 @KEYMAP.define_key("C-r")
 def search_previous(ctx):
     prompt = ctx.minibuffer.prompt()

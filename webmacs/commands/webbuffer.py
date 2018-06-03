@@ -141,7 +141,10 @@ def go_forward(ctx):
     """
     Navigate forward in history for the current buffer.
     """
-    ctx.buffer.triggerAction(WebBuffer.Forward)
+    if not ctx.buffer.history().canGoForward():
+        ctx.minibuffer.show_info("Can't go forward in history.")
+    else:
+        ctx.buffer.triggerAction(WebBuffer.Forward)
 
 
 @define_command("go-backward")
@@ -149,7 +152,10 @@ def go_backward(ctx):
     """
     Navigate backward in history for the current buffer.
     """
-    ctx.buffer.triggerAction(WebBuffer.Back)
+    if not ctx.buffer.history().canGoBack():
+        ctx.minibuffer.show_info("Can't go back in history.")
+    else:
+        ctx.buffer.triggerAction(WebBuffer.Back)
 
 
 @define_command("scroll-down")
@@ -258,7 +264,7 @@ def close_other_buffers(ctx):
     if selected.row() >= 0:
         # Get all other buffers and kill them
         for wb in [b for b in BUFFERS if b != selected.internalPointer()]:
-            close_buffer(wb, False)
+            close_buffer(wb)
 
 
 @define_command("select-buffer-content")

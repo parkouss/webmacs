@@ -59,7 +59,7 @@ class Autofill(QObject):
         )
         if not passwords:
             prompt = SavePasswordPrompt(self, buffer, formdata)
-            current_minibuffer().do_prompt(prompt)
+            current_minibuffer().do_prompt(prompt, sync=False, flash=True)
 
     def add_form_entry(self, url, formdata):
         host = create_host(url)

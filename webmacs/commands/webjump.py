@@ -359,8 +359,11 @@ class WebJumpPromptCurrentUrl(WebJumpPrompt):
 class DefaultSearchPrompt(WebJumpPrompt):
     def enable(self, minibuffer):
         WebJumpPrompt.enable(self, minibuffer)
-        if webjump_default.value:
-            minibuffer.input().setText(webjump_default.value)
+        wj = WEBJUMPS.get(webjump_default.value)
+        if wj:
+            minibuffer.input().setText(
+                wj.name + ("://" if wj.protocol else " ")
+            )
 
 
 def get_url(prompt):

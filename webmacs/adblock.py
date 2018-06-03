@@ -16,6 +16,7 @@
 import os
 import logging
 import time
+import json
 
 from datetime import datetime, timezone
 import dateparser
@@ -27,12 +28,12 @@ from . import variables
 from .runnable import Runner
 
 
-DEFAULT_EASYLIST = (
+DEFAULT_EASYLIST = [
     "https://easylist.to/easylist/easylist.txt",
     # easyprivacy blocks too much right now
     # "https://easylist.to/easylist/easyprivacy.txt",
     "https://easylist.to/easylist/fanboy-annoyance.txt"
-)
+]
 
 adblock_urls_rules = variables.define_variable(
     "adblock-urls-rules",
@@ -56,6 +57,7 @@ class Adblocker(object):
         self._cache_path = cache_path
         self._urls = {}
         self.register_filter_urls()
+        self.cached_urls_path = os.path.join(self._cache_path, "urls.json")
 
     def register_filter_urls(self):
         """
@@ -68,6 +70,22 @@ class Adblocker(object):
         if destfile is None:
             destfile = url.rsplit("/", 1)[-1]
         self._urls[url] = os.path.join(self._cache_path, destfile)
+
+    def load_cached_urls(self):
+        if not os.path.isfile(self.cached_urls_path):
+            return None
+        try:
+            with open(self.cached_urls_path) as f:
+                return json.load(f)
+        except Exception:
+            logging.exception("Could not load cached urls. Removing %s."
+                              % self.cached_urls_path)
+            os.unlink(self.cached_urls_path)
+            return None
+
+    def save_cached_urls(self, cached_urls):
+        with open(self.cached_urls_path, "w") as f:
+            json.dump(cached_urls, f)
 
     def _download_file(self, url, path):
         headers = {'User-Agent': "Magic Browser"}
@@ -129,13 +147,20 @@ class Adblocker(object):
     def maybe_update_adblock(self):
         adblock = AdBlock()
         cache = self.cache_file()
-        modified = self._fetch_urls()
+        cached_urls = self.load_cached_urls()
+        if cached_urls != self._urls:
+            self._fetch_urls()
+            modified = True
+        else:
+            modified = self._fetch_urls()
         if modified or not os.path.isfile(cache):
             for path in self._urls.values():
                 logging.info("parsing adblock file: %s", path)
                 with open(path) as f:
                     adblock.parse(f.read())
             adblock.save(cache)
+            logging.info("updating adblock cache file %s." % cache)
+            self.save_cached_urls(self._urls)
             return adblock
 
 

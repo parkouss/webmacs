@@ -17,55 +17,61 @@ textzoom.isBlank = function(str) {
 }
 
 textzoom.resetChangeFont = function() {
+    for (let i=0; i<window.frames.length; i++) {
+        post_message(window.frames[i], "textzoom.resetChangeFont");
+    }
     textzoom.totalRatio = 1;
-    textzoom.changeFont(0);
+    textzoom.changeFont(0, true);
     return textzoom.totalRatio;
 }
 
 
-textzoom.changeFont = function(ratioDiff) {
-    var call, changeFontSizeCalls, el, i, j, len, len1, multiplier, prevRatio, relevantElements, results;
-    changeFontSizeCalls = [];
-    prevRatio = textzoom.totalRatio;
+textzoom.changeFont = function(ratioDiff, prevent) {
+    let prevRatio = textzoom.totalRatio;
     textzoom.totalRatio += ratioDiff;
     textzoom.totalRatio = Math.round(textzoom.totalRatio * 10) / 10;
-    multiplier = textzoom.totalRatio / prevRatio;
-    relevantElements = document.querySelectorAll('body, body *');
+    let multiplier = textzoom.totalRatio / prevRatio;
+    let relevantElements = document.querySelectorAll('body, body *');
+
+    if (!prevent) {
+        for (let i=0; i<window.frames.length; i++) {
+            post_message(window.frames[i], "textzoom.changeFont", ratioDiff);
+        }
+    }
 
     if (textzoom.totalRatio === 1) {
-	for (i = 0, len = relevantElements.length; i < len; i++) {
-	    el = relevantElements[i];
-	    el.style['transition'] = null;
-	    el.style['font-size'] = null;
-	    el.style['line-height'] = null;
-	}
+	      for (let el of relevantElements) {
+	          el.style['transition'] = null;
+	          el.style['font-size'] = null;
+	          el.style['line-height'] = null;
+	      }
     }
-    [].forEach.call(relevantElements, function(el) {
-	var computedStyle, currentLh, fontSize, lineHeight, tagName;
-	tagName = el.tagName;
-	if (tagName.match(textzoom.IGNORED_TAGS)) {
-	    return;
-	}
-	computedStyle = getComputedStyle(el);
-	if (!textzoom.isBlank(el.innerText) || (tagName === 'TEXTAREA')) {
-	    currentLh = computedStyle.lineHeight;
-	    if (currentLh.indexOf('px') !== -1) {
-		lineHeight = textzoom.multiplyByRatio(currentLh, multiplier);
-	    }
-	}
-	fontSize = textzoom.multiplyByRatio(computedStyle.fontSize, multiplier);
-	return changeFontSizeCalls.push(function() {
-	    el.style['transition'] = 'font 0s';
-	    textzoom.addImportantStyle(el, 'font-size', fontSize);
-	    if (lineHeight !== void 0) {
-		return textzoom.addImportantStyle(el, 'line-height', lineHeight);
-	    }
-	});
-    });
+    for (let el of relevantElements) {
+	      if (el.tagName.match(textzoom.IGNORED_TAGS)) {
+	          continue;
+	      }
+        let lineHeight = null;
+	      let computedStyle = getComputedStyle(el);
+	      if (!textzoom.isBlank(el.innerText) || (el.tagName === 'TEXTAREA')) {
+	          if (computedStyle.lineHeight.indexOf('px') !== -1) {
+		            lineHeight = textzoom.multiplyByRatio(computedStyle.lineHeight,
+                                                      multiplier);
+	          }
+	      }
+	      let fontSize = textzoom.multiplyByRatio(computedStyle.fontSize, multiplier);
 
-    for (j = 0, len1 = changeFontSizeCalls.length; j < len1; j++) {
-	call = changeFontSizeCalls[j];
-	call();
+	      el.style['transition'] = 'font 0s';
+	      textzoom.addImportantStyle(el, 'font-size', fontSize);
+	      if (lineHeight !== null) {
+		        textzoom.addImportantStyle(el, 'line-height', lineHeight);
+	      }
     }
     return textzoom.totalRatio;
-};
+}
+
+
+if (self !== top) {
+    register_message_handler("textzoom.changeFont", textzoom.changeFont);
+    register_message_handler("textzoom.resetChangeFont",
+                             textzoom.resetChangeFont);
+}

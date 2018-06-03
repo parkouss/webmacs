@@ -8,7 +8,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- adblock is fully disabled when the variable **adblock-urls-rules** is set to
+  an empty list.
+- adblock cache is rebuilt when the variable **adblock-urls-rules** has changed.
+- Fixed the **copy-link** command (**c**) when used with the argument 0.
+- Added a space after the default webjump when calling **search-default**.
+- Mouse events are now propagated to the minibuffer input and popup.
+- Fixed a bug that prevented to use multi-modifiers keybindings (e.g., C-M-a)
+- Fixed regression in **close-other-buffers** command.
 - The keyboard is not anymore lost when a new buffer is opened from javascript.
+- The **follow** command is now working in cross-origin iframes.
+- Text edition in web pages is now working in cross-origin iframes.
+- Text zoom in web pages is now working in cross-origin iframes.
+- Caret navigation is now working in cross-origin iframes.
+
+### Changed
+
+- Use smooth scroll in **scroll-page-down** and **scroll-page-up**.
+- **search-default** now defaults to google.
+
+### Added
+
+- The minibuffer input now flashes under some circumstances to grab user's
+  attention.
+- Added **minibuffer-flash-duration**, **minibuffer-flash-color**, and
+  **minibuffer-flash-count** variables to customize the flash animation.
 
 ## [0.4] - 2018-05-04
 

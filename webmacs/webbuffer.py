@@ -202,35 +202,32 @@ class WebBuffer(QWebEnginePage):
         self.runJavaScript("window.scrollTo(0, document.body.scrollHeight);")
 
     def start_select_browser_objects(self, selector):
-        current_buffer().runJavaScript(
+        self.runJavaScript(
             "hints.selectBrowserObjects(%r);" % selector,
             QWebEngineScript.ApplicationWorld)
 
     def stop_select_browser_objects(self):
-        current_buffer().runJavaScript(
+        self.runJavaScript(
             "hints.clearBrowserObjects();",
             QWebEngineScript.ApplicationWorld)
 
     def select_nex_browser_object(self, forward=True):
-        current_buffer().runJavaScript(
+        self.runJavaScript(
             "hints.activateNextHint(%s);" % ("false" if forward else "true",),
             QWebEngineScript.ApplicationWorld)
 
     def filter_browser_objects(self, text):
-        current_buffer().runJavaScript(
+        self.runJavaScript(
             "hints.filterSelection(%r);" % text,
             QWebEngineScript.ApplicationWorld)
 
     def focus_active_browser_object(self):
-        current_buffer().runJavaScript(
-            "if (hints.activeHint) {"
-            "   clickLike(hints.activeHint.obj);"
-            "   true;"
-            " } else {false}",
+        self.runJavaScript(
+            "hints.followCurrentLink();",
             QWebEngineScript.ApplicationWorld)
 
     def select_visible_hint(self, hint_id):
-        current_buffer().runJavaScript(
+        self.runJavaScript(
             "hints.selectVisibleHint(%r);" % hint_id,
             QWebEngineScript.ApplicationWorld)
 
@@ -258,7 +255,7 @@ class WebBuffer(QWebEnginePage):
         if feature_name:
             prompt = YesNoPrompt("Allow enabling feature {} for {}?"
                                  .format(feature_name, url.toString()))
-            if current_minibuffer().do_prompt(prompt):
+            if current_minibuffer().do_prompt(prompt, flash=True):
                 permission = QWebEnginePage.PermissionGrantedByUser
         self.setFeaturePermission(url, feature, permission)
 
@@ -281,7 +278,7 @@ class WebBuffer(QWebEnginePage):
             sprompt = SavePasswordPrompt(autofill, self,
                                          self.__authentication_data)
             self.__authentication_data = None
-            current_minibuffer().do_prompt(sprompt)
+            current_minibuffer().do_prompt(sprompt, flash=True)
         else:
             autofill.complete_buffer(self, url)
 
@@ -291,6 +288,13 @@ class WebBuffer(QWebEnginePage):
             app().download_manager().detach_buffer(self)
 
         self.set_mode(get_auto_modename_for_url(self.url().toString()))
+
+        # We lose the keyboard focus without that with Qt 5.11. Though it
+        # happens quite randomly, but a combination of follow, go back, google
+        # something and the issue happens. I was not seeing this with Qt5.9.
+        view = self.view()
+        if view and view.main_window.current_webview() == view:
+            view.internal_view().setFocus()
 
     def handle_authentication(self, url, authenticator):
         autofill = app().autofill()
@@ -303,7 +307,7 @@ class WebBuffer(QWebEnginePage):
 
         # ask authentication credentials
         prompt = AskPasswordPrompt(autofill, self)
-        current_minibuffer().do_prompt(prompt)
+        current_minibuffer().do_prompt(prompt, flash=True)
 
         data = self.__authentication_data = FormData(url, prompt.username,
                                                      prompt.password, None)
@@ -318,7 +322,7 @@ class WebBuffer(QWebEnginePage):
 
         prompt = YesNoPrompt("[certificate error] {} - ignore ? "
                              .format(error.errorDescription()))
-        current_minibuffer().do_prompt(prompt)
+        current_minibuffer().do_prompt(prompt, flash=True)
 
         if prompt.yes:
             db.ignore(url)
@@ -326,7 +330,8 @@ class WebBuffer(QWebEnginePage):
 
     def javaScriptConfirm(self, url, msg):
         return current_minibuffer().do_prompt(
-            YesNoPrompt("[js-confirm] {} ".format(msg))
+            YesNoPrompt("[js-confirm] {} ".format(msg)),
+            flash=True,
         )
 
     def javaScriptAlert(self, url, msg):

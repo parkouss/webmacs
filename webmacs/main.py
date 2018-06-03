@@ -25,6 +25,20 @@ import os
 from PyQt5.QtNetwork import QAbstractSocket
 
 from .ipc import IpcServer
+from . import variables
+
+
+log_to_disk = variables.define_variable(
+    "log-to-disk-max-files",
+    "Maximum number of log files to keep. Log files are stored in"
+    " ~/.webmacs/logs. Setting this to a number less or"
+    "equal to 0 will deactivate file logging completely.",
+    0,
+    conditions=(
+        variables.condition(lambda x: isinstance(x, int),
+                            "Must be an int"),
+    ),
+)
 
 
 def signal_wakeup(app):
@@ -47,15 +61,50 @@ def signal_wakeup(app):
 
 
 def setup_logging(level, webcontent_level):
-    logging.basicConfig(level=level, format="%(levelname)s: %(message)s")
+    root = logging.getLogger()
+    webcontent = logging.getLogger("webcontent")
+    for logger, format, lvl in (
+            (root,
+             "%(levelname)s: %(message)s",
+             level),
+            (webcontent,
+             "%(levelname)s %(name)s: [%(url)s] %(message)s",
+             webcontent_level)):
+        logger.setLevel(logging.DEBUG)
+        handler = logging.StreamHandler()
+        fmt = logging.Formatter("%(levelname)s: %(message)s")
+        handler.setFormatter(fmt)
+        handler.setLevel(lvl)
+        logger.addHandler(handler)
 
-    webcontent_logger = logging.getLogger("webcontent")
-    handler = logging.StreamHandler()
-    fmt = logging.Formatter("%(levelname)s %(name)s: [%(url)s] %(message)s")
-    handler.setFormatter(fmt)
-    webcontent_logger.addHandler(handler)
-    webcontent_logger.propagate = False
-    webcontent_logger.setLevel(webcontent_level)
+    webcontent.propagate = False
+
+
+def setup_logging_on_disk(log_dir, backup_count=5):
+    from logging.handlers import RotatingFileHandler
+
+    root = logging.getLogger()
+    webcontent = logging.getLogger("webcontent")
+
+    class Formatter(logging.Formatter):
+        def formatMessage(self, record):
+            fmt = ("%(levelname)s %(name)s: [%(url)s] %(message)s"
+                   if record.name == "webcontent"
+                   else "%(levelname)s: %(message)s")
+            return fmt % record.__dict__
+
+    if not os.path.isdir(log_dir):
+        os.makedirs(log_dir)
+
+    handler = RotatingFileHandler(os.path.join(log_dir, "log"),
+                                  backupCount=backup_count,
+                                  delay=True)
+    handler.setFormatter(Formatter())
+    handler.doRollover()
+    handler.setLevel(logging.DEBUG)
+
+    for logger in (root, webcontent):
+        logger.addHandler(handler)
 
 
 def parse_args(argv=None):
@@ -99,7 +148,6 @@ def init(opts):
     """
     from .application import app
     from .session import session_load, session_save
-    from .variables import get
     from .window import Window
     from .webbuffer import create_buffer
 
@@ -112,7 +160,7 @@ def init(opts):
         w.current_webview().setBuffer(buff)
         w.showMaximized()
 
-    home_page = get("home-page")
+    home_page = variables.get("home-page")
     session_file = a.profile.session_file
     if home_page:
         create_window(home_page)
@@ -143,6 +191,11 @@ def _handle_user_init_error(msg):
 
 def main():
     opts = parse_args()
+
+    conf_path = os.path.join(os.path.expanduser("~"), ".webmacs")
+    if not os.path.isdir(conf_path):
+        os.makedirs(conf_path)
+
     setup_logging(getattr(logging, opts.log_level.upper()),
                   getattr(logging, opts.webcontent_log_level.upper()))
 
@@ -159,20 +212,13 @@ def main():
 
     # Delay loading after command line parsing and ipc checking.
     # Loading qwebengine stuff takes a couple of seconds...
-    from .application import Application
+    from .application import Application, _app_requires
 
-    app = Application([
-        # The first argument passed to the QApplication args defines
-        # the x11 property WM_CLASS.
-        "webmacs" if not opts.instance
-        else "webmacs-%s" % opts.instance
-    ])
-    server = IpcServer(opts.instance)
-    atexit.register(server.cleanup)
+    _app_requires()
 
     # load a user init module if any
     try:
-        spec = imp.find_module("init", [app.conf_path()])
+        spec = imp.find_module("init", [conf_path])
     except ImportError:
         user_init = None
     else:
@@ -181,7 +227,16 @@ def main():
         except Exception:
             _handle_user_init_error("Error reading the user configuration.")
 
-    # and exectute its init function if there is one
+    app = Application(conf_path, [
+        # The first argument passed to the QApplication args defines
+        # the x11 property WM_CLASS.
+        "webmacs" if not opts.instance
+        else "webmacs-%s" % opts.instance
+    ])
+    server = IpcServer(opts.instance)
+    atexit.register(server.cleanup)
+
+    # execute the user init function if there is one
     if user_init is None or not hasattr(user_init, "init"):
         init(opts)
     else:
@@ -191,6 +246,9 @@ def main():
             _handle_user_init_error("Error executing user init function in %s."
                                     % user_init.__file__)
 
+    if log_to_disk.value > 0:
+        setup_logging_on_disk(os.path.join(conf_path, "logs"),
+                              backup_count=log_to_disk.value)
     app.post_init()
     signal_wakeup(app)
     signal.signal(signal.SIGINT, lambda s, h: app.quit())

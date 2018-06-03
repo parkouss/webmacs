@@ -13,59 +13,25 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSlot as \
-    Slot, QThread, pyqtSignal as Signal, QUrl
+from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PyQt5.QtGui import QImage
-import concurrent.futures
-import urllib.request
+from PyQt5.QtNetwork import QNetworkRequest
 
 from .. import current_buffer
 from ..minibuffer import Prompt
 from ..commands import define_command
-
-
-class IconRetriever(QThread):
-    """
-    Note: Using QNetworkAcessManager was causing a segfault.
-    """
-    download_finished = Signal(QUrl, QImage)
-
-    def __init__(self, urls):
-        QThread.__init__(self)
-        self.urls = urls
-
-    def load_icon(self, url):
-        with urllib.request.urlopen(url, timeout=5) as conn:
-            img = QImage()
-            img.loadFromData(conn.read())
-            if img.height() != 16 and img.width != 16:
-                img = img.scaled(16, 16, Qt.KeepAspectRatio)
-            return img
-
-    def run(self):
-        # We can use a with statement to ensure threads are cleaned up promptly
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            # Start the load operations and mark each future with its URL
-            futures = {executor.submit(self.load_icon, url.toString()): url
-                       for url in self.urls if url.isValid()}
-            for future in concurrent.futures.as_completed(futures):
-                url = futures[future]
-                try:
-                    img = future.result()
-                except Exception as exc:
-                    print('Got an exception (%s): %s' % (url, exc))
-                else:
-                    self.download_finished.emit(url, img)
+from ..application import app
 
 
 class BufferHistoryTableModel(QAbstractTableModel):
     def __init__(self, history):
         QAbstractTableModel.__init__(self)
         self._history = history
+        nm = app().network_manager
         self._icons = {}
-        self._icon_retriever = IconRetriever(h.iconUrl() for h in history)
-        self._icon_retriever.download_finished.connect(self.icon_dl_finished)
-        self._icon_retriever.start()
+        for h in history:
+            reply = nm.get(QNetworkRequest(h.iconUrl()))
+            reply.finished.connect(self.icon_dl_finished)
 
     def rowCount(self, index=QModelIndex()):
         return len(self._history)
@@ -93,8 +59,17 @@ class BufferHistoryTableModel(QAbstractTableModel):
         except IndexError:
             return QModelIndex()
 
-    @Slot(QUrl, QImage)
-    def icon_dl_finished(self, url, img):
+    def icon_dl_finished(self):
+        reply = self.sender()
+        url = reply.request().url()
+
+        img = QImage()
+        img.loadFromData(reply.readAll())
+        if img.height() != 16 and img.width != 16:
+            img = img.scaled(16, 16, Qt.KeepAspectRatio)
+
+        reply.deleteLater()
+
         self._icons[url] = img
         for i, item in enumerate(self._history):
             if item.iconUrl() == url:

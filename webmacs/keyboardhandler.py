@@ -19,7 +19,8 @@ from PyQt5.QtCore import QObject, QEvent
 
 from .keymaps import KeyPress, global_keymap, CHAR2KEY
 from . import hooks
-from . import COMMANDS, minibuffer_show_info, CommandContext
+from . import COMMANDS, minibuffer_show_info, CommandContext, \
+    current_minibuffer
 from .mode import Mode
 
 
@@ -35,18 +36,35 @@ class LocalKeymapSetter(QObject):
                 QEvent.MouseButtonDblClick,
                 QEvent.MouseButtonRelease,
                 QEvent.MouseMove):
+            minibuff = current_minibuffer()
+            if minibuff:
+                # allow clicks in minibuffer inputs and popup only
+                # note: QWidget.underMouse does not works here.
+                input = minibuff.input()
+                if input.rect().contains(input.mapFromGlobal(evt.globalPos())):
+                    return False
+                else:
+                    popup = input.popup()
+                    if popup.isVisible() and popup.rect().contains(
+                            popup.mapFromGlobal(evt.globalPos())):
+                        return False
+                # else flash the minibuffer on click.
+                if evt.type() in (QEvent.MouseButtonPress,
+                                  QEvent.MouseButtonDblClick) \
+                                  and minibuff.prompt():
+                    minibuff.prompt().flash()
             return True
         return False
 
-    def minibuffer_input_focus_changed(self, mb, enabled):
+    def minibuffer_input_focus_changed(self, mbi, enabled):
         self.enabled_minibuffer = enabled
         if enabled:
-            set_local_keymap(mb.keymap())
+            set_local_keymap(mbi.keymap())
         else:
-            if not mb.popup().isVisible():
+            if not mbi.isVisible():
                 # when the minibuffer input is hidden, enable its view's
                 # buffer
-                buff = mb.parent().parent().current_webview().buffer()
+                buff = mbi.parent().parent().current_webview().buffer()
                 set_local_keymap(buff.active_keymap())
 
     def view_focus_changed(self, view, enabled):
@@ -59,7 +77,8 @@ class LocalKeymapSetter(QObject):
     def web_content_edit_focus_changed(self, buff, enabled):
         if enabled:
             buff.set_keymap_mode(Mode.KEYMAP_CONTENT_EDIT)
-            set_local_keymap(buff.active_keymap())
+            if not self.enabled_minibuffer:
+                set_local_keymap(buff.active_keymap())
         else:
             buff.set_keymap_mode(Mode.KEYMAP_NORMAL)
             if not self.enabled_minibuffer:
@@ -68,7 +87,8 @@ class LocalKeymapSetter(QObject):
     def caret_browsing_changed(self, buff, enabled):
         if enabled:
             buff.set_keymap_mode(Mode.KEYMAP_CARET_BROWSING)
-            set_local_keymap(buff.active_keymap())
+            if not self.enabled_minibuffer:
+                set_local_keymap(buff.active_keymap())
         else:
             buff.set_keymap_mode(Mode.KEYMAP_NORMAL)
             if not self.enabled_minibuffer:

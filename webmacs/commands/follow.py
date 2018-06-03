@@ -47,7 +47,7 @@ class HintPrompt(Prompt):
     hint_selector = ""
 
     def enable(self, minibuffer):
-        Prompt.enable(self, minibuffer)
+        super(HintPrompt, self).enable(minibuffer)
         self.page = self.ctx.buffer
         self.page.start_select_browser_objects(self.hint_selector)
         self.numbers = ""
@@ -57,6 +57,10 @@ class HintPrompt(Prompt):
             self.on_browser_object_activated
         )
         minibuffer.input().installEventFilter(self)
+
+    def close(self):
+        self.page.stop_select_browser_objects()
+        super(HintPrompt, self).close()
 
     def on_browser_object_activated(self, bo):
         self.browser_object_activated = bo
@@ -80,11 +84,17 @@ class HintPrompt(Prompt):
                 self.page.select_visible_hint(self.numbers)
                 self._update_label()
                 return True
-            elif not event.key() in (Qt.Key_Control, Qt.Key_Shift, Qt.Key_Alt,
-                                     Qt.Key_Meta, Qt.Key_unknown):
+            elif not event.key() in (
+                    Qt.Key_Control,
+                    Qt.Key_Shift,
+                    Qt.Key_Alt,
+                    Qt.Key_Meta,
+                    Qt.Key_unknown,
+                    Qt.Key_Return,
+                    ):
                 self.numbers = ""
                 self._update_label()
-        return Prompt.eventFilter(self, obj, event)
+        return super(HintPrompt, self).eventFilter(obj, event)
 
 
 class FollowPrompt(HintPrompt):
@@ -95,7 +105,7 @@ class FollowPrompt(HintPrompt):
         self.new_buffer = PromptNewBuffer(self.ctx)
         if self.new_buffer:
             self.hint_selector = SELECTOR_LINK
-        HintPrompt.enable(self, minibuffer)
+        super(FollowPrompt, self).enable(minibuffer)
         self.new_buffer.enable(minibuffer)
         if self.new_buffer:
             self.label = minibuffer.label.text()
@@ -106,7 +116,7 @@ class CopyLinkPrompt(HintPrompt):
     hint_selector = SELECTOR_LINK
 
     def eventFilter(self, obj, event):
-        res = HintPrompt.eventFilter(self, obj, event)
+        res = super(CopyLinkPrompt, self).eventFilter(obj, event)
         if self.numbers == "0":
             self.minibuffer.input().set_right_italic_text(
                 self.page.url().toString()
