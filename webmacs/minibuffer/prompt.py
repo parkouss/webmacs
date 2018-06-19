@@ -19,9 +19,9 @@ import collections
 
 from PyQt5.QtCore import QObject, QAbstractTableModel, QModelIndex, Qt, \
     pyqtSlot as Slot, pyqtSignal as Signal, QEventLoop, QPropertyAnimation, \
-    QEvent
+    QEvent, QRegExp
 
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QRegExpValidator
 
 from ..keyboardhandler import set_global_keymap_enabled
 from ..keymaps import Keymap
@@ -53,6 +53,7 @@ class FSModel(QAbstractTableModel):
 
     May not be as efficient as the qt version, but works without much pain.
     """
+
     def __init__(self, parent=None):
         QAbstractTableModel.__init__(self, parent)
         self._root_dir = ""
@@ -264,6 +265,7 @@ class PromptHistory(object):
     """
     In memory history for prompts.
     """
+
     def __init__(self, maxsize=50):
         self._history = collections.deque((), maxlen=maxsize)
         self.reset()
