@@ -316,65 +316,63 @@ class PromptHistory(object):
 
 
 class YesNoPrompt(Prompt):
+    NO = 0
+    YES = 1
+    ALWAYS = 2
+    NEVER = 3
+
     keymap = Keymap("yes-no")  # an empty keymap
 
-    def __init__(self, label, parent=None):
+    def __init__(self, label, parent=None, always=False, never=False):
         Prompt.__init__(self, parent)
-        self.label = label + "[y/n]"
-        self.yes = False
+        self.never = never
+        self.always = always
+        self.label = label + \
+            "[yes/no" + ("/Always" if always else "") + \
+            ("/Never" if never else "") + "]"
+        self.valid_keys = "yYn" + \
+            ("N" if self.never else "") + ("A" if self.always else "")
+        self._value = 0
 
     def enable(self, minibuffer):
         set_global_keymap_enabled(False)  # disable any global keychord
+
         Prompt.enable(self, minibuffer)
+        buffer_input = minibuffer.input()
+
+        validator = QRegExpValidator(QRegExp(
+            "[" + self.valid_keys + "]"), buffer_input)
+        buffer_input.setValidator(validator)
         minibuffer.input().installEventFilter(self)
-        minibuffer.input().textEdited.connect(self._on_text_edited)
+        buffer_input.textEdited.connect(self._on_text_edited)
+
+    def _on_text_edited(self, text):
+        if text in ("y", "Y"):
+            self._value = self.YES
+        elif text == "N":
+            self._value = self.NEVER
+        elif text == "A":
+            self._value = self.ALWAYS
+        else:
+            self._value = self.NO
+
+        self.close()
+        set_global_keymap_enabled(True)
+
+    def value(self):
+        return self._value
 
     def eventFilter(self, obj, evt):
         if evt.type() in (QEvent.KeyPress, QEvent.KeyRelease,
                           QEvent.ShortcutOverride):
-            if evt.text() in "yYnN":
+            if evt.text() in self.valid_keys:
                 return False
             evt.accept()
             self.flash()
             return True
         return False
 
-    def value(self):
-        return self.yes
-
     def close(self):
         self.minibuffer.input().removeEventFilter(self)
         set_global_keymap_enabled(True)
         Prompt.close(self)
-
-    def _on_text_edited(self, text):
-        self.yes = text in ('y', 'Y')
-        self.close()
-
-
-class YesNoNeverPrompt(Prompt):
-    keymap = Keymap("yes-no-never")  # an empty keymap
-
-    def __init__(self, label, parent=None):
-        Prompt.__init__(self, parent)
-        self.label = label + "[yes/no/Never]"
-        self.yes = False
-        self.never = False
-
-    def enable(self, minibuffer):
-        set_global_keymap_enabled(False)  # disable any global keychord
-        Prompt.enable(self, minibuffer)
-        buffer_input = minibuffer.input()
-
-        validator = QRegExpValidator(QRegExp("[yYnN]"), buffer_input)
-        buffer_input.setValidator(validator)
-        buffer_input.textEdited.connect(self._on_text_edited)
-
-    def value(self):
-        return self.yes and not self.never
-
-    def _on_text_edited(self, text):
-        self.yes = text in ('y', 'Y')
-        self.never = text == "N"
-        self.close()
-        set_global_keymap_enabled(True)

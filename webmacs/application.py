@@ -167,6 +167,9 @@ class Application(QApplication):
     def bookmarks(self):
         return self.profile.bookmarks
 
+    def features(self):
+        return self.profile.features
+
     def autofill(self):
         return self.profile.autofill
 

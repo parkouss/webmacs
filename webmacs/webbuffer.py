@@ -233,12 +233,27 @@ class WebBuffer(QWebEnginePage):
                 feature_name = name
                 break
 
-        permission = QWebEnginePage.PermissionDeniedByUser
-        if feature_name:
-            prompt = YesNoPrompt("Allow enabling feature {} for {}?"
-                                 .format(feature_name, url.toString()))
-            if current_minibuffer().do_prompt(prompt, flash=True):
-                permission = QWebEnginePage.PermissionGrantedByUser
+        db = app().features()
+
+        permission = db.get_permission(url.host(), feature)
+
+        if permission == QWebEnginePage.PermissionUnknown:
+            permission = QWebEnginePage.PermissionDeniedByUser
+            if feature_name:
+                prompt = YesNoPrompt("Allow enabling feature {} for {}?"
+                                     .format(feature_name, url.toString()), always=True, never=True)
+                answer = current_minibuffer().do_prompt(prompt, flash=True)
+
+                if answer in (YesNoPrompt.YES, YesNoPrompt.ALWAYS):
+                    permission = QWebEnginePage.PermissionGrantedByUser
+                elif answer in (YesNoPrompt.NO, YesNoPrompt.NEVER):
+                    permission = QWebEnginePage.PermissionDeniedByUser
+                else:
+                    permission = QWebEnginePage.PermissionUnknown
+
+                if answer in (YesNoPrompt.ALWAYS, YesNoPrompt.NEVER):
+                    app().features().set_permission(url.host(), feature, permission)
+
         self.setFeaturePermission(url, feature, permission)
 
     def createWindow(self, type):
@@ -304,12 +319,12 @@ class WebBuffer(QWebEnginePage):
             return True
 
         prompt = YesNoPrompt("[certificate error] {} - ignore ? "
-                             .format(error.errorDescription()))
+                             .format(error.errorDescription()), always=True)
         current_minibuffer().do_prompt(prompt, flash=True)
 
-        if prompt.yes:
+        if prompt.value() == YesNoPrompt.ALWAYS:
             db.ignore(url)
-        return prompt.yes
+        return prompt.value() in (YesNoPrompt.ALWAYS, YesNoPrompt.YES)
 
     def javaScriptConfirm(self, url, msg):
         return current_minibuffer().do_prompt(
