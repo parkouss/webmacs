@@ -20,8 +20,9 @@ from ..commands import define_command
 from ..minibuffer import Prompt, KEYMAP
 from ..webbuffer import WebBuffer, close_buffer, create_buffer
 from ..killed_buffers import KilledBuffer
+from ..keyboardhandler import send_key_event
 from .. import BUFFERS
-from ..keymaps import Keymap
+from ..keymaps import Keymap, KeyPress
 
 
 class BufferTableModel(QAbstractTableModel):
@@ -179,7 +180,7 @@ def scroll_page_down(ctx):
     """
     Scroll the current buffer one page down.
     """
-    ctx.buffer.scroll_page(0.9, smooth=True)
+    send_key_event(ctx.sender, KeyPress.from_str("PageDown"))
 
 
 @define_command("scroll-page-up")
@@ -187,7 +188,7 @@ def scroll_page_up(ctx):
     """
     Scroll the current buffer one page up.
     """
-    ctx.buffer.scroll_page(-0.9, smooth=True)
+    send_key_event(ctx.sender, KeyPress.from_str("PageUp"))
 
 
 @define_command("scroll-top")
@@ -195,7 +196,7 @@ def scroll_top(ctx):
     """
     Scroll the current buffer to the top.
     """
-    ctx.buffer.scroll_top()
+    send_key_event(ctx.sender, KeyPress.from_str("Home"))
 
 
 @define_command("scroll-bottom")
@@ -203,7 +204,7 @@ def scroll_bottom(ctx):
     """
     Scroll the current buffer to the bottom.
     """
-    ctx.buffer.scroll_bottom()
+    send_key_event(ctx.sender, KeyPress.from_str("End"))
 
 
 @define_command("webcontent-copy")
