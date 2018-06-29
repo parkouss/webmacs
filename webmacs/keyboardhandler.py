@@ -51,7 +51,7 @@ class LocalKeymapSetter(QObject):
                 # else flash the minibuffer on click.
                 if evt.type() in (QEvent.MouseButtonPress,
                                   QEvent.MouseButtonDblClick) \
-                                  and minibuff.prompt():
+                                  and minibuff.prompt():  # noqa: 125
                     minibuff.prompt().flash()
             return True
         return False

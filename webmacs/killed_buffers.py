@@ -32,6 +32,7 @@ max_size = variables.define_variable(
     )
 )
 
+
 class KilledBuffer(object):
     all = collections.deque(maxlen=max_size.value)
 
