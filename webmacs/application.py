@@ -71,8 +71,6 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
         url_s = url.toString()
         if (self._use_adblock
             and self._adblock
-            # see https://github.com/brave/ad-block/issues/93
-            and not url_s.startswith("blob:")
             and self._adblock.matches(
                 url_s,
                 request.firstPartyUrl().toString())):
