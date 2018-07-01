@@ -24,7 +24,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
-- Use smooth scroll in **scroll-page-down** and **scroll-page-up**.
+- **scroll-page-down**, **scroll-page-up**, **scroll-bottom** and
+  **scroll-top** are now implemented by sending the PageDown, PageUp and End
+  and Home key presses.
 - **search-default** now defaults to google.
 
 ### Added
