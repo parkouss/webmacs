@@ -7,7 +7,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import QEvent, QTimer
 
-from webmacs.application import Application
+from webmacs.application import Application, _app_requires
 from webmacs import (windows, buffers, WINDOWS_HANDLER, current_buffer,
                      current_window, current_minibuffer)
 from webmacs.webbuffer import create_buffer
@@ -15,7 +15,7 @@ from webmacs.window import Window
 from webmacs.webbuffer import close_buffer
 from webmacs.keymaps.content_edit import KEYMAP as wce_keymap
 from webmacs.keyboardhandler import local_keymap
-from webmacs.keymaps import KeyPress, Keymap
+from webmacs.keymaps import KeyPress, Keymap, KEYMAPS
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -39,8 +39,11 @@ def iter_widgets_for_events(w):
 
 @pytest.fixture(scope='session')
 def qapp(qapp_args):
+    _app_requires()
     global _app
-    _app = Application(["webmacs"])
+    # TODO FIXME use another path for tests
+    conf_path = os.path.join(os.path.expanduser("~"), ".webmacs")
+    _app = Application(conf_path, ["webmacs"])
     return _app
 
 
@@ -162,10 +165,7 @@ class TestSession(object):
         if isinstance(name_or_keymap, Keymap):
             keymap = name_or_keymap
         else:
-            if name_or_keymap == "webcontent-edit":
-                keymap = wce_keymap
-            elif name_or_keymap == "webbuffer":
-                keymap = current_buffer().keymap()
+            keymap = KEYMAPS[name_or_keymap]
 
         if keymap is None:
             raise ValueError("Unknown keymap %s" % name_or_keymap)
