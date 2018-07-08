@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [0.5] - 2018-07-08
+
 ### Fixed
 
 - focus is not lost anymore in the minibuffer input on page loading
