@@ -67,7 +67,6 @@ class WebView(QFrame):
             # something
             iv = v.internal_view()
             if iv:
-                pass
                 iv.setFocus()
 
         if self._internal_view:

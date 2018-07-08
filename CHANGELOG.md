@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- focus is not lost anymore in the minibuffer input on page loading
 - adblock is fully disabled when the variable **adblock-urls-rules** is set to
   an empty list.
 - adblock cache is rebuilt when the variable **adblock-urls-rules** has changed.
