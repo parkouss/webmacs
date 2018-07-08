@@ -13,18 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import json
+import shlex
+import logging
 
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
+from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
+    QProcess
 
 from PyQt5.QtWebEngineWidgets import QWebEngineDownloadItem
 
-from ..minibuffer.prompt import Prompt, FSModel
+from ..minibuffer.prompt import Prompt, FSModel, PromptTableModel
 from .. import current_minibuffer
-from ..minibuffer.keymap import KEYMAP, cancel
-from ..keymaps import Keymap
 
-DL_PROMPT_KEYMAP = Keymap("dl-prompt", parent=KEYMAP)
 
 STATE_STR = {
     QWebEngineDownloadItem.DownloadRequested: "Requested",
@@ -39,25 +40,56 @@ def state_str(state):
     return STATE_STR.get(state, "Unknown state")
 
 
-@DL_PROMPT_KEYMAP.define_key("C-g")
-def cancel_dl(ctx):
-    prompt = ctx.minibuffer.prompt()
-    prompt._dl.cancel()
-    cancel(ctx)
-    prompt.finished.emit()  # to end the event loop
+class DlChooseActionPrompt(Prompt):
+    complete_options = {
+        "match": Prompt.FuzzyMatch,
+        "complete-empty": True,
+    }
+    value_return_index_data = True
+
+    def __init__(self, path, mimetype):
+        Prompt.__init__(self, None)
+        self.__actions = [
+            ("download", "download file on disk"),
+            ("open", "open file with external command"),
+        ]
+        name = os.path.basename(path)
+        if len(name) > 33:
+            name = name[:30] + "..."
+        self.label = "File {} [{}]: ".format(name, mimetype)
+
+    def completer_model(self):
+        return PromptTableModel(self.__actions)
+
+    def enable(self, minibuffer):
+        super().enable(minibuffer)
+        minibuffer.input().popup().selectRow(0)
+
+
+class DlOpenActionPrompt(Prompt):
+    complete_options = {
+        "match": Prompt.FuzzyMatch,
+        "complete-empty": True,
+    }
+    label = "Open file with:"
+    value_return_index_data = True
+
+    def __init__(self):
+        Prompt.__init__(self, None)
+
+    def completer_model(self):
+        return PromptTableModel([[e] for e in list_executables()])
 
 
 class DlPrompt(Prompt):
-    keymap = DL_PROMPT_KEYMAP
     complete_options = {
         "autocomplete": True
     }
-    download_started = Signal(object)
 
-    def __init__(self, dl):
+    def __init__(self, path, mimetype):
         Prompt.__init__(self, None)
-        self._dl = dl
-        self.label = "Download file [{}]:".format(dl.mimeType())
+        self.label = "Download file [{}]:".format(mimetype)
+        self._dlpath = path
 
     def completer_model(self):
         # todo, not working
@@ -65,15 +97,8 @@ class DlPrompt(Prompt):
         return model
 
     def enable(self, minibuffer):
-        Prompt.enable(self, minibuffer)
-        minibuffer.input().setText(self._dl.path())
-
-    def _on_edition_finished(self):
-        path = self.minibuffer.input().text()
-        self._dl.setPath(path)
-        self._dl.accept()
-        self.download_started.emit(self._dl)
-        Prompt._on_edition_finished(self)
+        super().enable(minibuffer)
+        minibuffer.input().setText(self._dlpath)
 
 
 def download_to_json(dlitem):
@@ -98,6 +123,7 @@ class DownloadManager(QObject):
         QObject.__init__(self, parent)
         self.downloads = []
         self._buffers = []  # list of web buffers currently showing downloads
+        self._running_procs = {}
 
     def attach_buffer(self, buffer):
         self._buffers.append(buffer)
@@ -110,7 +136,8 @@ class DownloadManager(QObject):
         except ValueError:
             pass
 
-    def _download_started(self, dlitem):
+    def _start_download(self, dlitem):
+        dlitem.accept()
         self.downloads.append(dlitem)
         dlitem.destroyed.connect(lambda: self.downloads.remove(dlitem))
         self.download_started.emit(dlitem)
@@ -120,6 +147,7 @@ class DownloadManager(QObject):
         dlitem.downloadProgress.connect(self._download_state_changed)
         dlitem.stateChanged.connect(self._download_state_changed)
         dlitem.finished.connect(self._download_state_changed)
+        dlitem.finished.connect(dlitem.deleteLater)
 
     @Slot()
     def _download_state_changed(self):
@@ -131,13 +159,85 @@ class DownloadManager(QObject):
     @Slot("QWebEngineDownloadItem*")
     def download_requested(self, dl):
         minibuff = current_minibuffer()
-        prompt = DlPrompt(dl)
-        prompt.download_started.connect(self._download_started)
 
-        def finished():
-            state = state_str(dl.state())
-            minibuff.show_info("[{}] download: {}".format(state, dl.path()))
+        prompt = DlChooseActionPrompt(dl.path(), dl.mimeType())
+        action = minibuff.do_prompt(prompt)
 
-        dl.finished.connect(finished)
+        if action == "open":
+            prompt = DlOpenActionPrompt()
+            executable = minibuff.do_prompt(prompt)
+            if executable is None:
+                return
 
-        minibuff.do_prompt(prompt)
+            logging.info("Downloading %s...", dl.path())
+
+            def finished():
+                if dl.state() == QWebEngineDownloadItem.DownloadCompleted:
+                    logging.info("Opening external file %s with %s",
+                                 dl.path(), executable)
+                    self._run_program(executable, dl.path())
+
+            dl.finished.connect(finished)
+            self._start_download(dl)
+
+        elif action == "download":
+
+            prompt = DlPrompt(dl.path(), dl.mimeType())
+            path = minibuff.do_prompt(prompt)
+            if path is None:
+                return
+
+            dl.setPath(path)
+            logging.info("Downloading %s...", dl.path())
+
+            def finished():
+                state = state_str(dl.state())
+                logging.info("Finished download [%s] of %s", state, dl.path())
+                minibuff.show_info("[{}] download: {}".format(state,
+                                                              dl.path()))
+            dl.finished.connect(finished)
+            self._start_download(dl)
+
+    def _run_program(self, executable, path):
+        shell_arg = "{} {}".format(executable, shlex.quote(path))
+        args = ["-c", shell_arg]
+        shell = get_shell()
+        proc = QProcess()
+        self._running_procs[proc] = path
+
+        logging.debug("Executing command: %s %s", shell, " ".join(args))
+
+        proc.finished.connect(self._program_finished)
+        proc.start(shell, args, QProcess.ReadOnly)
+
+    @Slot(int, QProcess.ExitStatus)
+    def _program_finished(self, code, status):
+        proc = self.sender()
+        path = self._running_procs.pop(proc)
+        logging.debug("Removing downloaded file %s", path)
+        try:
+            os.unlink(path)
+        except Exception:
+            pass
+
+
+def list_executables():
+    try:
+        paths = os.environ["PATH"].split(os.pathsep)
+    except KeyError:
+        return []
+
+    executables = []
+    for path in paths:
+        try:
+            for file_ in os.listdir(path):
+                if os.access(os.path.join(path, file_), os.X_OK):
+                    executables.append(file_)
+        except Exception:
+            pass
+
+    return executables
+
+
+def get_shell():
+    return os.environ.get("SHELL", "/bin/sh")

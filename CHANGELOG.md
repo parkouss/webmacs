@@ -12,6 +12,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   5.11.1.
 - crash when reviving closed buffers in some cases.
 
+### Added
+
+- when opening a download, there is now a prompt to ask to download or to open
+  the file with an external command.
+
 ## [0.5] - 2018-07-08
 
 ### Fixed
