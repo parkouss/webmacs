@@ -142,6 +142,9 @@ class Application(QApplication):
         settings.setAttribute(
             QWebEngineSettings.JavascriptCanOpenWindows, True,
         )
+        settings.setAttribute(
+            QWebEngineSettings.FocusOnNavigationEnabled, False,
+        )
 
         self.installEventFilter(LOCAL_KEYMAP_SETTER)
 
