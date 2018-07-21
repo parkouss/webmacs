@@ -127,6 +127,7 @@ class Prompt(QObject):
     complete_options = {}
     keymap = None
     history = None
+    value_return_index_data = False
 
     SimpleMatch = 0
     FuzzyMatch = 1
@@ -137,6 +138,7 @@ class Prompt(QObject):
     def __init__(self, ctx):
         QObject.__init__(self)
         self.ctx = ctx
+        self.__finished = False
 
     def completer_model(self):
         return None
@@ -226,7 +228,14 @@ class Prompt(QObject):
         self.__index = index
 
     def value(self):
-        return self.minibuffer.input().text()
+        if not self.__finished:
+            return None
+        if self.value_return_index_data:
+            index = self.index()
+            if index:
+                return index.internalPointer()
+        else:
+            return self.minibuffer.input().text()
 
     def index(self):
         return self.__index
@@ -237,6 +246,7 @@ class Prompt(QObject):
         if history:
             history.push(self.value())
         self.close()
+        self.__finished = True
         self.finished.emit()
 
     def exec_(self, minibuffer, flash=False, sync=True):

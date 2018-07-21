@@ -31,7 +31,6 @@ from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .mode import get_mode, Mode, get_auto_modename_for_url
-from .killed_buffers import KilledBuffer
 
 
 # a tuple of QUrl, str to delay loading of a page.
@@ -58,9 +57,7 @@ def close_buffer(wb):
     if internal_view:
         internal_view.deleteLater()
 
-    app().download_manager().detach_buffer(wb)
     BUFFERS.remove(wb)
-    KilledBuffer.from_buffer(wb)
     wb.deleteLater()
     hooks.webbuffer_closed(wb)
     return True
@@ -186,21 +183,6 @@ class WebBuffer(QWebEnginePage):
         self.runJavaScript("window.scrollBy(left: %d, top: %d, behavior: %s);" % (
             x, y, "smooth" if smooth else "auto"))
 
-    def scroll_page(self, nb, smooth=True):
-        self.runJavaScript("""
-        window.scroll({
-          top: window.pageYOffset + (window.innerHeight * %f),
-          left: 0,
-          behavior: '%s'
-        });
-        """ % (nb, "smooth" if smooth else "auto"))
-
-    def scroll_top(self):
-        self.runJavaScript("window.scrollTo(0, 0);")
-
-    def scroll_bottom(self):
-        self.runJavaScript("window.scrollTo(0, document.body.scrollHeight);")
-
     def start_select_browser_objects(self, selector):
         self.runJavaScript(
             "hints.selectBrowserObjects(%r);" % selector,
@@ -262,9 +244,11 @@ class WebBuffer(QWebEnginePage):
     def createWindow(self, type):
         buffer = create_buffer()
         view = self.view()
-        # this is required to to not lose the keyboard focus.
-        call_later(lambda: view.internal_view().setFocus())
-        view.setBuffer(buffer)
+
+        def open_in_view():
+            view.setBuffer(buffer)
+
+        call_later(open_in_view)
         return buffer
 
     def finished(self):
@@ -282,18 +266,17 @@ class WebBuffer(QWebEnginePage):
         else:
             autofill.complete_buffer(self, url)
 
-        if url.scheme() == "webmacs" and url.authority() == "downloads":
-            app().download_manager().attach_buffer(self)
-        else:
-            app().download_manager().detach_buffer(self)
-
         self.set_mode(get_auto_modename_for_url(self.url().toString()))
+
+        hooks.webbuffer_load_finished(self)
 
         # We lose the keyboard focus without that with Qt 5.11. Though it
         # happens quite randomly, but a combination of follow, go back, google
         # something and the issue happens. I was not seeing this with Qt5.9.
         view = self.view()
-        if view and view.main_window.current_webview() == view:
+        if view and not LOCAL_KEYMAP_SETTER.enabled_minibuffer \
+           and view.main_window.current_webview() == view:
+
             view.internal_view().setFocus()
 
     def handle_authentication(self, url, authenticator):

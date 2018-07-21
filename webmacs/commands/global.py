@@ -560,7 +560,7 @@ def restore_session(ctx):
     session_clean()
     try:
         session_load(session_file)
-    except:
+    except Exception:
         w = Window()
         w.current_webview().setBuffer("about:blank")
         w.show()

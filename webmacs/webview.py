@@ -67,14 +67,13 @@ class WebView(QFrame):
             # something
             iv = v.internal_view()
             if iv:
-                pass
                 iv.setFocus()
 
         if self._internal_view:
             self._internal_view.detach()
+            self._internal_view = None
 
         if buffer is None:
-            self._internal_view = None
             return
 
         internal_view = buffer.internal_view()

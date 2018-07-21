@@ -42,10 +42,12 @@ adblocker = Extension(
     sources=[
         os.path.join(bloom_dir, "BloomFilter.cpp"),
         os.path.join(bloom_dir, "hashFn.cpp"),
-        os.path.join(hashset_dir, "HashSet.cpp"),
+        os.path.join(hashset_dir, "hash_set.cc"),
         os.path.join(adblock_dir, "ad_block_client.cc"),
         os.path.join(adblock_dir, "filter.cc"),
         os.path.join(adblock_dir, "cosmetic_filter.cc"),
+        os.path.join(adblock_dir, "no_fingerprint_domain.cc"),
+        os.path.join(adblock_dir, "protocol.cc"),
         os.path.join(THIS_DIR, "c", "adblock.c"),
     ])
 

@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- crash when opening in a new window (from right-click menu on a link), in qt
+  5.11.1.
+- crash when reviving closed buffers in some cases.
+
+### Added
+
+- when opening a download, there is now a prompt to ask to download or to open
+  the file with an external command.
+
+## [0.5] - 2018-07-08
+
+### Fixed
+
+- focus is not lost anymore in the minibuffer input on page loading
 - adblock is fully disabled when the variable **adblock-urls-rules** is set to
   an empty list.
 - adblock cache is rebuilt when the variable **adblock-urls-rules** has changed.
@@ -24,7 +38,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
-- Use smooth scroll in **scroll-page-down** and **scroll-page-up**.
+- **scroll-page-down**, **scroll-page-up**, **scroll-bottom** and
+  **scroll-top** are now implemented by sending the PageDown, PageUp and End
+  and Home key presses.
 - **search-default** now defaults to google.
 
 ### Added
