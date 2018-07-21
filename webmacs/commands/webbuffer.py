@@ -18,7 +18,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from ..commands import define_command
 from ..minibuffer import Prompt, KEYMAP
-from ..webbuffer import WebBuffer, close_buffer, create_buffer
+from ..webbuffer import WebBuffer, close_buffer
 from ..killed_buffers import KilledBuffer
 from ..keyboardhandler import send_key_event
 from .. import BUFFERS

@@ -272,8 +272,8 @@ class WebBuffer(QWebEnginePage):
         # happens quite randomly, but a combination of follow, go back, google
         # something and the issue happens. I was not seeing this with Qt5.9.
         view = self.view()
-        if (view and not LOCAL_KEYMAP_SETTER.enabled_minibuffer
-            and view.main_window.current_webview() == view):
+        if view and not LOCAL_KEYMAP_SETTER.enabled_minibuffer \
+           and view.main_window.current_webview() == view:
 
             view.internal_view().setFocus()
 
