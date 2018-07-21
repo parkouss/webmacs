@@ -245,9 +245,11 @@ class WebBuffer(QWebEnginePage):
     def createWindow(self, type):
         buffer = create_buffer()
         view = self.view()
-        # this is required to to not lose the keyboard focus.
-        call_later(lambda: view.internal_view().setFocus())
-        view.setBuffer(buffer)
+
+        def open_in_view():
+            view.setBuffer(buffer)
+
+        call_later(open_in_view)
         return buffer
 
     def finished(self):
