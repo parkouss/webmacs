@@ -401,7 +401,6 @@ def revive_buffer(ctx):
     selected = ctx.prompt.index()
     if selected.row() >= 0:
         killed_buffer = selected.internalPointer()
-        buff = create_buffer()
-        killed_buffer.revive(buff)
+        buff = killed_buffer.revive()
 
         ctx.window.current_webview().setBuffer(buff)

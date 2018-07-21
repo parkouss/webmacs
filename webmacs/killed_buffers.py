@@ -15,7 +15,8 @@
 
 import collections
 from PyQt5.QtCore import QDataStream, QByteArray, QIODevice
-from . import variables
+from .webbuffer import create_buffer
+from . import variables, hooks
 
 
 max_size = variables.define_variable(
@@ -63,8 +64,12 @@ class KilledBuffer(object):
             data
         )
 
-    def revive(self, buff):
-        buff.load(self.url)
+    def revive(self):
+        buff = create_buffer()
         stream = QDataStream(self.history_data, QIODevice.ReadOnly)
         stream >> buff.history()
         self.all.remove(self)
+        return buff
+
+
+hooks.webbuffer_closed.add(KilledBuffer.from_buffer)

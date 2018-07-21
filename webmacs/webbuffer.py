@@ -31,7 +31,6 @@ from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .mode import get_mode, Mode, get_auto_modename_for_url
-from .killed_buffers import KilledBuffer
 
 
 # a tuple of QUrl, str to delay loading of a page.
@@ -60,7 +59,6 @@ def close_buffer(wb):
 
     app().download_manager().detach_buffer(wb)
     BUFFERS.remove(wb)
-    KilledBuffer.from_buffer(wb)
     wb.deleteLater()
     hooks.webbuffer_closed(wb)
     return True
