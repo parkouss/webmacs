@@ -25,6 +25,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineDownloadItem
 
 from ..minibuffer.prompt import Prompt, FSModel, PromptTableModel
 from .. import current_minibuffer
+from .. import hooks
 
 
 STATE_STR = {
@@ -124,6 +125,16 @@ class DownloadManager(QObject):
         self.downloads = []
         self._buffers = []  # list of web buffers currently showing downloads
         self._running_procs = {}
+
+        def on_buffer_load_finished(buff):
+            url = buff.url()
+            if url.scheme() == "webmacs" and url.authority() == "downloads":
+                self.attach_buffer(buff)
+            else:
+                self.detach_buffer(buff)
+
+        hooks.webbuffer_load_finished.add(on_buffer_load_finished)
+        hooks.webbuffer_closed.add(self.detach_buffer)
 
     def attach_buffer(self, buffer):
         self._buffers.append(buffer)

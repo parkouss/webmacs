@@ -57,7 +57,6 @@ def close_buffer(wb):
     if internal_view:
         internal_view.deleteLater()
 
-    app().download_manager().detach_buffer(wb)
     BUFFERS.remove(wb)
     wb.deleteLater()
     hooks.webbuffer_closed(wb)
@@ -264,11 +263,6 @@ class WebBuffer(QWebEnginePage):
             current_minibuffer().do_prompt(sprompt, flash=True)
         else:
             autofill.complete_buffer(self, url)
-
-        if url.scheme() == "webmacs" and url.authority() == "downloads":
-            app().download_manager().attach_buffer(self)
-        else:
-            app().download_manager().detach_buffer(self)
 
         self.set_mode(get_auto_modename_for_url(self.url().toString()))
 
