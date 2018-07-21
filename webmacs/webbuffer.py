@@ -272,6 +272,8 @@ class WebBuffer(QWebEnginePage):
 
         self.set_mode(get_auto_modename_for_url(self.url().toString()))
 
+        hooks.webbuffer_load_finished(self)
+
         # We lose the keyboard focus without that with Qt 5.11. Though it
         # happens quite randomly, but a combination of follow, go back, google
         # something and the issue happens. I was not seeing this with Qt5.9.
