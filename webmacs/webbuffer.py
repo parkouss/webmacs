@@ -176,12 +176,12 @@ class WebBuffer(QWebEnginePage):
         self.runJavaScript("[window.pageXOffset, window.pageYOffset]", func)
 
     def set_scroll_pos(self, x=0, y=0, smooth=True):
-        self.runJavaScript("window.scrollTo(left: %d, top: %d, behavior: %s);" % (
-            x, y, "smooth" if smooth else "auto"))
+        self.runJavaScript("window.scrollTo(left: %d, top: %d, behavior: %s);"
+                           % (x, y, "smooth" if smooth else "auto"))
 
-    def scroll_by(self, x=0, y=0):
-        self.runJavaScript("window.scrollBy(left: %d, top: %d, behavior: %s);" % (
-            x, y, "smooth" if smooth else "auto"))
+    def scroll_by(self, x=0, y=0, smooth=True):
+        self.runJavaScript("window.scrollBy(left: %d, top: %d, behavior: %s);"
+                           % (x, y, "smooth" if smooth else "auto"))
 
     def start_select_browser_objects(self, selector):
         self.runJavaScript(
@@ -241,7 +241,10 @@ class WebBuffer(QWebEnginePage):
             permission = QWebEnginePage.PermissionDeniedByUser
             if feature_name:
                 prompt = YesNoPrompt("Allow enabling feature {} for {}?"
-                                     .format(feature_name, url.toString()), always=True, never=True)
+                                     .format(feature_name,
+                                             url.toString()),
+                                     always=True,
+                                     never=True)
                 answer = current_minibuffer().do_prompt(prompt, flash=True)
 
                 if answer in (YesNoPrompt.YES, YesNoPrompt.ALWAYS):
@@ -252,7 +255,9 @@ class WebBuffer(QWebEnginePage):
                     permission = QWebEnginePage.PermissionUnknown
 
                 if answer in (YesNoPrompt.ALWAYS, YesNoPrompt.NEVER):
-                    app().features().set_permission(url.host(), feature, permission)
+                    app().features().set_permission(url.host(),
+                                                    feature,
+                                                    permission)
 
         self.setFeaturePermission(url, feature, permission)
 

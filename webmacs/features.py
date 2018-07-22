@@ -22,7 +22,10 @@ class Features(object):
         self._conn = sqlite3.connect(dbbath)
         self._conn.execute("""
         CREATE TABLE IF NOT EXISTS features
-        (url TEXT, feature NUMBER, permission NUMBER, PRIMARY KEY(url, feature));
+        (url TEXT,
+        feature NUMBER,
+        permission NUMBER,
+        PRIMARY KEY(url, feature));
         """)
 
     def set_permission(self, url, feature, permission):
@@ -34,6 +37,10 @@ class Features(object):
 
     def get_permission(self, url, feature):
         permission = self._conn.execute(
-            "SELECT permission FROM features WHERE url = ? AND feature = ?", (url, feature)).fetchone()
+            "SELECT permission FROM features WHERE url = ? AND feature = ?",
+            (url, feature)).fetchone()
 
-        return permission[0] if permission else QWebEnginePage.PermissionUnknown
+        if permission:
+            return permission[0]
+        else:
+            return QWebEnginePage.PermissionUnknown
