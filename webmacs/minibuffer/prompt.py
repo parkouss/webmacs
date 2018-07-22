@@ -244,7 +244,7 @@ class Prompt(QObject):
     def _on_edition_finished(self):
         history = self.history
         if history:
-            history.push(self.value())
+            history.push(self.minibuffer.input().text())
         self.close()
         self.__finished = True
         self.finished.emit()
