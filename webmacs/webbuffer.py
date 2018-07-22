@@ -23,7 +23,7 @@ from collections import namedtuple
 from .keymaps import BUFFER_KEYMAP as KEYMAP
 from . import hooks
 from . import BUFFERS, current_minibuffer, minibuffer_show_info, \
-    current_buffer, call_later
+    current_buffer, call_later, current_window
 from .content_handler import WebContentHandler
 from .application import app
 from .minibuffer.prompt import YesNoPrompt
@@ -242,6 +242,8 @@ class WebBuffer(QWebEnginePage):
     def createWindow(self, type):
         buffer = create_buffer()
         view = self.view()
+        if view is None:
+            view = current_window().current_webview()
 
         def open_in_view():
             view.setBuffer(buffer)
