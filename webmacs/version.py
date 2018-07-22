@@ -70,8 +70,31 @@ def opengl_vendor():  # pragma: no cover
             old_context.makeCurrent(old_surface)
 
 
-def QT_VERSION_CHECK(major, minor, patch):
+def QT_VERSION_CHECK(major, minor=0, patch=0):
     return (major << 16) | (minor << 8) | patch
+
+
+class QtVersionChecker(object):
+    def __init__(self):
+        self.version = QT_VERSION
+
+    def __eq__(self, other):
+        return self.version == QT_VERSION_CHECK(*other)
+
+    def __lt__(self, other):
+        return self.version < QT_VERSION_CHECK(*other)
+
+    def __gt__(self, other):
+        return self.version > QT_VERSION_CHECK(*other)
+
+    def __le__(self, other):
+        return self.version <= QT_VERSION_CHECK(*other)
+
+    def __ge__(self, other):
+        return self.version >= QT_VERSION_CHECK(*other)
+
+
+qt_version = QtVersionChecker()
 
 
 def chromium_version():
