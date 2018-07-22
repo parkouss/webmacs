@@ -327,12 +327,25 @@ class YesNoPrompt(Prompt):
         Prompt.__init__(self, parent)
         self.never = never
         self.always = always
-        self.label = label + \
-            "[yes/no" + ("/Always" if always else "") + \
-            ("/Never" if never else "") + "]"
-        self.valid_keys = "yYn" + \
-            ("N" if self.never else "") + ("A" if self.always else "")
+        self.label = label + self.build_label()
+        self.valid_keys = self.build_valid_keys()
         self._value = 0
+
+    def build_label(self):
+        optional = ""
+        if self.always:
+            optional += "/Always"
+        if self.never:
+            optional += "/Never"
+        return f"[yes/no{optional}]"
+
+    def build_valid_keys(self):
+        optional = ""
+        if self.always:
+            optional += "A"
+        if self.never:
+            optional += "N"
+        return f"yYn{optional}"
 
     def enable(self, minibuffer):
         set_global_keymap_enabled(False)  # disable any global keychord
