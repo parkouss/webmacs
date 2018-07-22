@@ -18,10 +18,10 @@ from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from ..commands import define_command
 from ..minibuffer import Prompt, KEYMAP
-from ..webbuffer import WebBuffer, close_buffer
+from ..webbuffer import WebBuffer, close_buffer, create_buffer
 from ..killed_buffers import KilledBuffer
 from ..keyboardhandler import send_key_event
-from .. import BUFFERS
+from .. import BUFFERS, version
 from ..keymaps import Keymap, KeyPress
 
 
@@ -135,6 +135,31 @@ def switch_buffer(ctx):
             otherview = buffer.view()
             otherview.setBuffer(otherbuffer)
         view.setBuffer(buffer)
+
+
+class OpenDevToolsPrompt(BufferListPrompt):
+    label = "open dev tools for buffer:"
+    keymap = None
+
+    def enable(self, minibuffer):
+        Prompt.enable(self, minibuffer)
+        # auto-select the currently visible buffer
+        minibuffer.input().popup().selectRow(0)
+
+
+@define_command("open-dev-tools", prompt=OpenDevToolsPrompt)
+def open_dev_tools(ctx):
+    """
+    Opens a dev tool page for a buffer.
+    """
+    if version.qt_version < (5, 11):
+        ctx.minibuffer.show_info("Only available with qt version >= 5.11")
+        return
+    selected = ctx.prompt.index()
+    if selected.row() >= 0:
+        buffer = selected.internalPointer()
+        dev_tools = create_buffer()
+        buffer.setDevToolsPage(dev_tools)
 
 
 @define_command("go-forward")
