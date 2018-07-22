@@ -36,17 +36,20 @@ def test_iframe_follow(session, pytestconfig):
     """
     It is possible to hint things inside sub frames.
     """
+    input0_iframe = "window.frames[0].document.getElementById('input0')"
+
     session.load_page("iframe_follow", wait_iframes=True)
 
     session.keyclick("f")
 
     session.wait_local_keymap("hint")
-    # TODO FIXME can't use wkeyclicks("2"), why?
-    QTest.qWait(200)
-    session.keyclick(Qt.Key_2)
+    session.wkeyclicks("C-n")
+    # wait until the background color is green, the above keypress has been
+    # taken in account.
+    session.check_javascript("%s.style.backgroundColor" % input0_iframe,
+                             'rgb(136, 255, 0)')
     session.wkeyclicks("Enter")
     session.wait_local_keymap("webcontent-edit")
     session.keyclicks("youhou")
 
-    input0_iframe = "window.frames[0].document.getElementById('input0')"
     session.check_javascript("%s.value" % input0_iframe, "youhou")
