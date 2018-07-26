@@ -164,7 +164,7 @@ def scroll_down(ctx):
     """
     Scroll the current buffer down a bit.
     """
-    ctx.buffer.scroll_by(y=20, smooth=False)
+    ctx.buffer.scroll_by(y=20)
 
 
 @define_command("scroll-up")
@@ -172,7 +172,7 @@ def scroll_up(ctx):
     """
     Scroll the current buffer up a bit.
     """
-    ctx.buffer.scroll_by(y=-20, smooth=False)
+    ctx.buffer.scroll_by(y=-20)
 
 
 @define_command("scroll-page-down")

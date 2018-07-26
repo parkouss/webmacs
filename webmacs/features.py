@@ -18,8 +18,8 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage
 
 
 class Features(object):
-    def __init__(self, dbbath):
-        self._conn = sqlite3.connect(dbbath)
+    def __init__(self, db_path):
+        self._conn = sqlite3.connect(db_path)
         self._conn.execute("""
         CREATE TABLE IF NOT EXISTS features
         (url TEXT,

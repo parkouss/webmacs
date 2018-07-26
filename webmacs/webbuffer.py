@@ -175,13 +175,11 @@ class WebBuffer(QWebEnginePage):
     def async_scroll_pos(self, func):
         self.runJavaScript("[window.pageXOffset, window.pageYOffset]", func)
 
-    def set_scroll_pos(self, x=0, y=0, smooth=True):
-        self.runJavaScript("window.scrollTo(left: %d, top: %d, behavior: %s);"
-                           % (x, y, "smooth" if smooth else "auto"))
+    def set_scroll_pos(self, x=0, y=0):
+        self.runJavaScript("window.scrollTo(%d, %d);" % (x, y))
 
-    def scroll_by(self, x=0, y=0, smooth=True):
-        self.runJavaScript("window.scrollBy(left: %d, top: %d, behavior: %s);"
-                           % (x, y, "smooth" if smooth else "auto"))
+    def scroll_by(self, x=0, y=0):
+        self.runJavaScript("window.scrollBy(%d, %d);" % (x, y))
 
     def start_select_browser_objects(self, selector):
         self.runJavaScript(
