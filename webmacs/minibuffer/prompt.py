@@ -337,7 +337,7 @@ class YesNoPrompt(Prompt):
             optional += "/Always"
         if self.never:
             optional += "/Never"
-        return f"[yes/no{optional}]"
+        return "[yes/no{}]".format(optional)
 
     def build_valid_keys(self):
         optional = ""
@@ -345,7 +345,7 @@ class YesNoPrompt(Prompt):
             optional += "A"
         if self.never:
             optional += "N"
-        return f"yYn{optional}"
+        return "yYn{}".format(optional)
 
     def enable(self, minibuffer):
         set_global_keymap_enabled(False)  # disable any global keychord
