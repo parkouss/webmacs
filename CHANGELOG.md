@@ -14,6 +14,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- added a database to keep feature permissions (geolocation, camera, ...) on a
+  per-url basis (thanks to Patrick Lafrance)
+- the allow permission for feature dialog now ask for Always/Never, and save
+  that in the database. (thanks to Patrick Lafrance)
+- it is now possible to answer Never when webmacs ask to save a password.
+  (thanks to Patrick Lafrance)
+- it is now possible to answer Always to bypass certificate errors. (thanks to
+  Patrick Lafrance)
 - when opening a download, there is now a prompt to ask to download or to open
   the file with an external command.
 
