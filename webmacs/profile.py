@@ -24,6 +24,7 @@ from .autofill import Autofill
 from .autofill.db import PasswordDb
 from .ignore_certificates import IgnoredCertificates
 from .bookmarks import Bookmarks
+from .features import Features
 from . import variables
 
 
@@ -71,6 +72,8 @@ class Profile(object):
             = IgnoredCertificates(os.path.join(path, "ignoredcerts.db"))
         self.bookmarks \
             = Bookmarks(os.path.join(path, "bookmarks.db"))
+        self.features \
+            = Features(os.path.join(path, "features.db"))
 
         self.q_profile.setCachePath(os.path.join(path, "cache"))
         self.q_profile.downloadRequested.connect(

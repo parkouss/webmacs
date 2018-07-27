@@ -19,9 +19,9 @@ import collections
 
 from PyQt5.QtCore import QObject, QAbstractTableModel, QModelIndex, Qt, \
     pyqtSlot as Slot, pyqtSignal as Signal, QEventLoop, QPropertyAnimation, \
-    QEvent
+    QEvent, QRegExp
 
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QRegExpValidator
 
 from ..keyboardhandler import set_global_keymap_enabled
 from ..keymaps import Keymap
@@ -53,6 +53,7 @@ class FSModel(QAbstractTableModel):
 
     May not be as efficient as the qt version, but works without much pain.
     """
+
     def __init__(self, parent=None):
         QAbstractTableModel.__init__(self, parent)
         self._root_dir = ""
@@ -264,6 +265,7 @@ class PromptHistory(object):
     """
     In memory history for prompts.
     """
+
     def __init__(self, maxsize=50):
         self._history = collections.deque((), maxlen=maxsize)
         self.reset()
@@ -314,37 +316,76 @@ class PromptHistory(object):
 
 
 class YesNoPrompt(Prompt):
+    NO = 0
+    YES = 1
+    ALWAYS = 2
+    NEVER = 3
+
     keymap = Keymap("yes-no")  # an empty keymap
 
-    def __init__(self, label, parent=None):
+    def __init__(self, label, parent=None, always=False, never=False):
         Prompt.__init__(self, parent)
-        self.label = label + "[y/n]"
-        self.yes = False
+        self.never = never
+        self.always = always
+        self.label = label + self.build_label()
+        self.valid_keys = self.build_valid_keys()
+        self._value = 0
+
+    def build_label(self):
+        optional = ""
+        if self.always:
+            optional += "/Always"
+        if self.never:
+            optional += "/Never"
+        return f"[yes/no{optional}]"
+
+    def build_valid_keys(self):
+        optional = ""
+        if self.always:
+            optional += "A"
+        if self.never:
+            optional += "N"
+        return f"yYn{optional}"
 
     def enable(self, minibuffer):
         set_global_keymap_enabled(False)  # disable any global keychord
+
         Prompt.enable(self, minibuffer)
+        buffer_input = minibuffer.input()
+
+        validator = QRegExpValidator(QRegExp(
+            "[" + self.valid_keys + "]"), buffer_input)
+        buffer_input.setValidator(validator)
         minibuffer.input().installEventFilter(self)
-        minibuffer.input().textEdited.connect(self._on_text_edited)
+        buffer_input.textEdited.connect(self._on_text_edited)
+
+    def _on_text_edited(self, text):
+        if text in ("y", "Y"):
+            self._value = self.YES
+        elif text == "N":
+            self._value = self.NEVER
+        elif text == "A":
+            self._value = self.ALWAYS
+        else:
+            self._value = self.NO
+
+        self.close()
+        set_global_keymap_enabled(True)
+
+    def value(self):
+        return self._value
 
     def eventFilter(self, obj, evt):
         if evt.type() in (QEvent.KeyPress, QEvent.KeyRelease,
                           QEvent.ShortcutOverride):
-            if evt.text() in "yYnN":
+            if evt.text() in self.valid_keys:
                 return False
             evt.accept()
             self.flash()
             return True
         return False
 
-    def value(self):
-        return self.yes
-
     def close(self):
         self.minibuffer.input().removeEventFilter(self)
         set_global_keymap_enabled(True)
         Prompt.close(self)
-
-    def _on_text_edited(self, text):
-        self.yes = text in ('y', 'Y')
-        self.close()
