@@ -27,6 +27,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   Patrick Lafrance)
 - when opening a download, there is now a prompt to ask to download or to open
   the file with an external command.
+  
+### Changed
+
+- loading page information is now displayed in the minibuffer right label, using
+  the **loading** key in the **minibuffer-right-label** variable (default value
+  of this variable has changed)
 
 ## [0.5] - 2018-07-08
 
