@@ -50,12 +50,13 @@ class Window(QWidget):
 
         self._toolbar = None
         # self.toggle_toolbar()
-        hooks.webbuffer_current_changed.add(self._update_toolbar)
+
+        # remove the toolbar update callback if it was set
+        self.destroyed.connect(lambda:
+                               hooks.webbuffer_current_changed
+                               .remove_if_exists(self._update_toolbar))
 
     def _update_toolbar(self, buffer):
-        if self._toolbar is None:
-            return
-
         if buffer.view().main_window != self:
             return
 
@@ -68,12 +69,14 @@ class Window(QWidget):
 
     def toggle_toolbar(self):
         if self._toolbar is None:
+            hooks.webbuffer_current_changed.add(self._update_toolbar)
             self._toolbar = QToolBar()
             self._layout.insertWidget(0, self._toolbar)
             current_view = self.current_webview()
             if current_view and current_view.buffer():
                 self._update_toolbar(current_view.buffer())
         else:
+            hooks.webbuffer_current_changed.remove(self._update_toolbar)
             self._layout.removeWidget(self._toolbar)
             self._toolbar.deleteLater()
             self._toolbar = None

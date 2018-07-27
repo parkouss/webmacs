@@ -23,6 +23,12 @@ class Hook(list):
 
     add = list.append
 
+    def remove_if_exists(self, cb):
+        try:
+            self.remove(cb)
+        except ValueError:
+            pass
+
 
 webbuffer_created = Hook()
 
