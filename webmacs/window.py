@@ -19,7 +19,15 @@ from PyQt5.QtCore import Qt, QRect
 from .minibuffer import Minibuffer
 from .egrid import ViewGridLayout
 from . import WINDOWS_HANDLER
-from . import hooks
+from . import hooks, variables
+
+
+window_toolbar_on_startup = variables.define_variable(
+    "window-toolbar-on-startup",
+    "If set to True, the main window(s) will have the navigation toolbar"
+    " visible on startup.",
+    False,
+)
 
 
 def remove_layout_spaces(layout):
@@ -49,7 +57,8 @@ class Window(QWidget):
         WINDOWS_HANDLER.register_window(self)
 
         self._toolbar = None
-        # self.toggle_toolbar()
+        if window_toolbar_on_startup.value:
+            self.toggle_toolbar()
 
         # remove the toolbar update callback if it was set
         self.destroyed.connect(lambda:
