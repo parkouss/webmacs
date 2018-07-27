@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- added a basic navigation toolbar, that can be shown using the command
+  **toggle-toolbar**. Also added a new variable, **window-toolbar-on-startup**
+  that can be set to True to show the toolbar automatically.
 - added a database to keep feature permissions (geolocation, camera, ...) on a
   per-url basis (thanks to Patrick Lafrance)
 - the allow permission for feature dialog now ask for Always/Never, and save
