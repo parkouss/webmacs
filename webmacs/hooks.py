@@ -30,4 +30,6 @@ webbuffer_closed = Hook()
 
 webbuffer_load_finished = Hook()
 
+webbuffer_current_changed = Hook()
+
 local_mode_changed = Hook()

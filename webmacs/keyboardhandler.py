@@ -73,6 +73,8 @@ class LocalKeymapSetter(QObject):
             # reproduce, have two opened buffers, then C-x 2, C-x 3.
             if hasattr(view.buffer(), "active_keymap"):
                 set_local_keymap(view.buffer().active_keymap())
+                if view.main_window.current_webview() == view:
+                    hooks.webbuffer_current_changed(view.buffer())
 
     def web_content_edit_focus_changed(self, buff, enabled):
         if enabled:
