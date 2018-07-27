@@ -13,12 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QToolBar
 from PyQt5.QtCore import Qt, QRect
 
 from .minibuffer import Minibuffer
 from .egrid import ViewGridLayout
 from . import WINDOWS_HANDLER
+from . import hooks
 
 
 def remove_layout_spaces(layout):
@@ -46,6 +47,36 @@ class Window(QWidget):
         self.quit_if_last_closed = True
 
         WINDOWS_HANDLER.register_window(self)
+
+        self._toolbar = None
+        # self.toggle_toolbar()
+        hooks.webbuffer_current_changed.add(self._update_toolbar)
+
+    def _update_toolbar(self, buffer):
+        if self._toolbar is None:
+            return
+
+        if buffer.view().main_window != self:
+            return
+
+        self._toolbar.clear()
+        self._toolbar.addAction(buffer.action(buffer.Back))
+        self._toolbar.addAction(buffer.action(buffer.Forward))
+        self._toolbar.addSeparator()
+        self._toolbar.addAction(buffer.action(buffer.Stop))
+        self._toolbar.addAction(buffer.action(buffer.Reload))
+
+    def toggle_toolbar(self):
+        if self._toolbar is None:
+            self._toolbar = QToolBar()
+            self._layout.insertWidget(0, self._toolbar)
+            current_view = self.current_webview()
+            if current_view and current_view.buffer():
+                self._update_toolbar(current_view.buffer())
+        else:
+            self._layout.removeWidget(self._toolbar)
+            self._toolbar.deleteLater()
+            self._toolbar = None
 
     def _change_current_webview(self, webview):
         self.current_webview().show_focused(False)

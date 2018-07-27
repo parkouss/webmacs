@@ -226,6 +226,14 @@ def toggle_ad_block(ctx):
     reload_buffer_no_cache(ctx)
 
 
+@define_command("toggle-toolbar")
+def toggle_toolbar(ctx):
+    """
+    Toggle the main window toolbar on or off.
+    """
+    ctx.window.toggle_toolbar()
+
+
 class VisitedLinksModel(PromptTableModel):
     def __init__(self, parent):
         visitedlinks = app().visitedlinks()
