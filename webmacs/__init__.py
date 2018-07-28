@@ -129,21 +129,13 @@ def call_later(fn, msec=0):
 
 
 class CommandContext(object):
-    def __init__(self, sender, keypress, buffer=None):
+    def __init__(self, sender, keypress):
         self.sender = sender
         self.keypress = keypress
-        self.buffer = buffer or current_buffer()
+        self.window = current_window()
+        self.view = self.window.current_webview() if self.window else None
+        self.buffer = self.view.buffer() if self.view else None
         self.prompt = None
-
-    @property
-    def view(self):
-        return self.buffer.view()
-
-    @property
-    def window(self):
-        view = self.view
-        if view:
-            return view.main_window
 
     @property
     def minibuffer(self):
