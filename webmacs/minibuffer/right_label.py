@@ -73,7 +73,7 @@ def init_minibuffer_right_labels():
                 BUFF_PROGRESS[buff] = p
 
             view = buff.view()
-            if view.main_window.current_webview() == view:
+            if view and view.main_window.current_webview() == view:
                 update_minibuffer_right_label(view.main_window)
 
         # then connect this buffer to keep track of its load percent
