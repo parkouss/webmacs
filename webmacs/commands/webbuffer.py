@@ -18,7 +18,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from ..commands import define_command
 from ..minibuffer import Prompt, KEYMAP
-from ..webbuffer import WebBuffer, close_buffer, create_buffer
+from ..webbuffer import WebBuffer, close_buffer, create_buffer, current_window
 from ..killed_buffers import KilledBuffer
 from ..keyboardhandler import send_key_event
 from .. import BUFFERS, version
@@ -123,7 +123,7 @@ def switch_buffer(ctx):
     """
     selected = ctx.prompt.index()
     if selected.row() >= 0:
-        view = ctx.window.current_webview()
+        view = current_window().current_webview()
         buffer = selected.internalPointer()
         if view.buffer() == buffer:
             # swith to the same buffer, nothing to do

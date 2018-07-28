@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - crash when opening in a new window (from right-click menu on a link), in qt
   5.11.1.
 - crash when reviving closed buffers in some cases.
+- crash when calling switch-buffer and closing buffer (including the current
+  one) using C-k.
 
 ### Added
 
