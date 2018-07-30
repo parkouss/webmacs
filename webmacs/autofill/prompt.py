@@ -43,7 +43,7 @@ class SavePasswordPrompt(YesNoPrompt):
 
 class AskPasswordPrompt(Prompt):
     def __init__(self, autofill, buffer):
-        Prompt.__init__(self)
+        Prompt.__init__(self, None)
         self.autofill = autofill
         self.buffer = buffer
         self.username, self.password = "", ""
