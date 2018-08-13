@@ -152,7 +152,7 @@ def copy_link(ctx):
 
     if prompt.numbers == "0":
         # special case, copy current url
-        url = buff.url().toString()
+        url = str(buff.url().toEncoded(), "utf-8")
     else:
         bo = prompt.browser_object_activated
         if "url" in bo:
