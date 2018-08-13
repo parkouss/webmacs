@@ -27,6 +27,9 @@ KEYMAP = Keymap("i-search", MKEYMAP)
 @KEYMAP.define_key("C-n")
 @KEYMAP.define_key("C-s")
 def search_next(ctx):
+    if ISearchPrompt.LAST_SEARCH and not ctx.minibuffer.input().text():
+        ctx.minibuffer.input().setText(ISearchPrompt.LAST_SEARCH)
+        return
     prompt = ctx.minibuffer.prompt()
     prompt.set_isearch_direction(0)
     prompt.find_text()
@@ -35,6 +38,9 @@ def search_next(ctx):
 @KEYMAP.define_key("C-p")
 @KEYMAP.define_key("C-r")
 def search_previous(ctx):
+    if ISearchPrompt.LAST_SEARCH and not ctx.minibuffer.input().text():
+        ctx.minibuffer.input().setText(ISearchPrompt.LAST_SEARCH)
+        return
     prompt = ctx.minibuffer.prompt()
     prompt.set_isearch_direction(WebBuffer.FindBackward)
     prompt.find_text()
@@ -42,8 +48,8 @@ def search_previous(ctx):
 
 @KEYMAP.define_key("Return")
 def validate(ctx):
-    buff = ctx.buffer
-    buff.findText("")  # to clear the highlight
+    ISearchPrompt.LAST_SEARCH = ctx.minibuffer.input().text()
+    ctx.buffer.findText("")  # to clear the highlight
     ctx.minibuffer.close_prompt()
 
 
@@ -52,7 +58,8 @@ def validate(ctx):
 def cancel(ctx):
     prompt = ctx.minibuffer.prompt()
     scroll_pos = prompt.page_scroll_pos
-    validate(ctx)
+    ctx.buffer.findText("")  # to clear the highlight
+    ctx.minibuffer.close_prompt()
     prompt.set_page_scroll_pos(scroll_pos)
 
 
@@ -61,6 +68,8 @@ class ISearchPrompt(Prompt):
     keymap = KEYMAP
 
     isearch_direction = 0  # forward
+
+    LAST_SEARCH = None
 
     def enable(self, minibuffer):
         self._caret_browsing = local_keymap() == CARET_BROWSING_KEYMAP
