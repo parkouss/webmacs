@@ -17,7 +17,6 @@ import os
 import sys
 
 from setuptools import setup, Extension, find_packages
-from setuptools.command.test import test as TestCommand
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -52,14 +51,6 @@ adblocker = Extension(
     ])
 
 
-class PyTest(TestCommand):
-    def run_tests(self):
-        import pytest
-        sys.path.insert(0, THIS_DIR)
-        errno = pytest.main([os.path.join(THIS_DIR, "tests")])
-        sys.exit(errno)
-
-
 setup(
     name='webmacs',
     version='1.0',
@@ -72,8 +63,6 @@ Work in progress.
 ''',
     packages=find_packages(),
     install_requires=["dateparser", "jinja2", "pygments"],
-    tests_require=["pytest"],
-    cmdclass={'test': PyTest},
     entry_points={"console_scripts": ["webmacs = webmacs.main:main"]},
     package_data={"webmacs": [
         "scripts/*.js",
