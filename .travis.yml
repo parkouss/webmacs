@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 language: python
 dist: trusty
 python: 3.6
@@ -10,7 +10,8 @@ cache:
 install:
   - pip install PyQt5
   - pip install -r test-requirements.txt
+  - sudo apt-get --yes install xvfb herbstluftwm
 
 script:
   - flake8 webmacs setup.py
-  - pytest --ignore tests/integration/ tests
+  - pytest tests

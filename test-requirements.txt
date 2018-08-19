@@ -2,4 +2,5 @@
 pytest
 pytest-qt
 pytest-mock
+pytest-xvfb
 flake8

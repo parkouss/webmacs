@@ -1,6 +1,7 @@
 import pytest
 import os
 import time
+import subprocess
 
 from PyQt5.QtTest import QTest
 from PyQt5.QtWebEngineWidgets import QWebEngineView
@@ -37,8 +38,30 @@ def iter_widgets_for_events(w):
         yield w
 
 
+@pytest.fixture(scope="session")
+def wm(xvfb):
+    if xvfb is None:
+        yield None
+    else:
+        if not any(
+                os.access(os.path.join(path, 'herbstluftwm'), os.X_OK)
+                for path in os.environ["PATH"].split(os.pathsep)
+        ):
+            raise RuntimeError("herbstluftwm is not installed, can not run"
+                               " graphical tests.")
+        env = dict(os.environ)
+        env["DISPLAY"] = str(":%s" % xvfb.display)
+        proc = subprocess.Popen(
+            ["herbstluftwm"], env=env
+        )
+        time.sleep(2)  # wait for the wm to be active
+        yield proc
+        proc.kill()
+        proc.wait()
+
+
 @pytest.fixture(scope='session')
-def qapp(qapp_args):
+def qapp(wm, qapp_args):
     _app_requires()
     global _app
     # TODO FIXME use another path for tests
