@@ -55,6 +55,7 @@ def close_buffer(wb):
 
     internal_view = wb.internal_view()
     if internal_view:
+        internal_view.detach()
         internal_view.deleteLater()
 
     BUFFERS.remove(wb)

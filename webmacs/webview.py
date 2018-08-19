@@ -123,7 +123,6 @@ class InternalWebView(QWebEngineView):
     """Do not instantiate that class directly"""
     def __init__(self):
         QWebEngineView.__init__(self)
-        self._viewport = None
         self._view = None
         self._fullscreen_state = None
 
