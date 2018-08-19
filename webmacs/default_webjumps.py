@@ -52,8 +52,9 @@ def complete_fs():
 
     def _complete(text):
         model.text_changed(text)
-        return [model.data(model.index(i, 0))
-                for i in range(model.rowCount())]
+        dircontent = [model.data(model.index(i, 0))
+                      for i in range(model.rowCount())]
+        return [c for c in dircontent if c.startswith(text)]
 
     return SyncWebJumpCompleter(_complete)
 
