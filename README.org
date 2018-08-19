@@ -49,6 +49,26 @@ sudo ln -s <path_to_venv>/bin/webmacs /usr/local/bin/webmacs
 #+END_SRC
 
 
+* Running tests
+
+To run the tests, you will need a few more dependencies (the virtualenv needs
+to be activated):
+
+#+BEGIN_SRC bash
+# install test dependencies
+pip install -r <path_to_webmacs_sources>/test-requirements.txt
+# also install the herbstluftwm window manager, using your package manager.
+# Example on fedora:
+sudo dnf install herbstluftwm
+#+END_SRC
+
+Then you can run the tests (the virtualenv needs to be activated):
+#+BEGIN_SRC bash
+py.test <path_to_webmacs_sources>/tests
+# you can run them with the windows visible:
+py.test <path_to_webmacs_sources>/tests --no-xvfb
+#+END_SRC
+
 * Features
 
 *webmacs* quite mimics the conkeror way of browsing. Short list of the already
