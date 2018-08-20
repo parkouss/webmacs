@@ -176,11 +176,9 @@ def init(opts):
             create_window("http://duckduckgo.com/")
 
 
-def _handle_user_init_error(msg):
+def _handle_user_init_error(conf_path, msg):
     import traceback
-    from .application import app
 
-    conf_path = app().conf_path()
     stack_size = 0
     tbs = traceback.extract_tb(sys.exc_info()[2])
     for i, t in enumerate(tbs):
@@ -228,7 +226,10 @@ def main():
         try:
             user_init = imp.load_module("_webmacs_userconfig", *spec)
         except Exception:
-            _handle_user_init_error("Error reading the user configuration.")
+            _handle_user_init_error(
+                conf_path,
+                "Error reading the user configuration."
+            )
 
     app = Application(conf_path, [
         # The first argument passed to the QApplication args defines
