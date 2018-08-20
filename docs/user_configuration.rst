@@ -132,6 +132,8 @@ In webmacs, like in emacs, it is possible to bind a key to command on a given ke
 Keymaps
 -------
 
+.. webmacs-keymaps::
+
 There are multiple keymaps, the most useful are:
 
 - the global keymap (returned by
