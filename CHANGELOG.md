@@ -32,6 +32,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   
 ### Changed
 
+- the functions **webmacs.keymaps.global_keymap()**,
+  **webmacs.keymaps.webbuffer_keymap()**,
+  **webmacs.keymaps.content_edit_keymap()** have been deprecated in favor of
+  **webmacs.keymaps.keymap()** (respectively with the argument "global",
+  "webbuffer" and "webcontent-edit").
 - loading page information is now displayed in the minibuffer right label, using
   the **loading** key in the **minibuffer-right-label** variable (default value
   of this variable has changed)
