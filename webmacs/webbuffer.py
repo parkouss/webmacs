@@ -352,9 +352,11 @@ class WebBuffer(QWebEnginePage):
 
     def update_title(self, title=None):
         if self == current_buffer():
-            self.main_window().update_title(
-                title if title is not None else self.title()
-            )
+            mw = self.main_window()
+            if mw is not None:
+                mw.update_title(
+                    title if title is not None else self.title()
+                )
 
     def _incr_zoom(self, forward):
         # Zooming constants
