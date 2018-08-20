@@ -11,9 +11,7 @@ Initialisation
 Keymaps
 *******
 
-.. autofunction:: webmacs.keymaps.global_keymap
-
-.. autofunction:: webmacs.keymaps.webbuffer_keymap
+.. autofunction:: webmacs.keymaps.keymap
 
 .. autoclass:: webmacs.keymaps.Keymap
    :members: define_key, undefine_key

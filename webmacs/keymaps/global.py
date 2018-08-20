@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..keymaps import global_keymap
+from ..keymaps import GLOBAL_KEYMAP
 
-KEYMAP = global_keymap()
+KEYMAP = GLOBAL_KEYMAP
 
 
 KEYMAP.define_key("C-x C-c", "quit")

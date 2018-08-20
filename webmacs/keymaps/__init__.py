@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
+import warnings
+
 from collections import namedtuple
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeyEvent
@@ -487,6 +489,10 @@ def global_keymap():
     It is almost always active, and act as a fallback if there is
     an active keymap.
     """
+    warnings.warn(
+        "global_keymap() is deprecated, use keymap('global') instead",
+        DeprecationWarning
+    )
     return GLOBAL_KEYMAP
 
 
@@ -497,6 +503,10 @@ def webbuffer_keymap():
     This keymap is active when there is no focus for an editable
     element in web contents.
     """
+    warnings.warn(
+        "webbuffer_keymap() is deprecated, use keymap('webbuffer') instead",
+        DeprecationWarning
+    )
     return BUFFER_KEYMAP
 
 
@@ -507,4 +517,14 @@ def content_edit_keymap():
     Local keymap activated when a webcontent field (input, textarea,
     ...) is focused
     """
+    warnings.warn(
+        "content_edit_keymap() is deprecated, use keymap('webcontent-edit')"
+        " instead",
+        DeprecationWarning
+    )
     return CONTENT_EDIT_KEYMAP
+
+
+def keymap(name):
+    """Get a keymap given its name."""
+    return KEYMAPS[name]

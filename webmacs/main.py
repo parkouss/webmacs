@@ -21,6 +21,7 @@ import imp
 import sys
 import atexit
 import os
+import warnings
 
 from PyQt5.QtNetwork import QAbstractSocket
 
@@ -78,6 +79,8 @@ def setup_logging(level, webcontent_level):
         logger.addHandler(handler)
 
     webcontent.propagate = False
+
+    warnings.simplefilter('always', DeprecationWarning)
 
 
 def setup_logging_on_disk(log_dir, backup_count=5):
