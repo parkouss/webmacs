@@ -17,7 +17,7 @@ import logging
 
 from PyQt5.QtCore import QObject, QEvent
 
-from .keymaps import KeyPress, global_keymap, CHAR2KEY
+from .keymaps import KeyPress, GLOBAL_KEYMAP, CHAR2KEY
 from . import hooks
 from . import COMMANDS, minibuffer_show_info, CommandContext, \
     current_minibuffer
@@ -154,7 +154,7 @@ class KeyEater(object):
         if self._local_key_map:
             yield self._local_key_map
         if self._use_global_keymap:
-            yield global_keymap()
+            yield GLOBAL_KEYMAP
 
     def _add_keypress(self, keypress):
         self._keypresses.append(keypress)

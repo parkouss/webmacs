@@ -8,6 +8,7 @@ from webmacs.commands.webjump import WEBJUMPS
 from webmacs.application import _app_requires
 from webmacs.variables import VARIABLES
 from webmacs.mode import MODES
+from webmacs.keymaps import KEYMAPS
 
 
 # to include all commands, etc.
@@ -102,8 +103,21 @@ class WebmacsModes(SimpleAutoDirective):
             result.append(line, "")
 
 
+class WebmacsKeymaps(SimpleAutoDirective):
+    def _run(self):
+        result = self._result
+
+        table = [("Name", "Description")]
+        for name in sorted(KEYMAPS):
+            km = KEYMAPS[name]
+            table.append((name, km.doc or ""))
+
+        for line in as_rest_table(table):
+            result.append(line, "")
+
 def setup(app):
     app.add_directive("webmacs-commands", WebmacsCommands)
     app.add_directive("webmacs-webjumps", WebmacsWebjumps)
     app.add_directive("webmacs-variables", WebmacsVariables)
     app.add_directive("webmacs-modes", WebmacsModes)
+    app.add_directive("webmacs-keymaps", WebmacsKeymaps)

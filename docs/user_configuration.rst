@@ -132,16 +132,13 @@ In webmacs, like in emacs, it is possible to bind a key to command on a given ke
 Keymaps
 -------
 
-There are multiple keymaps, the most useful are:
+Here is the list of available keymaps. Note you can see them live (with their
+associated key bindings) in webmacs by running the command `describe-bindings`.
 
-- the global keymap (returned by
-  :func:`webmacs.keymaps.global_keymap`). This keymap is almost always
-  enabled and act as a fallback to the current local keymap.
+.. webmacs-keymaps::
 
-- the webbuffer keymap (returned by
-  :data:`webmacs.keymaps.webbuffer_keymap`). This keymap is active as
-  the current local keymap when there is not editable field focused in
-  the web content buffer.
+A keymap object in user configuration is retrieved with
+:func:`webmacs.keymaps.keymap`.
 
 
 Commands
@@ -161,11 +158,11 @@ You should use :meth:`webmacs.keymaps.Keymap.define_key`. Here is an example:
 
    from webmacs import keymaps
 
-   global_map = keymaps.global_keymap()
+   global_map = keymaps.keymap("global")
    global_map.define_key("C-c |", "split-view-right")
    global_map.define_key("C-c _", "split-view-bottom")
 
-   buffer_keymap = keymaps.webbuffer_keymap()
+   buffer_keymap = keymaps.keymap("webbuffer")
    buffer_keymap.define_key("x", "close-buffer")
 
 
