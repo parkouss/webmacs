@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [0.6] - 2018-08-20
+
 ### Fixed
 
 - crash when opening in a new window (from right-click menu on a link), in qt
