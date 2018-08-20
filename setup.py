@@ -63,9 +63,22 @@ setup(
     description='Keyboard driven web browser, emacs-like',
     author='Julien Pagès',
     author_email='j.parkouss@gmail.com',
-    url='todo',
+    url='https://github.com/parkouss/webmacs',
     long_description='''
-Work in progress.
+A browser for keyboard-based web navigation.
+
+Keybindings are emacs-friendly, most of them took from the conkeror
+(http://conkeror.org/) project which is not maintained anymore.
+
+It is based on qtwebengine, which in turns uses chromium for the web engine.
+
+Some of the features are:
+
+- integrated ad-blocker
+- emacs like navigation nearly everywhere (C-n, C-p, ...)
+- hinting to navigate with keyboard only
+- and a lot more, see the project url
+
 ''',
     packages=find_packages(),
     install_requires=["dateparser", "jinja2", "pygments"],
