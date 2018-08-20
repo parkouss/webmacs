@@ -14,6 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import re
 
 from setuptools import setup, Extension, find_packages
 
@@ -50,9 +51,15 @@ adblocker = Extension(
     ])
 
 
+def get_version():
+    with open(os.path.join(THIS_DIR, "webmacs", "__init__.py")) as f:
+        version = re.findall("__version__ = '(.+)'", f.read())
+    return version[0]
+
+
 setup(
     name='webmacs',
-    version='1.0',
+    version=get_version(),
     description='Keyboard driven web browser, emacs-like',
     author='Julien Pagès',
     author_email='j.parkouss@gmail.com',
