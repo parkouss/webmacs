@@ -1,5 +1,5 @@
 from ..keyboardhandler import current_prefix_arg
-from ..webbuffer import create_buffer
+from ..webbuffer import create_buffer, insert_after_buffer
 from .. import current_buffer
 
 
@@ -20,10 +20,9 @@ class PromptNewBuffer(object):
             minibuffer.label.setText(minibuffer.label.text() + " (new buffer)")
 
     def get_buffer(self):
+        buf = current_buffer()
         if self.new_buffer:
-            buf = create_buffer()
+            buf = create_buffer(add_to_buffers=insert_after_buffer(buf))
             view = self.ctx.view
             view.setBuffer(buf)
-        else:
-            buf = current_buffer()
         return buf
