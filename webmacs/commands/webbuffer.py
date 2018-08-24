@@ -63,7 +63,7 @@ class BufferTableModel(QAbstractTableModel):
             if col == 0:
                 return buff.url().toString()
             else:
-                return buff.title()
+                return "[{}] {}".format(BUFFERS.index(buff) + 1, buff.title())
         elif role == Qt.DecorationRole and col == 0:
             return buff.icon()
         elif role == Qt.BackgroundColorRole:
