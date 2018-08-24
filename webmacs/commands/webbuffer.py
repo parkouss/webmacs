@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
+import itertools
+
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
@@ -135,6 +137,22 @@ class BufferKillListPrompt(BufferListPrompt):
         minibuffer.input().popup().selectRow(0)
 
 
+def show_buffer(buffer, view):
+    """
+    Display the given buffer in the given view.
+    """
+    if view.buffer() == buffer:
+        # switch to the same buffer, nothing to do
+        return
+    if buffer.view():
+        # swap buffers if the buffer is already displayed
+        otherbuffer = view.buffer()
+        view.setBuffer(None)
+        otherview = buffer.view()
+        otherview.setBuffer(otherbuffer)
+    view.setBuffer(buffer)
+
+
 @define_command("switch-buffer", prompt=BufferSwitchListPrompt)
 def switch_buffer(ctx):
     """
@@ -142,18 +160,35 @@ def switch_buffer(ctx):
     """
     selected = ctx.prompt.index()
     if selected.row() >= 0:
-        view = ctx.view
-        buffer = selected.internalPointer()
-        if view.buffer() == buffer:
-            # swith to the same buffer, nothing to do
-            return
-        if buffer.view():
-            # swap buffers if the buffer is already displayed
-            otherbuffer = view.buffer()
-            view.setBuffer(None)
-            otherview = buffer.view()
-            otherview.setBuffer(otherbuffer)
-        view.setBuffer(buffer)
+        show_buffer(selected.internalPointer(), ctx.view)
+
+
+def _next_buffer(ctx, reverse=False):
+    if len(BUFFERS) <= 1:
+        return
+
+    buffers = itertools.cycle(reversed(BUFFERS) if reverse else BUFFERS)
+    next_b = next(buffers)
+    while next_b != ctx.buffer:
+        next_b = next(buffers)
+
+    show_buffer(next(buffers), ctx.view)
+
+
+@define_command("next-buffer")
+def next_buffer(ctx):
+    """
+    Cycle to the next buffer in the current view.
+    """
+    _next_buffer(ctx)
+
+
+@define_command("previous-buffer")
+def previous_buffer(ctx):
+    """
+    Cycle to the previous buffer in the current view.
+    """
+    _next_buffer(ctx, reverse=True)
 
 
 class OpenDevToolsPrompt(BufferListPrompt):
