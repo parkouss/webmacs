@@ -95,5 +95,6 @@ def init_minibuffer_right_labels():
     hooks.local_mode_changed.add(
         lambda a: update_minibuffer_right_labels()
     )
+    hooks.webbuffer_closed.add(on_buffer_closed)
 
     update_minibuffer_right_labels()
