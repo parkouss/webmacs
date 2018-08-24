@@ -15,7 +15,6 @@
 
 import logging
 import time
-import functools
 
 from PyQt5.QtCore import QUrl, pyqtSlot as Slot
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
@@ -66,18 +65,6 @@ def close_buffer(wb):
     return True
 
 
-def insert_after_buffer(buff):
-    """
-    Method that can be given to the add_to_buffers named parameter of the
-    WebBuffer instance.
-    The newly created buffer will be inserted just after the buffer given in
-    this function parameter. It is useful when a web buffer is opened from
-    another one, so going back and forward using next-buffer and
-    previous-buffer seems more natural.
-    """
-    return functools.partial(BUFFERS.insert, BUFFERS.index(buff) + 1)
-
-
 class WebBuffer(QWebEnginePage):
     """
     Represent some web page content.
@@ -90,18 +77,20 @@ class WebBuffer(QWebEnginePage):
         QWebEnginePage.ErrorMessageLevel: logging.ERROR,
     }
 
-    def __init__(self, url=None, add_to_buffers=None):
+    def __init__(self, url=None):
         """
         Create a webbuffer.
 
         :param url: the url to use for the buffer. Must be an instance of QUrl,
             an str or None to not load any url.
-        :param add_to_buffers: a method to insert the about to be created
-            buffer instance in the BUFFERS list. Default to BUFFERS.append.
         """
         QWebEnginePage.__init__(self)
         self.last_use = time.time()
-        (add_to_buffers or BUFFERS.append)(self)
+        cb = current_buffer()
+        if cb:
+            BUFFERS.insert(BUFFERS.index(cb) + 1, self)
+        else:
+            BUFFERS.append(self)
         hooks.webbuffer_created(self)
 
         self.fullScreenRequested.connect(self._on_full_screen_requested)
@@ -283,7 +272,7 @@ class WebBuffer(QWebEnginePage):
         self.setFeaturePermission(url, feature, permission)
 
     def createWindow(self, type):
-        buffer = create_buffer(add_to_buffers=insert_after_buffer(self))
+        buffer = create_buffer()
         view = self.view()
         if view is None:
             view = current_window().current_webview()
