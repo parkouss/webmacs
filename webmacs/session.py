@@ -16,7 +16,7 @@
 import json
 import logging
 
-from .import BUFFERS, windows, current_window
+from .import BUFFERS, windows, current_window, recent_buffers
 from .webbuffer import create_buffer, QUrl, DelayedLoadingUrl, close_buffer
 from .window import Window
 
@@ -71,7 +71,7 @@ def _session_save(stream):
     urls = [{
         "url": b.url().toString(),
         "title": b.title()
-    } for b in BUFFERS]
+    } for b in recent_buffers()]
 
     json.dump({
         "version": FORMAT_VERSION,

@@ -100,8 +100,15 @@ def current_buffer():
 
 
 def buffers():
-    "Return the list of buffers."
+    "Returns the list of buffers."
     return BUFFERS
+
+
+def recent_buffers():
+    """
+    Returns an iterable of buffers, most recently used first.
+    """
+    return sorted(BUFFERS, key=lambda b: b.last_use, reverse=True)
 
 
 def current_minibuffer():

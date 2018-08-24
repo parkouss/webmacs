@@ -14,6 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import time
 
 from PyQt5.QtCore import QUrl, pyqtSlot as Slot
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
@@ -23,7 +24,7 @@ from collections import namedtuple
 from .keymaps import BUFFER_KEYMAP as KEYMAP
 from . import hooks
 from . import BUFFERS, current_minibuffer, minibuffer_show_info, \
-    current_buffer, call_later, current_window
+    current_buffer, call_later, current_window, recent_buffers
 from .content_handler import WebContentHandler
 from .application import app
 from .minibuffer.prompt import YesNoPrompt
@@ -42,7 +43,7 @@ def close_buffer(wb):
     if view:
         # buffer is currently visible, search for a buffer that is not visible
         # yet to put it in the view
-        invisibles = [b for b in BUFFERS if not b.view()]
+        invisibles = [b for b in recent_buffers() if not b.view()]
         if not invisibles:
             if len(view.main_window.webviews()) > 1:
                 # we can close the current view if it is not alone
@@ -78,8 +79,8 @@ class WebBuffer(QWebEnginePage):
 
     def __init__(self, url=None):
         QWebEnginePage.__init__(self)
-        # put the most recent buffer at the beginning of the BUFFERS list
-        BUFFERS.insert(0, self)
+        self.last_use = time.time()
+        BUFFERS.append(self)
         hooks.webbuffer_created(self)
 
         self.fullScreenRequested.connect(self._on_full_screen_requested)
