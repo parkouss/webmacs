@@ -14,6 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PyQt5.QtGui import QColor
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from ..commands import define_command
@@ -21,8 +22,22 @@ from ..minibuffer import Prompt, KEYMAP
 from ..webbuffer import WebBuffer, close_buffer, create_buffer
 from ..killed_buffers import KilledBuffer
 from ..keyboardhandler import send_key_event
-from .. import BUFFERS, version
+from .. import BUFFERS, version, current_buffer
+from .. import variables
 from ..keymaps import Keymap, KeyPress
+
+
+switch_buffer_current_color = variables.define_variable(
+    "switch-buffer-current-color",
+    "The color to use for the current buffer in the switch-buffer list."
+    " Set to an empty string if you don't want a special color.",
+    "#c0d5f7",
+    conditions=(
+        variables.condition(
+            lambda v: isinstance(v, str), "Must be an instance of string"
+        ),
+    ),
+)
 
 
 class BufferTableModel(QAbstractTableModel):
@@ -49,6 +64,10 @@ class BufferTableModel(QAbstractTableModel):
                 return buff.title()
         elif role == Qt.DecorationRole and col == 0:
             return buff.icon()
+        elif role == Qt.BackgroundColorRole:
+            if buff == current_buffer():
+                if switch_buffer_current_color.value:
+                    return QColor(switch_buffer_current_color.value)
 
     def index(self, row, col, parent=QModelIndex()):
         try:
