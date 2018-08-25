@@ -14,7 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 from .. import hooks, variables, keyboardhandler
-from .. import windows, BUFFERS
+from .. import windows, BUFFERS, call_later
 
 
 MINIBUFFER_RIGHTLABEL = variables.define_variable(
@@ -28,7 +28,21 @@ MINIBUFFER_RIGHTLABEL = variables.define_variable(
 )
 
 
+REQUEST_WINDOW_UPDATE = {}
+
+
 def update_minibuffer_right_label(window):
+    # only really update the minibuffer once in a qt loop cycle.
+    if window in REQUEST_WINDOW_UPDATE:
+        return
+
+    call_later(lambda: _update_minibuffer_right_label(window))
+    REQUEST_WINDOW_UPDATE[window] = True
+
+
+def _update_minibuffer_right_label(window):
+    del REQUEST_WINDOW_UPDATE[window]
+
     buff = window.current_webview().buffer()
 
     try:
@@ -96,5 +110,11 @@ def init_minibuffer_right_labels():
         lambda a: update_minibuffer_right_labels()
     )
     hooks.webbuffer_closed.add(on_buffer_closed)
+
+    # following hook should not be useful, but this ensure we don't keep
+    # window references
+    hooks.window_closed.add(
+        lambda w: REQUEST_WINDOW_UPDATE.pop(w, None)
+    )
 
     update_minibuffer_right_labels()

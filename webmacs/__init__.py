@@ -17,6 +17,8 @@ import importlib
 
 from PyQt5.QtCore import QObject, QEvent, QTimer
 
+from . import hooks
+
 
 __version__ = '0.7'
 
@@ -55,6 +57,7 @@ class WindowsHandler(QObject):
         t = event.type()
         if t == QEvent.WindowActivate:
             self.current_window = window
+            hooks.window_activated(window)
         elif t == QEvent.Close:
             if window.quit_if_last_closed and len(self.windows) == 1:
                 if self._on_last_window_closing():
@@ -63,6 +66,7 @@ class WindowsHandler(QObject):
             window.deleteLater()
             if window == self.current_window:
                 self.current_window = None
+            hooks.window_closed(window)
 
         return QObject.eventFilter(self, window, event)
 
