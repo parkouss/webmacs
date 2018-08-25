@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix refreshing buffer count in the minibuffer right label when a buffer is
+  closed.
+
+### Added
+
+- Added the **switch-buffer-current-color** variable that customize the color of
+  the current buffer row in the **switch-buffer** displayed list. The color
+  defaults to a light blue. Set to an empty string to get the old behavior (no
+  specific color).
+
 ## [0.6] - 2018-08-20
 
 ### Fixed
