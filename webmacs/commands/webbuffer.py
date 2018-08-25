@@ -24,7 +24,7 @@ from ..minibuffer import Prompt, KEYMAP
 from ..webbuffer import WebBuffer, close_buffer, create_buffer
 from ..killed_buffers import KilledBuffer
 from ..keyboardhandler import send_key_event
-from .. import BUFFERS, version, current_buffer, recent_buffers
+from .. import BUFFERS, version, current_buffer
 from .. import variables
 from ..keymaps import Keymap, KeyPress
 
@@ -45,7 +45,7 @@ switch_buffer_current_color = variables.define_variable(
 class BufferTableModel(QAbstractTableModel):
     def __init__(self):
         QAbstractTableModel.__init__(self)
-        self._buffers = list(recent_buffers())
+        self._buffers = list(BUFFERS)
 
     def rowCount(self, index=QModelIndex()):
         return len(self._buffers)
@@ -117,11 +117,12 @@ class BufferListPrompt(Prompt):
 
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
-        # auto-select the most recent not currently visible buffer
-        for i, buf in enumerate(recent_buffers()):
-            if not buf.view():
-                minibuffer.input().popup().selectRow(i)
-                break
+        # select the next buffer
+
+        index = BUFFERS.index(current_buffer()) + 1
+        if index >= len(BUFFERS):
+            index = 0
+        minibuffer.input().popup().selectRow(index)
 
 
 class BufferSwitchListPrompt(BufferListPrompt):
@@ -134,7 +135,7 @@ class BufferKillListPrompt(BufferListPrompt):
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
         # auto-select the currently visible buffer
-        minibuffer.input().popup().selectRow(0)
+        minibuffer.input().popup().selectRow(BUFFERS.index(current_buffer()))
 
 
 def show_buffer(buffer, view):
