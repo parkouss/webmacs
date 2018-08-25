@@ -44,11 +44,12 @@ class KilledBuffer(object):
             new_all.appendleft(item)
         cls.all = new_all
 
-    def __init__(self, url, title, icon, history_data):
+    def __init__(self, url, title, icon, history_data, delayed):
         self.url = url
         self.title = title
         self.icon = icon
         self.history_data = history_data
+        self.delayed = delayed
         self.all.appendleft(self)
 
     @classmethod
@@ -61,7 +62,8 @@ class KilledBuffer(object):
             buff.url(),
             buff.title(),
             buff.icon(),
-            data
+            data,
+            buff.delayed_loading_url()
         )
 
     def revive(self):
@@ -69,6 +71,9 @@ class KilledBuffer(object):
         stream = QDataStream(self.history_data, QIODevice.ReadOnly)
         stream >> buff.history()
         self.all.remove(self)
+
+        if self.delayed:
+            buff.load(self.delayed.url)
         return buff
 
 

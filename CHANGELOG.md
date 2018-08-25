@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - Fix refreshing buffer count in the minibuffer right label when a buffer is
   closed.
+- Fix reviving buffers that were not loaded (after restoring a session).
 
 ### Added
 
