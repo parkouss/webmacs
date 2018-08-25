@@ -41,7 +41,12 @@ def update_minibuffer_right_label(window):
 
 
 def _update_minibuffer_right_label(window):
-    del REQUEST_WINDOW_UPDATE[window]
+    try:
+        # KeyError if the window was closed, in such case no update is
+        # required.
+        del REQUEST_WINDOW_UPDATE[window]
+    except KeyError:
+        return
 
     buff = window.current_webview().buffer()
 
