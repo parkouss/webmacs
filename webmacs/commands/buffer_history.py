@@ -65,7 +65,7 @@ class BufferHistoryTableModel(QAbstractTableModel):
 
         img = QImage()
         img.loadFromData(reply.readAll())
-        if img.height() != 16 and img.width != 16:
+        if not img.isNull() and img.height() != 16 and img.width != 16:
             img = img.scaled(16, 16, Qt.KeepAspectRatio)
 
         reply.deleteLater()
