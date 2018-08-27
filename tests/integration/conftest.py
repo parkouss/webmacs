@@ -24,6 +24,8 @@ _app = None
 
 
 def get_test_page(name):
+    if name.endswith(".html"):
+        return os.path.join(THIS_DIR, name)
     return os.path.join(THIS_DIR, name, "index.html")
 
 
@@ -233,11 +235,12 @@ def session(qtbot, qapp, mocker):
 
     yield sess
 
-    for buffer in buffers():
-        close_buffer(buffer)
-
     for w in windows():
+        w.current_webview().setBuffer(None)
         w.close()
         w.deleteLater()
+
+    for buffer in buffers():
+        close_buffer(buffer)
 
     qapp.processEvents()
