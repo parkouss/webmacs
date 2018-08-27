@@ -16,33 +16,37 @@
 import json
 import logging
 
-from .import BUFFERS, windows, current_window, recent_buffers
+from .import BUFFERS, windows, current_window
 from .webbuffer import create_buffer, QUrl, DelayedLoadingUrl, close_buffer
 from .window import Window
 
 
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2
 
 
 def _session_load(stream):
     data = json.load(stream)
     version = data.get("version", 0)
     urls = data["urls"]
+    if version < 2:
+        urls = reversed(urls)
 
     # apply the session config
 
     # now, load urls in buffers
-    for url in reversed(urls):
+    for url in urls:
         if isinstance(url, str):
             # old format, no delay loading support
             # TODO must be removed after some time
             create_buffer(url)
         else:
             # new format, url must be a dict
-            create_buffer(DelayedLoadingUrl(
+            buff = create_buffer(DelayedLoadingUrl(
                 url=QUrl(url["url"]),
                 title=url["title"]
             ))
+            if version >= 2:
+                buff.last_use = url["last_use"]
 
     if version > 0:
         def create_window(wdata):
@@ -70,8 +74,9 @@ def _session_load(stream):
 def _session_save(stream):
     urls = [{
         "url": b.url().toString(),
-        "title": b.title()
-    } for b in recent_buffers()]
+        "title": b.title(),
+        "last_use": b.last_use,
+    } for b in BUFFERS]
 
     json.dump({
         "version": FORMAT_VERSION,
