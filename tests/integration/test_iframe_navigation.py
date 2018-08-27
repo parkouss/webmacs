@@ -1,7 +1,3 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtTest import QTest
-
-
 def test_iframe_navigation(session):
     """
     Webcontent-edit keymaps are used even in sub frames.

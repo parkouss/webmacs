@@ -14,7 +14,6 @@ from webmacs import (windows, buffers, WINDOWS_HANDLER, current_buffer,
 from webmacs.webbuffer import create_buffer
 from webmacs.window import Window
 from webmacs.webbuffer import close_buffer
-from webmacs.keymaps.content_edit import KEYMAP as wce_keymap
 from webmacs.keyboardhandler import local_keymap
 from webmacs.keymaps import KeyPress, Keymap, KEYMAPS
 
