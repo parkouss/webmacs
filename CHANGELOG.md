@@ -18,6 +18,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   the current buffer row in the **switch-buffer** displayed list. The color
   defaults to a light blue. Set to an empty string to get the old behavior (no
   specific color).
+- **switch-buffer** now list buffers using the internal buffer order.
+- Buffers now have numbers and the current buffer number is displayed in the
+  minibuffer right label as well as in the **switch-buffer** and
+  **switch-recent-buffer** lists.
+- **M-n** and **M-p** are bound respectively to the new commands **next-buffer**
+  and **previous-buffer**, allowing to cycle through buffers.
+
+### Changed
+
+- The old **switch-buffer** behavior is now offered with the
+  **switch-recent-buffer** command. The latter is now bound to **C-x b** and
+  **C-x C-b** so there is no visible change using those keybindings.
 
 ## [0.6] - 2018-08-20
 
