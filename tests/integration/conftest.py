@@ -14,8 +14,7 @@ from webmacs import (windows, buffers, WINDOWS_HANDLER, current_buffer,
 from webmacs.webbuffer import create_buffer
 from webmacs.window import Window
 from webmacs.webbuffer import close_buffer
-from webmacs.keyboardhandler import local_keymap
-from webmacs.keymaps import KeyPress, Keymap, KEYMAPS
+from webmacs.keymaps import KeyPress
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -72,6 +71,8 @@ def qapp(wm, qapp_args):
 
 
 class TestSession(object):
+    NAV_HIGHLIGHT_COLOR = 'rgb(136, 255, 0)'
+
     def __init__(self, qtbot, qapp, prompt_exec):
         self.qtbot = qtbot
         self.qapp = qapp
@@ -152,6 +153,10 @@ class TestSession(object):
         assert self.wait_until(ready), "javascript result was %r" % result[0]
         return True
 
+    def check_nav_highlighted(self, js_elem):
+        self.check_javascript("%s.style.backgroundColor" % js_elem,
+                              self.NAV_HIGHLIGHT_COLOR)
+
     def wait_iframes(self, buffer=None):
         buffer = buffer or self.buffer
         script = (
@@ -183,24 +188,6 @@ class TestSession(object):
                 self.qapp.postEvent(w, key.to_qevent(QEvent.KeyPress))
                 self.qapp.postEvent(w, key.to_qevent(QEvent.KeyRelease))
         self.qapp.processEvents()
-
-    def wait_local_keymap(self, name_or_keymap):
-        keymap = None
-        if isinstance(name_or_keymap, Keymap):
-            keymap = name_or_keymap
-        else:
-            keymap = KEYMAPS[name_or_keymap]
-
-        if keymap is None:
-            raise ValueError("Unknown keymap %s" % name_or_keymap)
-
-        def wait():
-            if local_keymap() == keymap:
-                return True
-
-        assert self.wait_until(wait), (
-            "keymap %s is not active (%s)" % (name_or_keymap, local_keymap())
-        )
 
 
 class Waiter(object):
