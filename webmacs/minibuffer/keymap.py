@@ -40,6 +40,16 @@ def previous_completion(ctx):
     ctx.minibuffer.input().select_next_completion(False)
 
 
+@KEYMAP.define_key("M-<")
+def first_completion(ctx):
+    ctx.minibuffer.input().select_first_completion()
+
+
+@KEYMAP.define_key("M->")
+def last_completion(ctx):
+    ctx.minibuffer.input().select_last_completion()
+
+
 def _prompt_history(ctx, func):
     minibuff = ctx.minibuffer
     history = minibuff.prompt().history

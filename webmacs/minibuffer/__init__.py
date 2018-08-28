@@ -240,6 +240,13 @@ class MinibufferInput(QLineEdit):
 
         self._popup.selectRow(row)
 
+    def select_first_completion(self):
+        self._popup.selectRow(0)
+
+    def select_last_completion(self):
+        entries = self._proxy_model.rowCount()
+        self._popup.selectRow(entries - 1)
+
     def mark(self):
         return self._mark
 
