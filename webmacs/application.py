@@ -25,7 +25,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtNetwork import QNetworkAccessManager
 
 from . import require
-from .version import opengl_vendor
+from .version import opengl_vendor, is_linux
 from .adblock import Adblocker, AdblockUpdateRunner, adblock_urls_rules
 from .download_manager import DownloadManager
 from .profile import default_profile
@@ -36,7 +36,7 @@ from .spell_checking import SpellCheckingUpdateRunner, \
 from .runnable import run
 
 
-if sys.platform.startswith("linux"):
+if is_linux:
     # workaround for a nvidia issue
     # see https://bugs.launchpad.net/ubuntu/+source/python-qt4/+bug/941826
     import ctypes
