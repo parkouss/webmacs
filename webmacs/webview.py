@@ -13,13 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
+import time
+
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget
 from PyQt5.QtCore import QEvent
 
 from .keyboardhandler import local_keymap, set_local_keymap, KEY_EATER, \
     LOCAL_KEYMAP_SETTER
-from . import BUFFERS, windows, variables
+from . import windows, variables
 from .application import app
 
 
@@ -58,7 +60,7 @@ class WebView(QFrame):
         self.setLayout(layout)
         self.setStyleSheet(webview_stylesheet.value)
 
-    def setBuffer(self, buffer):
+    def setBuffer(self, buffer, update_last_use=True):
         otherviews = [w for w in self.main_window.webviews()
                       if w != self]
         for v in otherviews:
@@ -89,10 +91,9 @@ class WebView(QFrame):
         if url:
             buffer.load(url.url)
         LOCAL_KEYMAP_SETTER.buffer_opened_in_view(buffer)
-        # move the buffer so it becomes the most recently opened
-        if buffer != BUFFERS[0]:
-            BUFFERS.remove(buffer)
-            BUFFERS.insert(0, buffer)
+        # mark the buffer to be the most recently opened
+        if update_last_use:
+            buffer.last_use = time.time()
 
         if self.main_window.current_webview() == self:
             # keyboard focus is lost without that.

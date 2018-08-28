@@ -20,7 +20,7 @@ from .. import windows, BUFFERS, call_later
 MINIBUFFER_RIGHTLABEL = variables.define_variable(
     "minibuffer-right-label",
     "Format for displaying some information in right label of minibuffer.",
-    "{loading}{mode}: {local_keymap} [{buffer_count}]",
+    "{loading}{mode}: {local_keymap} [{buffer_current}/{buffer_count}]",
     conditions=(
         variables.condition(lambda v: isinstance(v, str),
                             "Must be an instance of string"),
@@ -59,6 +59,7 @@ def _update_minibuffer_right_label(window):
 
     window.minibuffer().rlabel.setText(
         MINIBUFFER_RIGHTLABEL.value.format(
+            buffer_current=BUFFERS.index(buff) + 1,
             buffer_count=len(BUFFERS),
             local_keymap=keyboardhandler.local_keymap(),
             mode=getattr(buff, "mode", "unknown"),
@@ -76,7 +77,7 @@ BUFF_PROGRESS = {}
 
 
 def update_label_for_buffer(buff):
-    update_minibuffer_right_label(buff.view().main_window)
+    update_minibuffer_right_labels()
 
 
 def init_minibuffer_right_labels():

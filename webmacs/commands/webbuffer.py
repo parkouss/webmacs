@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
+import itertools
+
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
@@ -22,7 +24,7 @@ from ..minibuffer import Prompt, KEYMAP
 from ..webbuffer import WebBuffer, close_buffer, create_buffer
 from ..killed_buffers import KilledBuffer
 from ..keyboardhandler import send_key_event
-from .. import BUFFERS, version, current_buffer
+from .. import BUFFERS, version, current_buffer, recent_buffers
 from .. import variables
 from ..keymaps import Keymap, KeyPress
 
@@ -41,9 +43,9 @@ switch_buffer_current_color = variables.define_variable(
 
 
 class BufferTableModel(QAbstractTableModel):
-    def __init__(self):
+    def __init__(self, buffers):
         QAbstractTableModel.__init__(self)
-        self._buffers = BUFFERS[:]
+        self._buffers = list(buffers)
 
     def rowCount(self, index=QModelIndex()):
         return len(self._buffers)
@@ -61,7 +63,7 @@ class BufferTableModel(QAbstractTableModel):
             if col == 0:
                 return buff.url().toString()
             else:
-                return buff.title()
+                return "[{}] {}".format(BUFFERS.index(buff) + 1, buff.title())
         elif role == Qt.DecorationRole and col == 0:
             return buff.icon()
         elif role == Qt.BackgroundColorRole:
@@ -111,18 +113,34 @@ class BufferListPrompt(Prompt):
     keymap = BUFFERLIST_KEYMAP
 
     def completer_model(self):
-        return BufferTableModel()
+        return BufferTableModel(self.ordered_buffers())
+
+    def ordered_buffers(self):
+        """
+        How to display buffers.
+        """
+        return BUFFERS
 
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
-        # auto-select the most recent not currently visible buffer
-        for i, buf in enumerate(BUFFERS):
-            if not buf.view():
-                minibuffer.input().popup().selectRow(i)
-                break
+        # select the next buffer
+        buffers = self.ordered_buffers()
+        index = buffers.index(current_buffer()) + 1
+        if index >= len(buffers):
+            index = 0
+        minibuffer.input().popup().selectRow(index)
+
+
+class RecentBufferListPrompt(BufferListPrompt):
+    def ordered_buffers(self):
+        return recent_buffers()
 
 
 class BufferSwitchListPrompt(BufferListPrompt):
+    label = "switch to buffer:"
+
+
+class RecentBufferSwitchListPrompt(RecentBufferListPrompt):
     label = "switch to buffer:"
 
 
@@ -132,7 +150,24 @@ class BufferKillListPrompt(BufferListPrompt):
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
         # auto-select the currently visible buffer
-        minibuffer.input().popup().selectRow(0)
+        buffers = self.ordered_buffers()
+        minibuffer.input().popup().selectRow(buffers.index(current_buffer()))
+
+
+def show_buffer(buffer, view):
+    """
+    Display the given buffer in the given view.
+    """
+    if view.buffer() == buffer:
+        # switch to the same buffer, nothing to do
+        return
+    if buffer.view():
+        # swap buffers if the buffer is already displayed
+        otherbuffer = view.buffer()
+        view.setBuffer(None)
+        otherview = buffer.view()
+        otherview.setBuffer(otherbuffer)
+    view.setBuffer(buffer)
 
 
 @define_command("switch-buffer", prompt=BufferSwitchListPrompt)
@@ -142,18 +177,45 @@ def switch_buffer(ctx):
     """
     selected = ctx.prompt.index()
     if selected.row() >= 0:
-        view = ctx.view
-        buffer = selected.internalPointer()
-        if view.buffer() == buffer:
-            # swith to the same buffer, nothing to do
-            return
-        if buffer.view():
-            # swap buffers if the buffer is already displayed
-            otherbuffer = view.buffer()
-            view.setBuffer(None)
-            otherview = buffer.view()
-            otherview.setBuffer(otherbuffer)
-        view.setBuffer(buffer)
+        show_buffer(selected.internalPointer(), ctx.view)
+
+
+@define_command("switch-recent-buffer", prompt=RecentBufferSwitchListPrompt)
+def switch_recent_buffer(ctx):
+    """
+    Prompt to select a buffer to display in the current view.
+    """
+    selected = ctx.prompt.index()
+    if selected.row() >= 0:
+        show_buffer(selected.internalPointer(), ctx.view)
+
+
+def _next_buffer(ctx, reverse=False):
+    if len(BUFFERS) <= 1:
+        return
+
+    buffers = itertools.cycle(reversed(BUFFERS) if reverse else BUFFERS)
+    next_b = next(buffers)
+    while next_b != ctx.buffer:
+        next_b = next(buffers)
+
+    show_buffer(next(buffers), ctx.view)
+
+
+@define_command("next-buffer")
+def next_buffer(ctx):
+    """
+    Cycle to the next buffer in the current view.
+    """
+    _next_buffer(ctx)
+
+
+@define_command("previous-buffer")
+def previous_buffer(ctx):
+    """
+    Cycle to the previous buffer in the current view.
+    """
+    _next_buffer(ctx, reverse=True)
 
 
 class OpenDevToolsPrompt(BufferListPrompt):

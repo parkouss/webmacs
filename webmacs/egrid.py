@@ -206,17 +206,14 @@ class ViewGridLayout(QLayout):
         return item_dump_state(self._root)
 
     def restore_state(self, grid_data):
-        buffers = list(BUFFERS)
-
         main_view = self._current_view
 
         def restore(data, view):
             split = data.get("split")
 
             if split is None:
-                # attach the buffer to the view. Note the global variable
-                # BUFFERS is modified by this call, we reset it later
-                view.setBuffer(buffers[data["buffer"]])
+                # attach the buffer to the view.
+                view.setBuffer(BUFFERS[data["buffer"]], update_last_use=False)
                 if data.get("current"):
                     self._current_view = view
 
@@ -236,10 +233,6 @@ class ViewGridLayout(QLayout):
                     restore(wdata, view)
 
         restore(grid_data, main_view)
-
-        # put back buffer order
-        BUFFERS.clear()
-        BUFFERS.extend(buffers)
 
         # and update the focus of the views
         for w in self._views:

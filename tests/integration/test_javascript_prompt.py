@@ -37,7 +37,7 @@ def test_confirm(session, selection, input, check):
         if not input:
             session.call_next(do_check)
 
-    def confirm(prompt , _1):
+    def confirm(prompt, _1):
         with session.wait_signal(prompt.closed):
             session.keyclicks(input)
 
