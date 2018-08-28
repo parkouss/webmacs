@@ -218,7 +218,7 @@ class MinibufferInput(QLineEdit):
             self._on_completion_activated(self._proxy_model.index(0, 0),
                                           hide_popup=hide_popup)
 
-    def select_next_completion(self, forward=True):
+    def select_next_completion(self, forward=True, steps=1):
         model = self._proxy_model
         entries = model.rowCount()
         if entries == 0:
@@ -230,11 +230,11 @@ class MinibufferInput(QLineEdit):
         else:
             row = selection.row()
             if forward:
-                row = row + 1
+                row = row + steps
                 if row >= entries:
                     row = 0
             else:
-                row = row - 1
+                row = row - steps
                 if row < 0:
                     row = (entries - 1)
 
@@ -246,6 +246,10 @@ class MinibufferInput(QLineEdit):
     def select_last_completion(self):
         entries = self._proxy_model.rowCount()
         self._popup.selectRow(entries - 1)
+
+    def select_next_page_completion(self, forward=True):
+        self.select_next_completion(forward=forward,
+                                    steps=self._popup._max_visible_items - 1)
 
     def mark(self):
         return self._mark
