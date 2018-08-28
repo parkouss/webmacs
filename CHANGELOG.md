@@ -24,6 +24,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   **switch-recent-buffer** lists.
 - **M-n** and **M-p** are bound respectively to the new commands **next-buffer**
   and **previous-buffer**, allowing to cycle through buffers.
+- **M-<**, **M->**, **C-v**, **M-v** bindings in the minibuffer lists for
+  navigation.
 
 ### Changed
 
