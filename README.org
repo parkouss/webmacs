@@ -121,6 +121,13 @@ py.test <path_to_webmacs_sources>/tests --no-xvfb
 - edit text fields with an external editor (defaulting to emacsclient): *C-x e*
 
 
+Note you can see all the commands live using *describe-commands* (*M-x*
+describe-commands RET), all the bindings using *describe-bindings*, and
+variables using *describe-variables*.
+
+Also similarly to emacs you can use *C-h k* to describe a keybinding, *C-h c* to
+describe one command and *C-h v* to describe one variable.
+
 * Documentation
 
 Documentation is available on [[http://webmacs.readthedocs.io/en/latest/index.html][readthedocs]]. Currently it is for user
