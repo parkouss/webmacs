@@ -51,13 +51,14 @@ def last_completion(ctx):
 
 
 @KEYMAP.define_key("C-v")
-def next_completion(ctx):
+def next_page_completion(ctx):
     ctx.minibuffer.input().select_next_page_completion()
 
 
 @KEYMAP.define_key("M-v")
-def previous_completion(ctx):
+def previous_page_completion(ctx):
     ctx.minibuffer.input().select_next_page_completion(False)
+
 
 def _prompt_history(ctx, func):
     minibuff = ctx.minibuffer
