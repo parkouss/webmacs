@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+import sys
 import logging
 import re
 
@@ -22,6 +24,12 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWebEngineWidgets import QWebEngineProfile
 from PyQt5.QtCore import QT_VERSION_STR, QT_VERSION  # noqa: F401
 from . import __version__ as WEBMACS_VERSION_STR  # noqa: F401
+
+
+is_mac = sys.platform.startswith('darwin')
+is_linux = sys.platform.startswith('linux')
+is_windows = sys.platform.startswith('win')
+is_posix = os.name == 'posix'
 
 
 def opengl_vendor():  # pragma: no cover
