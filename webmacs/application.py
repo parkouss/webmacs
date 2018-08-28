@@ -17,7 +17,7 @@ import os
 import sys
 import logging
 
-from PyQt5.QtCore import pyqtSlot as Slot
+from PyQt5.QtCore import pyqtSlot as Slot, Qt
 
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
@@ -25,7 +25,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtNetwork import QNetworkAccessManager
 
 from . import require
-from .version import opengl_vendor, is_linux
+from . import version
 from .adblock import Adblocker, AdblockUpdateRunner, adblock_urls_rules
 from .download_manager import DownloadManager
 from .profile import default_profile
@@ -36,7 +36,7 @@ from .spell_checking import SpellCheckingUpdateRunner, \
 from .runnable import run
 
 
-if is_linux:
+if version.is_linux:
     # workaround for a nvidia issue
     # see https://bugs.launchpad.net/ubuntu/+source/python-qt4/+bug/941826
     import ctypes
@@ -106,7 +106,7 @@ class Application(QApplication):
         QApplication.__init__(self, args)
         self.__class__.INSTANCE = self
 
-        if (opengl_vendor() == 'nouveau' and
+        if (version.opengl_vendor() == 'nouveau' and
             not (os.environ.get('LIBGL_ALWAYS_SOFTWARE') == '1'
                  or 'QT_XCB_FORCE_SOFTWARE_OPENGL' in os.environ)):
             sys.exit(
@@ -117,6 +117,9 @@ class Application(QApplication):
                 " opengl. Note that it might be slow, depending"
                 " on your hardware."
             )
+
+        if version.is_mac:
+            self.setAttribute(Qt.AA_MacDontSwapCtrlAndMeta)
 
         self._conf_path = conf_path
         if not os.path.isdir(self.profiles_path()):
