@@ -247,8 +247,11 @@ def main():
         try:
             user_init.init(opts)
         except Exception:
-            _handle_user_init_error("Error executing user init function in %s."
-                                    % user_init.__file__)
+            _handle_user_init_error(
+                conf_path,
+                "Error executing user init function in %s."
+                % user_init.__file__
+            )
 
     if log_to_disk.value > 0:
         setup_logging_on_disk(os.path.join(conf_path, "logs"),
