@@ -17,7 +17,6 @@ import argparse
 import signal
 import socket
 import logging
-import imp
 import sys
 import atexit
 import os
@@ -190,6 +189,28 @@ def _handle_user_init_error(conf_path, msg):
     sys.exit(1)
 
 
+if sys.version_info >= (3, 5):
+    import importlib.machinery
+    import importlib.util
+
+    def load_user_module(conf_path):
+        spec = importlib.machinery.PathFinder.find_spec("init", [conf_path])
+        if spec is None:
+            return None
+        user_init = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(user_init)
+        return user_init
+else:
+    import imp
+
+    def load_user_module(conf_path):
+        try:
+            spec = imp.find_module("init", [conf_path])
+        except ImportError:
+            return None
+        return imp.load_module("_webmacs_userconfig", *spec)
+
+
 def main():
     opts = parse_args()
 
@@ -219,17 +240,12 @@ def main():
 
     # load a user init module if any
     try:
-        spec = imp.find_module("init", [conf_path])
-    except ImportError:
-        user_init = None
-    else:
-        try:
-            user_init = imp.load_module("_webmacs_userconfig", *spec)
-        except Exception:
-            _handle_user_init_error(
-                conf_path,
-                "Error reading the user configuration."
-            )
+        user_init = load_user_module(conf_path)
+    except Exception:
+        _handle_user_init_error(
+            conf_path,
+            "Error reading the user configuration."
+        )
 
     app = Application(conf_path, [
         # The first argument passed to the QApplication args defines
