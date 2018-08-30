@@ -79,7 +79,8 @@ def setup_logging(level, webcontent_level):
 
     webcontent.propagate = False
 
-    warnings.simplefilter('always', DeprecationWarning)
+    warnings.filterwarnings('always', r"^.*$", DeprecationWarning,
+                            r"^webmacs.*$")
 
 
 def setup_logging_on_disk(log_dir, backup_count=5):
