@@ -31,7 +31,7 @@ COMMANDS = {}
 
 
 def require(module, package=__package__):
-        return importlib.import_module(module, package)
+    return importlib.import_module(module, package)
 
 
 # handler for windows, to be able to list them and determine the one currently
