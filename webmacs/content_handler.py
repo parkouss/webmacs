@@ -30,6 +30,7 @@ class WebContentHandler(QObject):
     Interface to communicate with the javascript side in the web pages.
     """
     browserObjectActivated = Signal(dict)
+    foundCurrentLinkUrl = Signal(str)
 
     def __init__(self, buff):
         QObject.__init__(self)
@@ -39,6 +40,10 @@ class WebContentHandler(QObject):
     def onTextFocus(self, enabled):
         LOCAL_KEYMAP_SETTER.web_content_edit_focus_changed(self.buffer,
                                                            enabled)
+
+    @Slot(str)
+    def currentLinkUrl(self, url):
+        self.foundCurrentLinkUrl.emit(url)
 
     @Slot(bool)
     def onCaretBrowsing(self, enabled):
