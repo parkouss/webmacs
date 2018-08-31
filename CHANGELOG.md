@@ -26,12 +26,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   and **previous-buffer**, allowing to cycle through buffers.
 - **M-<**, **M->**, **C-v**, **M-v** bindings in the minibuffer lists for
   navigation.
+- New commands and bindings added to copy stuff to clipboard.
+  **copy-current-link** bound to **c c**, **copy-current-buffer-title** bound to
+  **c t**, and copy-current-buffer-url bound to **c u** (all in the webbuffer
+  keymap)
 
 ### Changed
 
 - The old **switch-buffer** behavior is now offered with the
   **switch-recent-buffer** command. The latter is now bound to **C-x b** and
   **C-x C-b** so there is no visible change using those keybindings.
+- The **c** (copy-link) binding is now available using **c l** (think about Copy
+  Link).
 
 ## [0.6] - 2018-08-20
 

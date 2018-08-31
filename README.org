@@ -107,8 +107,8 @@ py.test <path_to_webmacs_sources>/tests --no-xvfb
 - command history within a session in minibuffer input (shortcut *M-n*, *M-p*)
 - user configuration written in Python, giving lots of power to
   customize webmacs.
-- copy link by hinting (shortcut *c*). Use the special number 0 to
-  copy the current url.
+- copy link by hinting (shortcut *c l*). Copy active link url with *c c*,
+  current buffer url with *c u*, and current buffer title with *c t*.
 - caret navigation. (shortcut *C*) to initialize caret navigation, then navigate
   using (*C-f*, *C-b*, *M-f*, *M-b*, *C-n*, *C-p*, ...) or the arrow keys. It is
   possible to select some web content using *C-Space* to activate/deactivate the
