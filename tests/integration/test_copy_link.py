@@ -43,3 +43,24 @@ def test_copy_current_link_in_subframe(session):
     assert session.wait_until(
         lambda: clipboard_contains("https://foo/inside.html")
     )
+
+
+def test_copy_current_url(session):
+    session.load_page("iframe_follow")
+    url = session.buffer.url().toString()
+
+    COMMANDS["copy-current-buffer-url"](CommandContext(None, None))
+
+    assert session.wait_until(
+        lambda: clipboard_contains(url)
+    )
+
+
+def test_copy_current_title(session):
+    session.load_page("iframe_follow")
+
+    COMMANDS["copy-current-buffer-title"](CommandContext(None, None))
+
+    assert session.wait_until(
+        lambda: clipboard_contains("iframe testing")
+    )

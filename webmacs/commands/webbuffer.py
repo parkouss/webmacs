@@ -537,3 +537,23 @@ def copy_current_link(ctx):
     buffer.content_handler.foundCurrentLinkUrl.connect(copy_to_clipboard)
     buffer.runJavaScript("currentLinkUrl();",
                          QWebEngineScript.ApplicationWorld)
+
+
+@define_command("copy-current-buffer-url")
+def copy_buffer_url(ctx):
+    """
+    Copy the url of the current buffer to the clipboard.
+    """
+    url = str(ctx.buffer.url().toEncoded(), "utf-8")
+    app().clipboard().setText(url)
+    ctx.minibuffer.show_info("Copied: {}".format(url))
+
+
+@define_command("copy-current-buffer-title")
+def copy_buffer_title(ctx):
+    """
+    Copy the title of the current buffer to the clipboard.
+    """
+    title = ctx.buffer.title()
+    app().clipboard().setText(title)
+    ctx.minibuffer.show_info("Copied: {}".format(title))
