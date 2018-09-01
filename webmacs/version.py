@@ -17,6 +17,7 @@ import os
 import sys
 import logging
 import re
+import subprocess
 
 from PyQt5.QtGui import (QOpenGLContext, QOpenGLVersionProfile,
                          QOffscreenSurface)
@@ -122,3 +123,30 @@ def chromium_version():
         logging.error("Could not get Chromium version from: {}".format(ua))
         return 'unknown'
     return match.group(1)
+
+
+def webmacs_revision():
+    """
+    Try to get webmacs git revision.
+
+    First try to read the "revision" file that should be created at
+    installation time - else fall back to executing the git command.
+    """
+    path = os.path.dirname(sys.modules["webmacs"].__file__)
+
+    revision_file = os.path.join(path, "revision")
+    if os.path.isfile(revision_file):
+        with open(revision_file) as f:
+            return f.read().strip()
+
+    # git directory should be in the parent directory
+    if not os.path.exists(os.path.join(os.path.dirname(path), ".git")):
+        return None
+
+    p = subprocess.Popen(
+        ["git", "rev-parse", "HEAD"], cwd=path,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    out, err = p.communicate()
+    if p.returncode == 0:
+        return out.strip().decode("utf-8")

@@ -83,9 +83,12 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
 
     @register_page()
     def version(self, job, _, name):
+        rev = version.webmacs_revision() or ""
+        if rev:
+            rev = " (%s)" % rev
         self.reply_template(job, name, {
             "versions": (
-                ("Webmacs version", version.WEBMACS_VERSION_STR),
+                ("Webmacs version", version.WEBMACS_VERSION_STR + rev),
                 ("Operating system", sys.platform),
                 ("Python version", sys.version),
                 ("Qt version", version.QT_VERSION_STR),

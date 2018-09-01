@@ -15,8 +15,10 @@
 
 import os
 import re
+import subprocess
 
 from setuptools import setup, Extension, find_packages
+from distutils.command.build_py import build_py as _build_py
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -57,6 +59,39 @@ def get_version():
     return version[0]
 
 
+def get_revision():
+    # ensure we are in a git dir
+    if not os.path.exists(os.path.join(THIS_DIR, ".git")):
+        return None
+    p = subprocess.Popen(
+        ["git", "rev-parse", "HEAD"], cwd=THIS_DIR,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    out, err = p.communicate()
+    if p.returncode == 0:
+        return out.strip().decode("utf-8")
+
+
+class build_py(_build_py):
+    """
+    Override build to generate a revision file to install.
+    """
+    def run(self):
+        rev = get_revision()
+        # honor the --dry-run flag
+        if not self.dry_run and rev:
+            target_dir = os.path.join(self.build_lib, 'webmacs')
+
+            # mkpath is a distutils helper to create directories
+            self.mkpath(target_dir)
+
+            with open(os.path.join(target_dir, 'revision'), 'w') as f:
+                f.write(rev)
+
+        # distutils uses old-style classes, so no super()
+        _build_py.run(self)
+
+
 setup(
     name='webmacs',
     version=get_version(),
@@ -88,6 +123,7 @@ Some of the features are:
         "scheme_handlers/webmacs/js/*.js",
         "scheme_handlers/webmacs/templates/*.html",
     ]},
+    cmdclass={'build_py': build_py},
     python_requires=">=3.3",
     ext_modules=[adblocker],
 )
