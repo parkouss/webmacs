@@ -102,24 +102,11 @@ define_protocol("https",
                 complete_fn=complete_protocol("https://"))
 
 
-def complete_duckduckgo():
-    def url_fn(text):
-        if not text:
-            return None
-        return (
-            "https://www.duckduckgo.com/ac/?q=%s&type=list"
-            % str(QUrl.toPercentEncoding(text), "utf-8")
-        )
-
-    return WebJumpRequestCompleter(
-        url_fn,
-        lambda response: json.loads(str(response, "utf-8"))[1]
-    )
-
-
 define_webjump("duckduckgo",
                "https://www.duckduckgo.com/?q=%s",
                "Duckduckgo Search",
-               complete_fn=complete_duckduckgo)
+               # duckduckgo completion using http://api.duckduckgo.com is not
+               # really complete, so use the google;
+               complete_fn=complete_google)
 
 webjump_default.set_value("google")
