@@ -86,6 +86,7 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
         self.reply_template(job, name, {
             "versions": (
                 ("Webmacs version", version.WEBMACS_VERSION_STR),
+                ("Operating system", sys.platform),
                 ("Python version", sys.version),
                 ("Qt version", version.QT_VERSION_STR),
                 ("Chromium version", version.chromium_version()),
