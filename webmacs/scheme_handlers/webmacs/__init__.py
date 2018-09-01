@@ -14,6 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 import re
 import importlib
 import inspect
@@ -85,6 +86,7 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
         self.reply_template(job, name, {
             "versions": (
                 ("Webmacs version", version.WEBMACS_VERSION_STR),
+                ("Python version", sys.version),
                 ("Qt version", version.QT_VERSION_STR),
                 ("Chromium version", version.chromium_version()),
                 ("Opengl vendor", version.opengl_vendor()),
