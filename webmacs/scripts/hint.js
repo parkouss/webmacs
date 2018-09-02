@@ -92,6 +92,14 @@ class BaseHint {
     remove() {
         this.hint.parentNode.removeChild(this.hint);
     }
+
+    setVisible(on) {
+        this.hint.style.display = on ? "initial" : "none";
+    }
+
+    isVisible() {
+        return this.hint.style.display != "none";
+    }
 }
 
 class Hint extends BaseHint {
@@ -115,7 +123,7 @@ class Hint extends BaseHint {
     }
 
     setVisible(on) {
-        this.hint.style.display = on ? "initial" : "none";
+        super.setVisible(on);
         this.refresh();
     }
 
@@ -131,10 +139,6 @@ class Hint extends BaseHint {
             this.obj.style.background = this.objBackground;
             this.obj.style.color = this.objColor;
         }
-    }
-
-    isVisible() {
-        return this.hint.style.display != "none";
     }
 
     id() {
@@ -160,6 +164,10 @@ class AlphabetHint extends BaseHint {
         this.hint.style.color = Hint.options.hint_color;
     }
 }
+
+AlphabetHint.options = {
+    characters: "auie,ctsrn",
+};
 
 class HintFrame {
     constructor(frame) {
@@ -192,6 +200,8 @@ class HintHandler {
     createHint(obj, index, rect) {
         throw "not implemented";
     }
+
+    hintsCreated(count) {}
 }
 
 
@@ -204,7 +214,54 @@ class FilterHintHandler extends HintHandler {
 
 class AlphabetHintHandler extends HintHandler {
     createHint(obj, index, rect) {
-        return new AlphabetHint(obj, this.manager, rect, index);
+        let h = new AlphabetHint(obj, this.manager, rect, index);
+        h.setVisible(false);
+        return h;
+    }
+
+    hintsCreated(count) {
+        // took from vimium
+        let hints = [""];
+        let offset = 0;
+        while ((hints.length - offset) < count || hints.length == 1) {
+            let hint = hints[offset++];
+            for (var ch of AlphabetHint.options.characters) {
+                hints.push(ch + hint);
+            }
+        }
+        hints = hints.slice(offset, offset+count).sort().map(e => {
+            return e.split("").reverse().join("");
+        });
+
+        this.configure_hints(0, hints, []);
+    }
+
+    configure_hints(index, labels, parent_indexes) {
+        let label_index = 0;
+        for (; index < this.manager.hints.length; index++) {
+            let hint = this.manager.hints[index];
+            if (hint instanceof HintFrame) {
+                post_message(hint.frame.contentWindow, "hints.frame_configure_hints",
+                             {index: 0, labels: labels.slice(label_index),
+                              parent_indexes: [index + 1].concat(parent_indexes)});
+                return;
+            } else {
+                hint.hint.textContent = labels[label_index];
+                hint.setVisible(true);
+                label_index++;
+            }
+        }
+        if (self !== top) {
+            post_message(parent, "hints.frame_configure_hints", {
+                index: parent_indexes[0],
+                parent_indexes: parent_indexes.slice(1),
+                labels: labels.slice(label_index),
+            });
+        }
+    }
+
+    frame_configure_hints(args) {
+        this.configure_hints(args.index, args.labels, args.parent_indexes);
     }
 }
 
@@ -256,6 +313,8 @@ class Hinter {
 
         if (self !== top) {
             post_message(parent, "hints.lookup_in_iframe_end", hint_index);
+        } else {
+            this.handler.hintsCreated(hint_index);
         }
     }
 
@@ -553,3 +612,5 @@ register_message_handler("hints.frameFilterSelection",
                          args => hints.frameFilterSelection(args));
 register_message_handler("hints.frameUpActivateHint",
                          args => hints.frameUpActivateHint(args));
+register_message_handler("hints.frame_configure_hints",
+                         args => hints.handler.frame_configure_hints(args));
