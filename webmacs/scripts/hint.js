@@ -50,24 +50,11 @@ function escapeRegExp(str) {
     return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
 
-class Hint {
-    constructor(obj, manager, left, top, index) {
+class BaseHint {
+    constructor(obj, manager, index) {
         this.obj = obj;
-        this.objBackground = obj.style.background;
-        this.objColor = obj.style.color;
-        obj.style.background = manager.options.background;
-        obj.style.color = manager.options.text_color;
-        this.index = index;
-        var hint = document.createElement("span");
-        hint.textContent = this.index;
-        hint.style.background = manager.options.hint_background;
-        hint.style.color = manager.options.hint_color;
-        hint.style.position = "absolute";
-        hint.style.zIndex = "2147483647";
-        hint.style.left = left;
-        hint.style.top = top;
-        this.hint = hint;
         this.manager = manager;
+        this.index = index;
     }
 
     text() {
@@ -82,6 +69,38 @@ class Hint {
             return this.obj.href;
         }
         return null;
+    }
+
+    id() {
+        return this.index;
+    }
+
+    serialize() {
+        return JSON.stringify({
+            nodeName: this.obj.nodeName,
+            text: this.text(),
+            id: this.id(),
+            url: this.url()
+        });
+    }
+}
+
+class Hint extends BaseHint {
+    constructor(obj, manager, left, top, index) {
+        super(obj, manager, index);
+        this.objBackground = obj.style.background;
+        this.objColor = obj.style.color;
+        obj.style.background = manager.options.background;
+        obj.style.color = manager.options.text_color;
+        var hint = document.createElement("span");
+        hint.textContent = this.index;
+        hint.style.background = manager.options.hint_background;
+        hint.style.color = manager.options.hint_color;
+        hint.style.position = "absolute";
+        hint.style.zIndex = "2147483647";
+        hint.style.left = left;
+        hint.style.top = top;
+        this.hint = hint;
     }
 
     remove() {
@@ -113,13 +132,8 @@ class Hint {
         return this.hint.style.display != "none";
     }
 
-    serialize() {
-        return JSON.stringify({
-            nodeName: this.obj.nodeName,
-            text: this.text(),
-            id: this.hint.textContent,
-            url: this.url()
-        });
+    id() {
+        return this.hint.textContent;
     }
 }
 
