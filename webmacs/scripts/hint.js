@@ -171,7 +171,7 @@ class Hinter {
         this.activeHint = null;
     }
 
-    next(hint_index) {
+    lookup(hint_index) {
         // has been cleared.
         if (this.hints === null) {
             return;
@@ -184,7 +184,7 @@ class Hinter {
                 continue;
             }
             if (obj.tagName == "IFRAME") {
-                post_message(obj.contentWindow, "hints.select_in_iframe_start",
+                post_message(obj.contentWindow, "hints.lookup_in_iframe_start",
                              {selector: this.selector, hint_index: hint_index});
                 this.hints.push(new HintFrame(obj));
                 this.index+=1;
@@ -202,13 +202,13 @@ class Hinter {
         document.documentElement.appendChild(this.fragment);
 
         if (self !== top) {
-            post_message(parent, "hints.select_in_iframe_end", hint_index);
+            post_message(parent, "hints.lookup_in_iframe_end", hint_index);
         }
     }
 
     selectBrowserObjects(selector) {
         this.init(selector);
-        this.next(0);
+        this.lookup(0);
         this.activateNextHint(false);
     }
 
@@ -477,9 +477,9 @@ function currentLinkUrl() {
 }
 
 if (self !== top) {
-    register_message_handler("hints.select_in_iframe_start", function(args) {
+    register_message_handler("hints.lookup_in_iframe_start", function(args) {
         hints.init(args.selector);
-        hints.next(args.hint_index);
+        hints.lookup(args.hint_index);
     });
     register_message_handler("hints.select_clear",
                              _ => hints.clearBrowserObjects());
@@ -490,8 +490,8 @@ if (self !== top) {
     register_message_handler("hints.foundCurrentLinkUrl",
                              _ => currentLinkUrl());
 }
-register_message_handler("hints.select_in_iframe_end",
-                         hint_index => hints.next(hint_index));
+register_message_handler("hints.lookup_in_iframe_end",
+                         hint_index => hints.lookup(hint_index));
 register_message_handler("hints.frameActivateNextHint",
                          args => hints.frameActivateNextHint(args));
 register_message_handler("hints.followCurrentLink",
