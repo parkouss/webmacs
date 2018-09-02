@@ -206,6 +206,8 @@ class HintHandler {
     hintsCreated(count) {}
 
     match_hint_fn(text) { throw "not implemented"; }
+
+    hint_matched(hint, hint_index) {}
 }
 
 
@@ -226,6 +228,10 @@ class FilterHintHandler extends HintHandler {
             return false;
         };
     }
+
+    hint_matched(hint, hint_index) {
+        hint.hint.textContent = hint_index;
+    }
 }
 
 
@@ -238,7 +244,11 @@ class AlphabetHintHandler extends HintHandler {
 
     match_hint_fn(text) {
         return function(hint) {
-            return hint.chars.startsWith(text);
+            let match = hint.chars.startsWith(text);
+            if (match && hint.chars == text) {
+                clickLike(hint.obj);
+            }
+            return match;
         };
     }
 
@@ -555,7 +565,7 @@ class Hinter {
             if (match_hint(hint)) {
                 hint_index +=1;
                 hint.setVisible(true);
-                hint.hint.textContent = hint_index;
+                this.handler.hint_matched(hint, hint_index);
             } else {
                 hint.setVisible(false);
                 if (hint == this.activeHint) {
