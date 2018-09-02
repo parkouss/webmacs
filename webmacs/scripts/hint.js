@@ -90,12 +90,12 @@ class Hint extends BaseHint {
         super(obj, manager, index);
         this.objBackground = obj.style.background;
         this.objColor = obj.style.color;
-        obj.style.background = manager.options.background;
-        obj.style.color = manager.options.text_color;
+        obj.style.background = Hint.options.background;
+        obj.style.color = Hint.options.text_color;
         var hint = document.createElement("span");
         hint.textContent = this.index;
-        hint.style.background = manager.options.hint_background;
-        hint.style.color = manager.options.hint_color;
+        hint.style.background = Hint.options.hint_background;
+        hint.style.color = Hint.options.hint_color;
         hint.style.position = "absolute";
         hint.style.zIndex = "2147483647";
         hint.style.left = left;
@@ -117,11 +117,11 @@ class Hint extends BaseHint {
     refresh() {
         if (this.isVisible()) {
             if (this.manager.activeHint == this) {
-                this.obj.style.background = this.manager.options.background_active;
+                this.obj.style.background = Hint.options.background_active;
             } else {
-                this.obj.style.background = this.manager.options.background;
+                this.obj.style.background = Hint.options.background;
             }
-            this.obj.style.color = this.manager.options.text_color;
+            this.obj.style.color = Hint.options.text_color;
         } else {
             this.obj.style.background = this.objBackground;
             this.obj.style.color = this.objColor;
@@ -137,7 +137,13 @@ class Hint extends BaseHint {
     }
 }
 
-
+Hint.options = {
+    hint_background: "red",
+    hint_color: "white",
+    background: "yellow",
+    background_active: "#88FF00",
+    text_color: "black"
+};
 
 class HintFrame {
     constructor(frame) {
@@ -164,16 +170,6 @@ function xpath_lookup_namespace (prefix) {
 
 
 class Hinter {
-    constructor() {
-        this.options = {
-            hint_background: "red",
-            hint_color: "white",
-            background: "yellow",
-            background_active: "#88FF00",
-            text_color: "black"
-        };
-    }
-
     init(selector) {
         this.selector = selector;
         this.xres = document.evaluate(selector, document, xpath_lookup_namespace,
