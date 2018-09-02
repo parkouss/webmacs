@@ -194,105 +194,6 @@ function xpath_lookup_namespace (prefix) {
     return XPATH_NS[prefix] || null;
 }
 
-class HintHandler {
-    constructor(mgr) {
-        this.manager = mgr;
-    }
-
-    createHint(obj, index, rect) {
-        throw "not implemented";
-    }
-
-    hintsCreated(count) {}
-
-    match_hint_fn(text) { throw "not implemented"; }
-
-    hint_matched(hint, hint_index) {}
-}
-
-
-class FilterHintHandler extends HintHandler {
-    createHint(obj, index, rect) {
-        return new Hint(obj, this.manager, rect, index);
-    }
-
-    match_hint_fn(text) {
-        // fuzzy-match on the hint text
-        let parts = text.split(/\s+/).map(escapeRegExp);
-        let re = new RegExp(".*" + parts.join(".*") + ".*", "i");
-        return function(hint) {
-            let text = hint.text();
-            if (text !== null) {
-                return (text.match(re) !== null);
-            }
-            return false;
-        };
-    }
-}
-
-
-class AlphabetHintHandler extends HintHandler {
-    createHint(obj, index, rect) {
-        let h = new AlphabetHint(obj, this.manager, rect, index);
-        h.setVisible(false);
-        return h;
-    }
-
-    match_hint_fn(text, index, args) {
-        let mgr = this.manager;
-        return function(hint) {
-            return hint.chars.startsWith(text);
-        };
-    }
-
-    hintsCreated(count) {
-        // took from vimium
-        let hints = [""];
-        let offset = 0;
-        while ((hints.length - offset) < count || hints.length == 1) {
-            let hint = hints[offset++];
-            for (var ch of AlphabetHint.options.characters) {
-                hints.push(ch + hint);
-            }
-        }
-        hints = hints.slice(offset, offset+count).sort().map(e => {
-            return e.split("").reverse().join("");
-        });
-
-        this.configure_hints(0, hints, []);
-    }
-
-    configure_hints(index, labels, parent_indexes) {
-        let label_index = 0;
-        for (; index < this.manager.hints.length; index++) {
-            let hint = this.manager.hints[index];
-            if (hint instanceof HintFrame) {
-                post_message(hint.frame.contentWindow, "hints.frame_configure_hints",
-                             {index: 0, labels: labels.slice(label_index),
-                              parent_indexes: [index + 1].concat(parent_indexes)});
-                return;
-            } else {
-                hint.chars = labels[label_index];
-                hint.hint.textContent = hint.chars;
-                hint.setVisible(true);
-                label_index++;
-            }
-        }
-        if (self !== top) {
-            post_message(parent, "hints.frame_configure_hints", {
-                index: parent_indexes[0],
-                parent_indexes: parent_indexes.slice(1),
-                labels: labels.slice(label_index),
-            });
-        }
-    }
-
-    frame_configure_hints(args) {
-        this.configure_hints(args.index, args.labels, args.parent_indexes);
-    }
-}
-
-
 class Hinter {
     init(selector, method) {
         this.selector = selector;
@@ -304,11 +205,6 @@ class Hinter {
         this.hints = [];
         this.activeHint = null;
         this.method = method;
-        if (method === "filter") {
-            this.handler = new FilterHintHandler(this);
-        } else if (method === "alphabet") {
-            this.handler = new AlphabetHintHandler(this);
-        }
     }
 
     lookup(hint_index) {
@@ -332,7 +228,13 @@ class Hinter {
                 return;
             }
             hint_index += 1;
-            var hint = this.handler.createHint(obj, hint_index, rect);
+            var hint;
+            if (this.method == "filter") {
+                hint = new Hint(obj, this, rect, hint_index);
+            } else {
+                hint = new AlphabetHint(obj, this, rect, hint_index);
+                hint.setVisible(false);
+            }
             this.hints.push(hint);
             this.fragment.appendChild(hint.hint);
         }
@@ -340,13 +242,62 @@ class Hinter {
 
         if (self !== top) {
             post_message(parent, "hints.lookup_in_iframe_end", hint_index);
-        } else {
-            this.handler.hintsCreated(hint_index);
+        } else if (this.method == "alphabet") {
+            this.hintsCreated(hint_index);
         }
     }
 
+    // alphabet only
+    hintsCreated(count) {
+        // took from vimium
+        let hints = [""];
+        let offset = 0;
+        while ((hints.length - offset) < count || hints.length == 1) {
+            let hint = hints[offset++];
+            for (var ch of AlphabetHint.options.characters) {
+                hints.push(ch + hint);
+            }
+        }
+        hints = hints.slice(offset, offset+count).sort().map(e => {
+            return e.split("").reverse().join("");
+        });
+
+        this.configure_hints(0, hints, []);
+    }
+
+    // alphabet only
+    configure_hints(index, labels, parent_indexes) {
+        let label_index = 0;
+        for (; index < this.hints.length; index++) {
+            let hint = this.hints[index];
+            if (hint instanceof HintFrame) {
+                post_message(hint.frame.contentWindow, "hints.frame_configure_hints",
+                             {index: 0, labels: labels.slice(label_index),
+                              parent_indexes: [index + 1].concat(parent_indexes)});
+                return;
+            } else {
+                hint.chars = labels[label_index];
+                hint.hint.textContent = hint.chars;
+                hint.setVisible(true);
+                label_index++;
+            }
+        }
+        if (self !== top) {
+            post_message(parent, "hints.frame_configure_hints", {
+                index: parent_indexes[0],
+                parent_indexes: parent_indexes.slice(1),
+                labels: labels.slice(label_index),
+            });
+        }
+    }
+
+    // alphabet only
+    frame_configure_hints(args) {
+        this.configure_hints(args.index, args.labels, args.parent_indexes);
+    }
+
     selectBrowserObjects(selector, method) {
-        method = method || "alphabet";
+        method = method || "filter";
         this.init(selector, method);
         this.lookup(0);
         if (method === "filter") {
@@ -541,7 +492,22 @@ class Hinter {
         let match_hint = hint => true;
 
         if (args.text) {
-            match_hint = this.handler.match_hint_fn(args.text);
+            if (this.method == "filter") {
+                // fuzzy-match on the hint text
+                let parts = args.text.split(/\s+/).map(escapeRegExp);
+                let re = new RegExp(".*" + parts.join(".*") + ".*", "i");
+                match_hint = function(hint) {
+                    let text = hint.text();
+                    if (text !== null) {
+                        return (text.match(re) !== null);
+                    }
+                    return false;
+                };
+            } else {
+                match_hint = function(hint) {
+                    return hint.chars.startsWith(args.text);
+                };
+            }
         }
 
         for (let index = args.index; index < this.hints.length; index++) {
@@ -647,4 +613,4 @@ register_message_handler("hints.frameFilterSelection",
 register_message_handler("hints.frameUpActivateHint",
                          args => hints.frameUpActivateHint(args));
 register_message_handler("hints.frame_configure_hints",
-                         args => hints.handler.frame_configure_hints(args));
+                         args => hints.frame_configure_hints(args));
