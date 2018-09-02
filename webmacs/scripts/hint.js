@@ -51,13 +51,13 @@ function escapeRegExp(str) {
 }
 
 class BaseHint {
-    constructor(obj, manager, index, left, top) {
+    constructor(obj, manager, index, rect) {
         this.obj = obj;
         this.manager = manager;
         this.index = index;
         this.hint = document.createElement("span");
-        this.hint.style.left = left;
-        this.hint.style.top = top;
+        this.hint.style.left = (rect.left + window.scrollX) + "px";
+        this.hint.style.top = (rect.top + window.scrollY) + "px";
         this.hint.style.position = "absolute";
         this.hint.style.zIndex = "2147483647";
     }
@@ -95,8 +95,8 @@ class BaseHint {
 }
 
 class Hint extends BaseHint {
-    constructor(obj, manager, left, top, index) {
-        super(obj, manager, index, left, top);
+    constructor(obj, manager, rect, index) {
+        super(obj, manager, index, rect);
         this.objBackground = obj.style.background;
         this.objColor = obj.style.color;
         obj.style.background = Hint.options.background;
@@ -150,6 +150,17 @@ Hint.options = {
     text_color: "black"
 };
 
+class AlphabetHint extends BaseHint {
+    constructor(obj, manager, rect, index) {
+        super(obj, manager, index, rect);
+
+        // configure the hint node
+        this.hint.textContent = index;
+        this.hint.style.background = Hint.options.hint_background;
+        this.hint.style.color = Hint.options.hint_color;
+    }
+}
+
 class HintFrame {
     constructor(frame) {
         this.frame = frame;
@@ -173,20 +184,33 @@ function xpath_lookup_namespace (prefix) {
     return XPATH_NS[prefix] || null;
 }
 
+class HintHandler {
+    constructor(mgr) {
+        this.manager = mgr;
+    }
 
-class FilterHintHandler {
-    createHint(mgr, obj, index, rect) {
-        return new Hint(obj, mgr,
-                        (rect.left + window.scrollX) + "px",
-                        (rect.top + window.scrollY) + "px",
-                        index
-                       );
+    createHint(obj, index, rect) {
+        throw "not implemented";
+    }
+}
+
+
+class FilterHintHandler extends HintHandler {
+    createHint(obj, index, rect) {
+        return new Hint(obj, this.manager, rect, index);
+    }
+}
+
+
+class AlphabetHintHandler extends HintHandler {
+    createHint(obj, index, rect) {
+        return new AlphabetHint(obj, this.manager, rect, index);
     }
 }
 
 
 class Hinter {
-    init(selector) {
+    init(selector, method) {
         this.selector = selector;
         this.xres = document.evaluate(selector, document, xpath_lookup_namespace,
                                       XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
@@ -195,7 +219,12 @@ class Hinter {
         this.index = 0;
         this.hints = [];
         this.activeHint = null;
-        this.handler = new FilterHintHandler();
+        this.method = method;
+        if (method === "filter") {
+            this.handler = new FilterHintHandler(this);
+        } else if (method === "alphabet") {
+            this.handler = new AlphabetHintHandler(this);
+        }
     }
 
     lookup(hint_index) {
@@ -212,13 +241,14 @@ class Hinter {
             }
             if (obj.tagName == "IFRAME") {
                 post_message(obj.contentWindow, "hints.lookup_in_iframe_start",
-                             {selector: this.selector, hint_index: hint_index});
+                             {selector: this.selector, hint_index: hint_index,
+                              method: this.method});
                 this.hints.push(new HintFrame(obj));
                 this.index+=1;
                 return;
             }
             hint_index += 1;
-            var hint = this.handler.createHint(this, obj, hint_index, rect);
+            var hint = this.handler.createHint(obj, hint_index, rect);
             this.hints.push(hint);
             this.fragment.appendChild(hint.hint);
         }
@@ -229,8 +259,8 @@ class Hinter {
         }
     }
 
-    selectBrowserObjects(selector) {
-        this.init(selector);
+    selectBrowserObjects(selector, method) {
+        this.init(selector, method || "filter");
         this.lookup(0);
         this.activateNextHint(false);
     }
@@ -501,7 +531,7 @@ function currentLinkUrl() {
 
 if (self !== top) {
     register_message_handler("hints.lookup_in_iframe_start", function(args) {
-        hints.init(args.selector);
+        hints.init(args.selector, args.method);
         hints.lookup(args.hint_index);
     });
     register_message_handler("hints.select_clear",
