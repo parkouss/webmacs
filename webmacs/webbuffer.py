@@ -193,9 +193,9 @@ class WebBuffer(QWebEnginePage):
     def scroll_by(self, x=0, y=0):
         self.runJavaScript("window.scrollBy(%d, %d);" % (x, y))
 
-    def start_select_browser_objects(self, selector):
+    def start_select_browser_objects(self, selector, method="filter"):
         self.runJavaScript(
-            "hints.selectBrowserObjects(%r);" % selector,
+            "hints.selectBrowserObjects(%r, %r);" % (selector, method),
             QWebEngineScript.ApplicationWorld)
 
     def stop_select_browser_objects(self):

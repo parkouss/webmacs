@@ -20,6 +20,22 @@ from ..keymaps import Keymap
 from ..commands import define_command
 from ..application import app
 from .prompt_helper import PromptNewBuffer
+from .. import variables
+
+
+HINT_METHODS = ("filter", "alphabet")
+
+hint_method = variables.define_variable(
+    "hint-method",
+    "Method to hint things in web buffers. One of %s" % (HINT_METHODS,),
+    HINT_METHODS[0],
+    conditions=(
+        variables.condition(
+            lambda v: v in HINT_METHODS,
+            "must be one of %s" % (HINT_METHODS,)
+        ),
+    ),
+)
 
 
 KEYMAP = Keymap("hint", MKEYMAP)
@@ -49,7 +65,9 @@ class HintPrompt(Prompt):
     def enable(self, minibuffer):
         super(HintPrompt, self).enable(minibuffer)
         self.page = self.ctx.buffer
-        self.page.start_select_browser_objects(self.hint_selector)
+        self.method = hint_method.value
+        self.page.start_select_browser_objects(self.hint_selector,
+                                               method=self.method)
         self.numbers = ""
         minibuffer.input().textChanged.connect(self.on_text_edited)
         self.browser_object_activated = {}
@@ -65,6 +83,8 @@ class HintPrompt(Prompt):
     def on_browser_object_activated(self, bo):
         self.browser_object_activated = bo
         self.minibuffer.input().set_right_italic_text(bo.get("url", ""))
+        if self.method == "alphabet":
+            self._on_edition_finished()
 
     def on_text_edited(self, text):
         self.page.filter_browser_objects(text)

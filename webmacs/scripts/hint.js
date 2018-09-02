@@ -297,7 +297,6 @@ class Hinter {
     }
 
     selectBrowserObjects(selector, method) {
-        method = method || "filter";
         this.init(selector, method);
         this.lookup(0);
         if (method === "filter") {
