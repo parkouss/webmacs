@@ -3,12 +3,23 @@ language: python
 dist: trusty
 python: 3.6
 
+matrix:
+  include:
+    - os: linux
+      env: PYQT_VERSION=5.8.2
+    - os: linux
+      env: PYQT_VERSION=5.9.2
+    - os: linux
+      env: PYQT_VERSION=5.10.1
+    - os: linux
+      env: PYQT_VERSION=5.11.2
+
 cache:
   directories:
     - $HOME/.cache/pip
 
 install:
-  - pip install PyQt5
+  - pip install PyQt5==$PYQT_VERSION
   - pip install -r test-requirements.txt
   - sudo apt-get --yes install xvfb herbstluftwm
 
