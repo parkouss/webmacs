@@ -100,6 +100,8 @@ class BaseHint {
     isVisible() {
         return this.hint.style.display != "none";
     }
+
+    refresh() {}
 }
 
 class Hint extends BaseHint {
@@ -384,7 +386,7 @@ class Hinter {
             return;
         }
         this.activeHint = null;
-        if (prevHint instanceof Hint) {
+        if (prevHint instanceof BaseHint) {
             prevHint.refresh();
         } else {
             post_message(prevHint.frame.contentWindow,
@@ -404,7 +406,7 @@ class Hinter {
     frameActivateNextHint(args) {
         let traverse = function(hinter, index) {
             let hint = hinter.hints[index];
-            if (hint instanceof Hint) {
+            if (hint instanceof BaseHint) {
                 if (hint.isVisible()) {
                     hinter.setCurrentActiveHint([index].concat(args.parent_indexes));
                     return true;
@@ -432,7 +434,7 @@ class Hinter {
                 index = this.hints.indexOf(this.activeHint);
 
                 // else, activate the next hint
-                if (this.activeHint instanceof Hint) {
+                if (this.activeHint instanceof BaseHint) {
                     index += args.way;
                 }
             } else {
@@ -481,7 +483,7 @@ class Hinter {
 
     followCurrentLink() {
         if (this.activeHint) {
-            if (this.activeHint instanceof Hint) {
+            if (this.activeHint instanceof BaseHint) {
                 clickLike(this.activeHint.obj);
             } else {
                 post_message(this.activeHint.frame.contentWindow,
@@ -496,7 +498,7 @@ class Hinter {
 
         for (let hint_index=0; hint_index < this.hints.length; hint_index++) {
             let hint = this.hints[hint_index];
-            if (hint instanceof Hint) {
+            if (hint instanceof BaseHint) {
                 if (! hint.isVisible()) {
                     continue;
                 }
