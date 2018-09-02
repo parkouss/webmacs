@@ -228,10 +228,6 @@ class FilterHintHandler extends HintHandler {
             return false;
         };
     }
-
-    hint_matched(hint, hint_index) {
-        hint.hint.textContent = hint_index;
-    }
 }
 
 
@@ -242,13 +238,10 @@ class AlphabetHintHandler extends HintHandler {
         return h;
     }
 
-    match_hint_fn(text) {
+    match_hint_fn(text, index, args) {
+        let mgr = this.manager;
         return function(hint) {
-            let match = hint.chars.startsWith(text);
-            if (match && hint.chars == text) {
-                clickLike(hint.obj);
-            }
-            return match;
+            return hint.chars.startsWith(text);
         };
     }
 
@@ -353,9 +346,12 @@ class Hinter {
     }
 
     selectBrowserObjects(selector, method) {
-        this.init(selector, method || "filter");
+        method = method || "alphabet";
+        this.init(selector, method);
         this.lookup(0);
-        this.activateNextHint(false);
+        if (method === "filter") {
+            this.activateNextHint(false);
+        }
     }
 
     clearBrowserObjects() {
@@ -555,7 +551,7 @@ class Hinter {
                 post_message(hint.frame.contentWindow, "hints.frameFilterSelection", {
                     text: args.text,
                     index: 0,
-                    parent_index: index,
+                    parent_indexes: [index].concat(args.parent_indexes),
                     hint_index: hint_index
                 });
                 return;
@@ -565,7 +561,18 @@ class Hinter {
             if (match_hint(hint)) {
                 hint_index +=1;
                 hint.setVisible(true);
-                this.handler.hint_matched(hint, hint_index);
+                if (this.method == "filter") {
+                    hint.hint.textContent = hint_index;
+                } else {
+                    if (hint.chars == args.text) {
+                        // alphabet always set the active hint when we found the
+                        // final hint.
+                        this.setCurrentActiveHint(
+                            [index].concat(args.parent_indexes)
+                        );
+                        return;
+                    }
+                }
             } else {
                 hint.setVisible(false);
                 if (hint == this.activeHint) {
@@ -579,12 +586,13 @@ class Hinter {
             // continue.
             post_message(parent, "hints.frameFilterSelection", {
                 text: args.text,
-                index: args.parent_index + 1,
-                hint_index: hint_index
+                index: args.parent_indexes[0] + 1,
+                hint_index: hint_index,
+                parent_indexes: args.parent_indexes.slice(1)
             });
         } else {
             // else if we lose the selection, put it back to the first hint.
-            if (this.activeHint === null) {
+            if (this.activeHint === null && this.method == "filter") {
                 this.activateNextHint(false);
             }
         }
@@ -595,6 +603,7 @@ class Hinter {
             text: text,
             index: 0,
             hint_index: 0,
+            parent_indexes: [],
         });
     }
 }
