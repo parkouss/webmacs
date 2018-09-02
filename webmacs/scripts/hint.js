@@ -202,12 +202,27 @@ class HintHandler {
     }
 
     hintsCreated(count) {}
+
+    match_hint_fn(text) { throw "not implemented"; }
 }
 
 
 class FilterHintHandler extends HintHandler {
     createHint(obj, index, rect) {
         return new Hint(obj, this.manager, rect, index);
+    }
+
+    match_hint_fn(text) {
+        // fuzzy-match on the hint text
+        let parts = text.split(/\s+/).map(escapeRegExp);
+        let re = new RegExp(".*" + parts.join(".*") + ".*", "i");
+        return function(hint) {
+            let text = hint.text();
+            if (text !== null) {
+                return (text.match(re) !== null);
+            }
+            return false;
+        };
     }
 }
 
@@ -217,6 +232,12 @@ class AlphabetHintHandler extends HintHandler {
         let h = new AlphabetHint(obj, this.manager, rect, index);
         h.setVisible(false);
         return h;
+    }
+
+    match_hint_fn(text) {
+        return function(hint) {
+            return hint.chars.startsWith(text);
+        };
     }
 
     hintsCreated(count) {
@@ -246,7 +267,8 @@ class AlphabetHintHandler extends HintHandler {
                               parent_indexes: [index + 1].concat(parent_indexes)});
                 return;
             } else {
-                hint.hint.textContent = labels[label_index];
+                hint.chars = labels[label_index];
+                hint.hint.textContent = hint.chars;
                 hint.setVisible(true);
                 label_index++;
             }
@@ -511,16 +533,7 @@ class Hinter {
         let match_hint = hint => true;
 
         if (args.text) {
-            // else, we fuzzy-match on the hint text
-            let parts = args.text.split(/\s+/).map(escapeRegExp);
-            let re = new RegExp(".*" + parts.join(".*") + ".*", "i");
-            match_hint = function(hint) {
-                let text = hint.text();
-                if (text !== null) {
-                    return (text.match(re) !== null);
-                }
-                return false;
-            };
+            match_hint = this.handler.match_hint_fn(args.text);
         }
 
         for (let index = args.index; index < this.hints.length; index++) {
