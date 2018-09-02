@@ -51,10 +51,15 @@ function escapeRegExp(str) {
 }
 
 class BaseHint {
-    constructor(obj, manager, index) {
+    constructor(obj, manager, index, left, top) {
         this.obj = obj;
         this.manager = manager;
         this.index = index;
+        this.hint = document.createElement("span");
+        this.hint.style.left = left;
+        this.hint.style.top = top;
+        this.hint.style.position = "absolute";
+        this.hint.style.zIndex = "2147483647";
     }
 
     text() {
@@ -83,30 +88,30 @@ class BaseHint {
             url: this.url()
         });
     }
+
+    remove() {
+        this.hint.parentNode.removeChild(this.hint);
+    }
 }
 
 class Hint extends BaseHint {
     constructor(obj, manager, left, top, index) {
-        super(obj, manager, index);
+        super(obj, manager, index, left, top);
         this.objBackground = obj.style.background;
         this.objColor = obj.style.color;
         obj.style.background = Hint.options.background;
         obj.style.color = Hint.options.text_color;
-        var hint = document.createElement("span");
-        hint.textContent = this.index;
-        hint.style.background = Hint.options.hint_background;
-        hint.style.color = Hint.options.hint_color;
-        hint.style.position = "absolute";
-        hint.style.zIndex = "2147483647";
-        hint.style.left = left;
-        hint.style.top = top;
-        this.hint = hint;
+
+        // configure the hint node
+        this.hint.textContent = index;
+        this.hint.style.background = Hint.options.hint_background;
+        this.hint.style.color = Hint.options.hint_color;
     }
 
     remove() {
         this.obj.style.background = this.objBackground;
         this.obj.style.color = this.objColor;
-        this.hint.parentNode.removeChild(this.hint);
+        super.remove();
     }
 
     setVisible(on) {
@@ -169,6 +174,17 @@ function xpath_lookup_namespace (prefix) {
 }
 
 
+class FilterHintHandler {
+    createHint(mgr, obj, index, rect) {
+        return new Hint(obj, mgr,
+                        (rect.left + window.scrollX) + "px",
+                        (rect.top + window.scrollY) + "px",
+                        index
+                       );
+    }
+}
+
+
 class Hinter {
     init(selector) {
         this.selector = selector;
@@ -179,6 +195,7 @@ class Hinter {
         this.index = 0;
         this.hints = [];
         this.activeHint = null;
+        this.handler = new FilterHintHandler();
     }
 
     lookup(hint_index) {
@@ -201,11 +218,7 @@ class Hinter {
                 return;
             }
             hint_index += 1;
-            var hint = new Hint(obj, this,
-                                (rect.left + window.scrollX) + "px",
-                                (rect.top + window.scrollY) + "px",
-                                hint_index
-                               );
+            var hint = this.handler.createHint(this, obj, hint_index, rect);
             this.hints.push(hint);
             this.fragment.appendChild(hint.hint);
         }
