@@ -360,6 +360,9 @@ class Hinter {
     }
 
     frameActivateNextHint(args) {
+        if (this.method !== "filter") {
+            return;
+        }
         let traverse = function(hinter, index) {
             let hint = hinter.hints[index];
             if (hint instanceof BaseHint) {
@@ -481,6 +484,9 @@ class Hinter {
     }
 
     selectVisibleHint(index) {
+        if (this.method !== "filter") {
+            return;
+        }
         this.frameSelectVisibleHint({index: parseInt(index), parent_indexes: []});
     }
 
