@@ -464,6 +464,18 @@ class Hinter {
 
 var hints = new Hinter();
 
+function currentLinkUrl() {
+    let elt = document.activeElement;
+    if (elt.tagName == "A") {
+        post_webmacs_message("currentLinkUrl", [elt.href]);
+    } else if (elt.tagName == "IFRAME") {
+        post_message(elt.contentWindow, "hints.foundCurrentLinkUrl", null);
+    } else {
+        post_webmacs_message("currentLinkUrl", [""]);
+    }
+
+}
+
 if (self !== top) {
     register_message_handler("hints.select_in_iframe_start", function(args) {
         hints.init(args.selector);
@@ -475,6 +487,8 @@ if (self !== top) {
                              _ => hints.clearFrameSelection());
     register_message_handler("hints.frameSelectVisibleHint",
                              args => hints.frameSelectVisibleHint(args));
+    register_message_handler("hints.foundCurrentLinkUrl",
+                             _ => currentLinkUrl());
 }
 register_message_handler("hints.select_in_iframe_end",
                          hint_index => hints.next(hint_index));

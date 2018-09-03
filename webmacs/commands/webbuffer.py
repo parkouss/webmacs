@@ -27,6 +27,7 @@ from ..keyboardhandler import send_key_event
 from .. import BUFFERS, version, current_buffer, recent_buffers
 from .. import variables
 from ..keymaps import Keymap, KeyPress
+from ..application import app
 
 
 switch_buffer_current_color = variables.define_variable(
@@ -510,3 +511,49 @@ def revive_buffer(ctx):
         buff = killed_buffer.revive()
 
         ctx.window.current_webview().setBuffer(buff)
+
+
+@define_command("copy-current-link")
+def copy_current_link(ctx):
+    """
+    Copy the current link in the clipboard.
+    """
+
+    # note the implementation does not rely on the CopyLinkToClipboard action
+    # as it does not work fully (e.g, in case a link is set current using an
+    # incremental search).
+    buffer = ctx.buffer
+    minibuff = ctx.minibuffer
+
+    def copy_to_clipboard(url):
+        buffer.content_handler.foundCurrentLinkUrl \
+                              .disconnect(copy_to_clipboard)
+        if url:
+            app().clipboard().setText(url)
+            minibuff.show_info("Copied: {}".format(url))
+        else:
+            minibuff.show_info("No current link url to copy.")
+
+    buffer.content_handler.foundCurrentLinkUrl.connect(copy_to_clipboard)
+    buffer.runJavaScript("currentLinkUrl();",
+                         QWebEngineScript.ApplicationWorld)
+
+
+@define_command("copy-current-buffer-url")
+def copy_buffer_url(ctx):
+    """
+    Copy the url of the current buffer to the clipboard.
+    """
+    url = str(ctx.buffer.url().toEncoded(), "utf-8")
+    app().clipboard().setText(url)
+    ctx.minibuffer.show_info("Copied: {}".format(url))
+
+
+@define_command("copy-current-buffer-title")
+def copy_buffer_title(ctx):
+    """
+    Copy the title of the current buffer to the clipboard.
+    """
+    title = ctx.buffer.title()
+    app().clipboard().setText(title)
+    ctx.minibuffer.show_info("Copied: {}".format(title))
