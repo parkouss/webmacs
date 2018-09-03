@@ -56,8 +56,17 @@ hint_node_style = variables.define_variable(
     " style property names to values. See"
     " https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style.",
     {
-        "background": "red",
+        "whiteSpace": "nowrap",
+        "overflow": "hidden",
+        "padding": "1px 3px 0px 3px",
+        "background": "linear-gradient(to bottom, #fc3232 0%,#990000 100%)",
+        "border": "solid 1px #c32222",
+        "borderRadius": "3px",
+        "boxShadow": "0px 3px 7px 0px rgba(0, 0, 0, 0.3)",
         "color": "white",
+        "fontWeight": "bold",
+        "fontSize": "13px",
+        "textShadow": "1px 1px 0 rgba(0, 0, 0, 0.6)",
     },
     conditions=(
         variables.condition(
