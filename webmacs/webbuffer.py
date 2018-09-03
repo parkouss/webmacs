@@ -15,6 +15,7 @@
 
 import logging
 import time
+import json
 
 from PyQt5.QtCore import QUrl, pyqtSlot as Slot
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
@@ -193,9 +194,11 @@ class WebBuffer(QWebEnginePage):
     def scroll_by(self, x=0, y=0):
         self.runJavaScript("window.scrollBy(%d, %d);" % (x, y))
 
-    def start_select_browser_objects(self, selector, method="filter"):
+    def start_select_browser_objects(self, selector, method="filter",
+                                     method_options=None):
         self.runJavaScript(
-            "hints.selectBrowserObjects(%r, %r);" % (selector, method),
+            "hints.selectBrowserObjects(%r, %r, %r);"
+            % (selector, method, json.dumps(method_options)),
             QWebEngineScript.ApplicationWorld)
 
     def stop_select_browser_objects(self):

@@ -37,6 +37,26 @@ hint_method = variables.define_variable(
     ),
 )
 
+hint_alphabet_characters = variables.define_variable(
+    "hint-alphabet-characters",
+    "Which characters to use for alphabet hinting.",
+    "asdfghjkl",
+    conditions=(
+        variables.condition(
+            lambda v: isinstance(v, str),
+            "must be one a string of unique letters"
+        ),
+    ),
+)
+
+
+def hint_method_options(method):
+    if method == "alphabet":
+        return {
+            "characters": hint_alphabet_characters.value,
+        }
+    return {}
+
 
 KEYMAP = Keymap("hint", MKEYMAP)
 
@@ -66,8 +86,12 @@ class HintPrompt(Prompt):
         super(HintPrompt, self).enable(minibuffer)
         self.page = self.ctx.buffer
         self.method = hint_method.value
-        self.page.start_select_browser_objects(self.hint_selector,
-                                               method=self.method)
+        self.method_options = hint_method_options(self.method)
+        self.page.start_select_browser_objects(
+            self.hint_selector,
+            method=self.method,
+            method_options=self.method_options
+        )
         self.numbers = ""
         minibuffer.input().textChanged.connect(self.on_text_edited)
         self.browser_object_activated = {}

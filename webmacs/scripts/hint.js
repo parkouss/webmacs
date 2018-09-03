@@ -109,13 +109,13 @@ class Hint extends BaseHint {
         super(obj, manager, index, rect);
         this.objBackground = obj.style.background;
         this.objColor = obj.style.color;
-        obj.style.background = Hint.options.background;
-        obj.style.color = Hint.options.text_color;
+        obj.style.background = manager.options.background;
+        obj.style.color = manager.options.text_color;
 
         // configure the hint node
         this.hint.textContent = index;
-        this.hint.style.background = Hint.options.hint_background;
-        this.hint.style.color = Hint.options.hint_color;
+        this.hint.style.background = manager.options.hint_background;
+        this.hint.style.color = manager.options.hint_color;
     }
 
     remove() {
@@ -132,11 +132,11 @@ class Hint extends BaseHint {
     refresh() {
         if (this.isVisible()) {
             if (this.manager.activeHint == this) {
-                this.obj.style.background = Hint.options.background_active;
+                this.obj.style.background = this.manager.options.background_active;
             } else {
-                this.obj.style.background = Hint.options.background;
+                this.obj.style.background = this.manager.options.background;
             }
-            this.obj.style.color = Hint.options.text_color;
+            this.obj.style.color = this.manager.options.text_color;
         } else {
             this.obj.style.background = this.objBackground;
             this.obj.style.color = this.objColor;
@@ -148,28 +148,16 @@ class Hint extends BaseHint {
     }
 }
 
-Hint.options = {
-    hint_background: "red",
-    hint_color: "white",
-    background: "yellow",
-    background_active: "#88FF00",
-    text_color: "black"
-};
-
 class AlphabetHint extends BaseHint {
     constructor(obj, manager, rect, index) {
         super(obj, manager, index, rect);
 
         // configure the hint node
         this.hint.textContent = index;
-        this.hint.style.background = Hint.options.hint_background;
-        this.hint.style.color = Hint.options.hint_color;
+        this.hint.style.background = manager.options.hint_background;
+        this.hint.style.color = manager.options.hint_color;
     }
 }
-
-AlphabetHint.options = {
-    characters: "auie,ctsrn",
-};
 
 class HintFrame {
     constructor(frame) {
@@ -195,7 +183,7 @@ function xpath_lookup_namespace (prefix) {
 }
 
 class Hinter {
-    init(selector, method) {
+    init(selector, method, options) {
         this.selector = selector;
         this.xres = document.evaluate(selector, document, xpath_lookup_namespace,
                                       XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
@@ -205,6 +193,13 @@ class Hinter {
         this.hints = [];
         this.activeHint = null;
         this.method = method;
+        this.options = Object.assign({}, {
+            hint_background: "red",
+            hint_color: "white",
+            background: "yellow",
+            background_active: "#88FF00",
+            text_color: "black"
+        }, options || {});
     }
 
     lookup(hint_index) {
@@ -222,7 +217,7 @@ class Hinter {
             if (obj.tagName == "IFRAME") {
                 post_message(obj.contentWindow, "hints.lookup_in_iframe_start",
                              {selector: this.selector, hint_index: hint_index,
-                              method: this.method});
+                              method: this.method, options: this.options});
                 this.hints.push(new HintFrame(obj));
                 this.index+=1;
                 return;
@@ -254,7 +249,7 @@ class Hinter {
         let offset = 0;
         while ((hints.length - offset) < count || hints.length == 1) {
             let hint = hints[offset++];
-            for (var ch of AlphabetHint.options.characters) {
+            for (var ch of this.options.characters) {
                 hints.push(ch + hint);
             }
         }
@@ -296,8 +291,8 @@ class Hinter {
         this.configure_hints(args.index, args.labels, args.parent_indexes);
     }
 
-    selectBrowserObjects(selector, method) {
-        this.init(selector, method);
+    selectBrowserObjects(selector, method, options) {
+        this.init(selector, method, JSON.parse(options));
         this.lookup(0);
         if (method === "filter") {
             this.activateNextHint(false);
@@ -595,7 +590,7 @@ function currentLinkUrl() {
 
 if (self !== top) {
     register_message_handler("hints.lookup_in_iframe_start", function(args) {
-        hints.init(args.selector, args.method);
+        hints.init(args.selector, args.method, args.options);
         hints.lookup(args.hint_index);
     });
     register_message_handler("hints.select_clear",
