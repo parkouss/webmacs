@@ -56,10 +56,14 @@ class BaseHint {
         this.manager = manager;
         this.index = index;
         this.hint = document.createElement("span");
+        for (var prop in manager.options.hint) {
+            this.hint.style[prop] = manager.options.hint[prop];
+        }
         this.hint.style.left = (rect.left + window.scrollX) + "px";
         this.hint.style.top = (rect.top + window.scrollY) + "px";
         this.hint.style.position = "absolute";
         this.hint.style.zIndex = "2147483647";
+        this.hint.textContent = index;
     }
 
     text() {
@@ -111,11 +115,6 @@ class Hint extends BaseHint {
         this.objColor = obj.style.color;
         obj.style.background = manager.options.background;
         obj.style.color = manager.options.text_color;
-
-        // configure the hint node
-        this.hint.textContent = index;
-        this.hint.style.background = manager.options.hint_background;
-        this.hint.style.color = manager.options.hint_color;
     }
 
     remove() {
@@ -151,11 +150,6 @@ class Hint extends BaseHint {
 class AlphabetHint extends BaseHint {
     constructor(obj, manager, rect, index) {
         super(obj, manager, index, rect);
-
-        // configure the hint node
-        this.hint.textContent = index;
-        this.hint.style.background = manager.options.hint_background;
-        this.hint.style.color = manager.options.hint_color;
     }
 }
 
@@ -193,13 +187,7 @@ class Hinter {
         this.hints = [];
         this.activeHint = null;
         this.method = method;
-        this.options = Object.assign({}, {
-            hint_background: "red",
-            hint_color: "white",
-            background: "yellow",
-            background_active: "#88FF00",
-            text_color: "black"
-        }, options || {});
+        this.options = options || {};
     }
 
     lookup(hint_index) {

@@ -51,11 +51,18 @@ hint_alphabet_characters = variables.define_variable(
 
 
 def hint_method_options(method):
+    options = {
+        "hint": {
+            "background": "red",
+            "color": "white",
+        },
+        "background": "yellow",
+        "background_active": "#88FF00",
+        "text_color": "black",
+    }
     if method == "alphabet":
-        return {
-            "characters": hint_alphabet_characters.value,
-        }
-    return {}
+        options["characters"] = hint_alphabet_characters.value
+    return options
 
 
 KEYMAP = Keymap("hint", MKEYMAP)
