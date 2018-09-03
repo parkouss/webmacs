@@ -55,13 +55,14 @@ class BaseHint {
         this.obj = obj;
         this.manager = manager;
         this.index = index;
-        this.hint = document.createElement("span");
+        this.hint = document.createElement("div");
         for (var prop in manager.options.hint) {
             this.hint.style[prop] = manager.options.hint[prop];
         }
         this.hint.style.left = (rect.left + window.scrollX) + "px";
         this.hint.style.top = (rect.top + window.scrollY) + "px";
         this.hint.style.position = "absolute";
+        this.hint.style.display = "block";
         this.hint.style.zIndex = "2147483647";
         this.hint.textContent = index;
     }

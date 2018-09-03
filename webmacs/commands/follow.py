@@ -50,12 +50,27 @@ hint_alphabet_characters = variables.define_variable(
 )
 
 
+hint_node_style = variables.define_variable(
+    "hint-node-style",
+    "The style to apply to the hint div. Note that it is a dict of javascript"
+    " style property names to values. See"
+    " https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style.",
+    {
+        "background": "red",
+        "color": "white",
+    },
+    conditions=(
+        variables.condition(
+            lambda v: isinstance(v, dict),
+            "must be an instance of dict."
+        ),
+    ),
+)
+
+
 def hint_method_options(method):
     options = {
-        "hint": {
-            "background": "red",
-            "color": "white",
-        },
+        "hint": hint_node_style.value,
         "background": "yellow",
         "background_active": "#88FF00",
         "text_color": "black",
