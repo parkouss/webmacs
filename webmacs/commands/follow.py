@@ -16,7 +16,7 @@
 from PyQt5.QtCore import QEvent, Qt
 
 from ..minibuffer import Prompt, KEYMAP as MKEYMAP
-from ..keymaps import Keymap
+from ..keymaps import Keymap, KeyPress
 from ..commands import define_command
 from ..application import app
 from .prompt_helper import PromptNewBuffer
@@ -122,22 +122,31 @@ class HintPrompt(Prompt):
     def eventFilter(self, obj, event):
         numbers = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
         if event.type() == QEvent.KeyPress:
-            text = event.text()
-            if text in numbers:
-                self.numbers += text
-                self.page.select_visible_hint(self.numbers)
-                self._update_label()
-                return True
-            elif not event.key() in (
-                    Qt.Key_Control,
-                    Qt.Key_Shift,
-                    Qt.Key_Alt,
-                    Qt.Key_Meta,
-                    Qt.Key_unknown,
-                    Qt.Key_Return,
-                    ):
-                self.numbers = ""
-                self._update_label()
+            if self.method == "filter":
+                text = event.text()
+                if text in numbers:
+                    self.numbers += text
+                    self.page.select_visible_hint(self.numbers)
+                    self._update_label()
+                    return True
+                elif not event.key() in (
+                        Qt.Key_Control,
+                        Qt.Key_Shift,
+                        Qt.Key_Alt,
+                        Qt.Key_Meta,
+                        Qt.Key_unknown,
+                        Qt.Key_Return,
+                        ):
+                    self.numbers = ""
+                    self._update_label()
+            elif self.method == "alphabet":
+                kp = KeyPress.from_qevent(event)
+                if kp is not None:
+                    char = kp.char()
+                    if not kp.has_any_modifier() \
+                       and len(char) == 1 \
+                       and char not in self.method_options["characters"]:
+                        return True
         return super(HintPrompt, self).eventFilter(obj, event)
 
 
