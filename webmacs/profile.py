@@ -25,7 +25,7 @@ from .autofill.db import PasswordDb
 from .ignore_certificates import IgnoredCertificates
 from .bookmarks import Bookmarks
 from .features import Features
-from . import variables
+from . import variables, version
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -42,6 +42,8 @@ class Profile(object):
         self._scheme_handlers = {}  # keep a python reference
 
     def update_spell_checking(self):
+        if version.qt_version < (5, 8):
+            return
         dicts = variables.get("spell-checking-dictionaries")
         self.q_profile.setSpellCheckEnabled(bool(dicts))
         self.q_profile.setSpellCheckLanguages(dicts)
