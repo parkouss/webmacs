@@ -16,10 +16,77 @@
 from PyQt5.QtCore import QEvent, Qt
 
 from ..minibuffer import Prompt, KEYMAP as MKEYMAP
-from ..keymaps import Keymap
+from ..keymaps import Keymap, KeyPress
 from ..commands import define_command
 from ..application import app
 from .prompt_helper import PromptNewBuffer
+from .. import variables
+
+
+HINT_METHODS = ("filter", "alphabet")
+
+hint_method = variables.define_variable(
+    "hint-method",
+    "Method to hint things in web buffers. One of %s" % (HINT_METHODS,),
+    HINT_METHODS[0],
+    conditions=(
+        variables.condition(
+            lambda v: v in HINT_METHODS,
+            "must be one of %s" % (HINT_METHODS,)
+        ),
+    ),
+)
+
+hint_alphabet_characters = variables.define_variable(
+    "hint-alphabet-characters",
+    "Which characters to use for alphabet hinting.",
+    "asdfghjkl",
+    conditions=(
+        variables.condition(
+            lambda v: isinstance(v, str),
+            "must be one a string of unique letters"
+        ),
+    ),
+)
+
+
+hint_node_style = variables.define_variable(
+    "hint-node-style",
+    "The style to apply to the hint div. Note that it is a dict of javascript"
+    " style property names to values. See"
+    " https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style.",
+    {
+        "whiteSpace": "nowrap",
+        "overflow": "hidden",
+        "padding": "1px 3px 0px 3px",
+        "background": "linear-gradient(to bottom, #fc3232 0%,#990000 100%)",
+        "border": "solid 1px #c32222",
+        "borderRadius": "3px",
+        "boxShadow": "0px 3px 7px 0px rgba(0, 0, 0, 0.3)",
+        "color": "white",
+        "fontWeight": "bold",
+        "fontSize": "13px",
+        "textShadow": "1px 1px 0 rgba(0, 0, 0, 0.6)",
+    },
+    conditions=(
+        variables.condition(
+            lambda v: isinstance(v, dict),
+            "must be an instance of dict."
+        ),
+    ),
+)
+
+
+def hint_method_options(method):
+    options = {
+        "hint": hint_node_style.value,
+        "background": "yellow",
+        "background_active": "#88FF00",
+        "text_color": "black",
+    }
+    if method == "alphabet":
+        options["characters"] = hint_alphabet_characters.value
+    return options
 
 
 KEYMAP = Keymap("hint", MKEYMAP)
@@ -49,7 +116,13 @@ class HintPrompt(Prompt):
     def enable(self, minibuffer):
         super(HintPrompt, self).enable(minibuffer)
         self.page = self.ctx.buffer
-        self.page.start_select_browser_objects(self.hint_selector)
+        self.method = hint_method.value
+        self.method_options = hint_method_options(self.method)
+        self.page.start_select_browser_objects(
+            self.hint_selector,
+            method=self.method,
+            method_options=self.method_options
+        )
         self.numbers = ""
         minibuffer.input().textChanged.connect(self.on_text_edited)
         self.browser_object_activated = {}
@@ -65,6 +138,8 @@ class HintPrompt(Prompt):
     def on_browser_object_activated(self, bo):
         self.browser_object_activated = bo
         self.minibuffer.input().set_right_italic_text(bo.get("url", ""))
+        if self.method == "alphabet":
+            self._on_edition_finished()
 
     def on_text_edited(self, text):
         self.page.filter_browser_objects(text)
@@ -78,22 +153,31 @@ class HintPrompt(Prompt):
     def eventFilter(self, obj, event):
         numbers = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
         if event.type() == QEvent.KeyPress:
-            text = event.text()
-            if text in numbers:
-                self.numbers += text
-                self.page.select_visible_hint(self.numbers)
-                self._update_label()
-                return True
-            elif not event.key() in (
-                    Qt.Key_Control,
-                    Qt.Key_Shift,
-                    Qt.Key_Alt,
-                    Qt.Key_Meta,
-                    Qt.Key_unknown,
-                    Qt.Key_Return,
-                    ):
-                self.numbers = ""
-                self._update_label()
+            if self.method == "filter":
+                text = event.text()
+                if text in numbers:
+                    self.numbers += text
+                    self.page.select_visible_hint(self.numbers)
+                    self._update_label()
+                    return True
+                elif not event.key() in (
+                        Qt.Key_Control,
+                        Qt.Key_Shift,
+                        Qt.Key_Alt,
+                        Qt.Key_Meta,
+                        Qt.Key_unknown,
+                        Qt.Key_Return,
+                        ):
+                    self.numbers = ""
+                    self._update_label()
+            elif self.method == "alphabet":
+                kp = KeyPress.from_qevent(event)
+                if kp is not None:
+                    char = kp.char()
+                    if not kp.has_any_modifier() \
+                       and len(char) == 1 \
+                       and char not in self.method_options["characters"]:
+                        return True
         return super(HintPrompt, self).eventFilter(obj, event)
 
 

@@ -31,6 +31,8 @@ class WebContentHandler(QObject):
     """
     browserObjectActivated = Signal(dict)
     foundCurrentLinkUrl = Signal(str)
+    # for testing, when the hints are ready
+    browserObjectsInited = Signal()
 
     def __init__(self, buff):
         QObject.__init__(self)
@@ -53,7 +55,11 @@ class WebContentHandler(QObject):
     def _browserObjectActivated(self, obj):
         # It is hard to pass dict objects from javascript, so a string is used
         # and decoded here.
-        self.browserObjectActivated.emit(json.loads(obj))
+        obj = json.loads(obj)
+        if obj is not None:
+            self.browserObjectActivated.emit(obj)
+        else:
+            self.browserObjectsInited.emit()
 
     @Slot(str)
     def copyToClipboard(self, text):

@@ -11,6 +11,7 @@ from PyQt5.QtCore import QEvent, QTimer
 from webmacs.application import Application, _app_requires
 from webmacs import (windows, buffers, WINDOWS_HANDLER, current_buffer,
                      current_window, current_minibuffer)
+from webmacs import variables as wvariables
 from webmacs.webbuffer import create_buffer
 from webmacs.window import Window
 from webmacs.webbuffer import close_buffer
@@ -58,6 +59,31 @@ def wm(xvfb):
         yield proc
         proc.kill()
         proc.wait()
+
+
+class VariablesWrapper(object):
+    def __init__(self):
+        self._original = {}
+
+    def set(self, name, value):
+        if name not in self._original:
+            self._original[name] = wvariables.get(name)
+        wvariables.set(name, value)
+
+    def get(self, name):
+        return wvariables.get(name)
+
+    def restore(self):
+        for name, value in self._original.items():
+            wvariables.set(name, value)
+        self._original.clear()
+
+
+@pytest.fixture()
+def variables():
+    vars = VariablesWrapper()
+    yield vars
+    vars.restore()
 
 
 @pytest.fixture(scope='session')
@@ -152,6 +178,13 @@ class TestSession(object):
 
         assert self.wait_until(ready), "javascript result was %r" % result[0]
         return True
+
+    def wait_hints_ready(self):
+        return self.qtbot.wait_signal(
+            self.buffer.content_handler.browserObjectsInited,
+            timeout=3000,
+            raising=True
+        )
 
     def check_nav_highlighted(self, js_elem):
         self.check_javascript("%s.style.backgroundColor" % js_elem,

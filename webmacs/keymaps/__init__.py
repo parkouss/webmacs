@@ -296,6 +296,12 @@ class KeyPress(_KeyPress):
         return (self.control_modifier or self.alt_modifier
                 or self.super_modifier)
 
+    def char(self):
+        char = KEY2CHAR[self.key]
+        if self.is_upper_case:
+            return char.upper()
+        return char
+
     def __str__(self):
         keyrepr = []
 
@@ -306,11 +312,7 @@ class KeyPress(_KeyPress):
         if self.super_modifier:
             keyrepr.append("S")
 
-        char = KEY2CHAR[self.key]
-        if self.is_upper_case:
-            char = char.upper()
-
-        keyrepr.append(char)
+        keyrepr.append(self.char())
 
         return "-".join(keyrepr)
 

@@ -50,24 +50,21 @@ function escapeRegExp(str) {
     return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
 
-class Hint {
-    constructor(obj, manager, left, top, index) {
+class BaseHint {
+    constructor(obj, manager, index, rect) {
         this.obj = obj;
-        this.objBackground = obj.style.background;
-        this.objColor = obj.style.color;
-        obj.style.background = manager.options.background;
-        obj.style.color = manager.options.text_color;
-        this.index = index;
-        var hint = document.createElement("span");
-        hint.textContent = this.index;
-        hint.style.background = manager.options.hint_background;
-        hint.style.color = manager.options.hint_color;
-        hint.style.position = "absolute";
-        hint.style.zIndex = "2147483647";
-        hint.style.left = left;
-        hint.style.top = top;
-        this.hint = hint;
         this.manager = manager;
+        this.index = index;
+        this.hint = document.createElement("div");
+        for (var prop in manager.options.hint) {
+            this.hint.style[prop] = manager.options.hint[prop];
+        }
+        this.hint.style.left = (rect.left + window.scrollX) + "px";
+        this.hint.style.top = (rect.top + window.scrollY) + "px";
+        this.hint.style.position = "absolute";
+        this.hint.style.display = "block";
+        this.hint.style.zIndex = "2147483647";
+        this.hint.textContent = index;
     }
 
     text() {
@@ -84,14 +81,51 @@ class Hint {
         return null;
     }
 
+    id() {
+        return this.index;
+    }
+
+    serialize() {
+        return JSON.stringify({
+            nodeName: this.obj.nodeName,
+            text: this.text(),
+            id: this.id(),
+            url: this.url()
+        });
+    }
+
     remove() {
-        this.obj.style.background = this.objBackground;
-        this.obj.style.color = this.objColor;
         this.hint.parentNode.removeChild(this.hint);
     }
 
     setVisible(on) {
         this.hint.style.display = on ? "initial" : "none";
+    }
+
+    isVisible() {
+        return this.hint.style.display != "none";
+    }
+
+    refresh() {}
+}
+
+class Hint extends BaseHint {
+    constructor(obj, manager, rect, index) {
+        super(obj, manager, index, rect);
+        this.objBackground = obj.style.background;
+        this.objColor = obj.style.color;
+        obj.style.background = manager.options.background;
+        obj.style.color = manager.options.text_color;
+    }
+
+    remove() {
+        this.obj.style.background = this.objBackground;
+        this.obj.style.color = this.objColor;
+        super.remove();
+    }
+
+    setVisible(on) {
+        super.setVisible(on);
         this.refresh();
     }
 
@@ -109,21 +143,16 @@ class Hint {
         }
     }
 
-    isVisible() {
-        return this.hint.style.display != "none";
-    }
-
-    serialize() {
-        return JSON.stringify({
-            nodeName: this.obj.nodeName,
-            text: this.text(),
-            id: this.hint.textContent,
-            url: this.url()
-        });
+    id() {
+        return this.hint.textContent;
     }
 }
 
-
+class AlphabetHint extends BaseHint {
+    constructor(obj, manager, rect, index) {
+        super(obj, manager, index, rect);
+    }
+}
 
 class HintFrame {
     constructor(frame) {
@@ -148,19 +177,8 @@ function xpath_lookup_namespace (prefix) {
     return XPATH_NS[prefix] || null;
 }
 
-
 class Hinter {
-    constructor() {
-        this.options = {
-            hint_background: "red",
-            hint_color: "white",
-            background: "yellow",
-            background_active: "#88FF00",
-            text_color: "black"
-        };
-    }
-
-    init(selector) {
+    init(selector, method, options) {
         this.selector = selector;
         this.xres = document.evaluate(selector, document, xpath_lookup_namespace,
                                       XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
@@ -169,9 +187,11 @@ class Hinter {
         this.index = 0;
         this.hints = [];
         this.activeHint = null;
+        this.method = method;
+        this.options = options || {};
     }
 
-    next(hint_index) {
+    lookup(hint_index) {
         // has been cleared.
         if (this.hints === null) {
             return;
@@ -184,32 +204,96 @@ class Hinter {
                 continue;
             }
             if (obj.tagName == "IFRAME") {
-                post_message(obj.contentWindow, "hints.select_in_iframe_start",
-                             {selector: this.selector, hint_index: hint_index});
+                post_message(obj.contentWindow, "hints.lookup_in_iframe_start",
+                             {selector: this.selector, hint_index: hint_index,
+                              method: this.method, options: this.options});
                 this.hints.push(new HintFrame(obj));
                 this.index+=1;
                 return;
             }
             hint_index += 1;
-            var hint = new Hint(obj, this,
-                                (rect.left + window.scrollX) + "px",
-                                (rect.top + window.scrollY) + "px",
-                                hint_index
-                               );
+            var hint;
+            if (this.method == "filter") {
+                hint = new Hint(obj, this, rect, hint_index);
+            } else {
+                hint = new AlphabetHint(obj, this, rect, hint_index);
+                hint.setVisible(false);
+            }
             this.hints.push(hint);
             this.fragment.appendChild(hint.hint);
         }
         document.documentElement.appendChild(this.fragment);
 
         if (self !== top) {
-            post_message(parent, "hints.select_in_iframe_end", hint_index);
+            post_message(parent, "hints.lookup_in_iframe_end", hint_index);
+        } else {
+            if (this.method == "alphabet") {
+                this.hintsCreated(hint_index);
+            } else {
+                // hints are ready
+                post_webmacs_message("_browserObjectActivated", ["null"]);
+            }
         }
     }
 
-    selectBrowserObjects(selector) {
-        this.init(selector);
-        this.next(0);
-        this.activateNextHint(false);
+    // alphabet only
+    hintsCreated(count) {
+        // took from vimium
+        let hints = [""];
+        let offset = 0;
+        while ((hints.length - offset) < count || hints.length == 1) {
+            let hint = hints[offset++];
+            for (var ch of this.options.characters) {
+                hints.push(ch + hint);
+            }
+        }
+        hints = hints.slice(offset, offset+count).sort().map(e => {
+            return e.split("").reverse().join("");
+        });
+
+        this.configure_hints(0, hints, []);
+    }
+
+    // alphabet only
+    configure_hints(index, labels, parent_indexes) {
+        let label_index = 0;
+        for (; index < this.hints.length; index++) {
+            let hint = this.hints[index];
+            if (hint instanceof HintFrame) {
+                post_message(hint.frame.contentWindow, "hints.frame_configure_hints",
+                             {index: 0, labels: labels.slice(label_index),
+                              parent_indexes: [index + 1].concat(parent_indexes)});
+                return;
+            } else {
+                hint.chars = labels[label_index];
+                hint.hint.textContent = hint.chars;
+                hint.setVisible(true);
+                label_index++;
+            }
+        }
+        if (self !== top) {
+            post_message(parent, "hints.frame_configure_hints", {
+                index: parent_indexes[0],
+                parent_indexes: parent_indexes.slice(1),
+                labels: labels.slice(label_index),
+            });
+        } else {
+            // hints are ready
+            post_webmacs_message("_browserObjectActivated", ["null"]);
+        }
+    }
+
+    // alphabet only
+    frame_configure_hints(args) {
+        this.configure_hints(args.index, args.labels, args.parent_indexes);
+    }
+
+    selectBrowserObjects(selector, method, options) {
+        this.init(selector, method, JSON.parse(options));
+        this.lookup(0);
+        if (method === "filter") {
+            this.activateNextHint(false);
+        }
     }
 
     clearBrowserObjects() {
@@ -250,7 +334,7 @@ class Hinter {
             return;
         }
         this.activeHint = null;
-        if (prevHint instanceof Hint) {
+        if (prevHint instanceof BaseHint) {
             prevHint.refresh();
         } else {
             post_message(prevHint.frame.contentWindow,
@@ -268,9 +352,12 @@ class Hinter {
     }
 
     frameActivateNextHint(args) {
+        if (this.method !== "filter") {
+            return;
+        }
         let traverse = function(hinter, index) {
             let hint = hinter.hints[index];
-            if (hint instanceof Hint) {
+            if (hint instanceof BaseHint) {
                 if (hint.isVisible()) {
                     hinter.setCurrentActiveHint([index].concat(args.parent_indexes));
                     return true;
@@ -298,7 +385,7 @@ class Hinter {
                 index = this.hints.indexOf(this.activeHint);
 
                 // else, activate the next hint
-                if (this.activeHint instanceof Hint) {
+                if (this.activeHint instanceof BaseHint) {
                     index += args.way;
                 }
             } else {
@@ -347,7 +434,7 @@ class Hinter {
 
     followCurrentLink() {
         if (this.activeHint) {
-            if (this.activeHint instanceof Hint) {
+            if (this.activeHint instanceof BaseHint) {
                 clickLike(this.activeHint.obj);
             } else {
                 post_message(this.activeHint.frame.contentWindow,
@@ -362,7 +449,7 @@ class Hinter {
 
         for (let hint_index=0; hint_index < this.hints.length; hint_index++) {
             let hint = this.hints[hint_index];
-            if (hint instanceof Hint) {
+            if (hint instanceof BaseHint) {
                 if (! hint.isVisible()) {
                     continue;
                 }
@@ -389,6 +476,9 @@ class Hinter {
     }
 
     selectVisibleHint(index) {
+        if (this.method !== "filter") {
+            return;
+        }
         this.frameSelectVisibleHint({index: parseInt(index), parent_indexes: []});
     }
 
@@ -399,16 +489,22 @@ class Hinter {
         let match_hint = hint => true;
 
         if (args.text) {
-            // else, we fuzzy-match on the hint text
-            let parts = args.text.split(/\s+/).map(escapeRegExp);
-            let re = new RegExp(".*" + parts.join(".*") + ".*", "i");
-            match_hint = function(hint) {
-                let text = hint.text();
-                if (text !== null) {
-                    return (text.match(re) !== null);
-                }
-                return false;
-            };
+            if (this.method == "filter") {
+                // fuzzy-match on the hint text
+                let parts = args.text.split(/\s+/).map(escapeRegExp);
+                let re = new RegExp(".*" + parts.join(".*") + ".*", "i");
+                match_hint = function(hint) {
+                    let text = hint.text();
+                    if (text !== null) {
+                        return (text.match(re) !== null);
+                    }
+                    return false;
+                };
+            } else {
+                match_hint = function(hint) {
+                    return hint.chars.startsWith(args.text);
+                };
+            }
         }
 
         for (let index = args.index; index < this.hints.length; index++) {
@@ -418,7 +514,7 @@ class Hinter {
                 post_message(hint.frame.contentWindow, "hints.frameFilterSelection", {
                     text: args.text,
                     index: 0,
-                    parent_index: index,
+                    parent_indexes: [index].concat(args.parent_indexes),
                     hint_index: hint_index
                 });
                 return;
@@ -428,7 +524,18 @@ class Hinter {
             if (match_hint(hint)) {
                 hint_index +=1;
                 hint.setVisible(true);
-                hint.hint.textContent = hint_index;
+                if (this.method == "filter") {
+                    hint.hint.textContent = hint_index;
+                } else {
+                    if (hint.chars == args.text) {
+                        // alphabet always set the active hint when we found the
+                        // final hint.
+                        this.setCurrentActiveHint(
+                            [index].concat(args.parent_indexes)
+                        );
+                        return;
+                    }
+                }
             } else {
                 hint.setVisible(false);
                 if (hint == this.activeHint) {
@@ -442,12 +549,13 @@ class Hinter {
             // continue.
             post_message(parent, "hints.frameFilterSelection", {
                 text: args.text,
-                index: args.parent_index + 1,
-                hint_index: hint_index
+                index: args.parent_indexes[0] + 1,
+                hint_index: hint_index,
+                parent_indexes: args.parent_indexes.slice(1)
             });
         } else {
             // else if we lose the selection, put it back to the first hint.
-            if (this.activeHint === null) {
+            if (this.activeHint === null && this.method == "filter") {
                 this.activateNextHint(false);
             }
         }
@@ -458,6 +566,7 @@ class Hinter {
             text: text,
             index: 0,
             hint_index: 0,
+            parent_indexes: [],
         });
     }
 }
@@ -477,9 +586,9 @@ function currentLinkUrl() {
 }
 
 if (self !== top) {
-    register_message_handler("hints.select_in_iframe_start", function(args) {
-        hints.init(args.selector);
-        hints.next(args.hint_index);
+    register_message_handler("hints.lookup_in_iframe_start", function(args) {
+        hints.init(args.selector, args.method, args.options);
+        hints.lookup(args.hint_index);
     });
     register_message_handler("hints.select_clear",
                              _ => hints.clearBrowserObjects());
@@ -490,8 +599,8 @@ if (self !== top) {
     register_message_handler("hints.foundCurrentLinkUrl",
                              _ => currentLinkUrl());
 }
-register_message_handler("hints.select_in_iframe_end",
-                         hint_index => hints.next(hint_index));
+register_message_handler("hints.lookup_in_iframe_end",
+                         hint_index => hints.lookup(hint_index));
 register_message_handler("hints.frameActivateNextHint",
                          args => hints.frameActivateNextHint(args));
 register_message_handler("hints.followCurrentLink",
@@ -500,3 +609,5 @@ register_message_handler("hints.frameFilterSelection",
                          args => hints.frameFilterSelection(args));
 register_message_handler("hints.frameUpActivateHint",
                          args => hints.frameUpActivateHint(args));
+register_message_handler("hints.frame_configure_hints",
+                         args => hints.frame_configure_hints(args));
