@@ -1,3 +1,6 @@
+import pytest
+
+
 INPUT0 = "document.getElementById('input0')"
 INPUT0_IFRAME = "window.frames[0].document.getElementById('input0')"
 
@@ -31,20 +34,26 @@ def test_iframe_navigation(session):
     session.check_javascript("%s.selectionEnd" % INPUT0_IFRAME, 6)
 
 
-def test_iframe_follow(session, pytestconfig):
+@pytest.mark.parametrize("hint_method", ["filter", "alphabet"])
+def test_iframe_follow(session, pytestconfig, hint_method, variables):
     """
     It is possible to hint things inside sub frames.
     """
+    variables.set("hint-method", hint_method)
     session.load_page("iframe_follow", wait_iframes=True)
 
-    session.keyclick("f")
-    session.check_nav_highlighted(INPUT0)
+    with session.wait_hints_ready():
+        session.keyclick("f")
 
-    session.wkeyclicks("C-n")
-    # wait until the background color is green, the above keypress has been
-    # taken in account.
-    session.check_nav_highlighted(INPUT0_IFRAME)
-    session.wkeyclicks("Enter")
+    if hint_method == "filter":
+        session.wkeyclicks("C-n")
+        # wait until the background color is green, the above keypress has been
+        # taken in account.
+        session.check_nav_highlighted(INPUT0_IFRAME)
+        session.wkeyclicks("Enter")
+    else:
+        session.keyclick("d")
+
     session.check_javascript("%s === window.frames[0].document.activeElement"
                              % INPUT0_IFRAME, True)
     session.keyclicks("youhou")

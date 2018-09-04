@@ -226,8 +226,13 @@ class Hinter {
 
         if (self !== top) {
             post_message(parent, "hints.lookup_in_iframe_end", hint_index);
-        } else if (this.method == "alphabet") {
-            this.hintsCreated(hint_index);
+        } else {
+            if (this.method == "alphabet") {
+                this.hintsCreated(hint_index);
+            } else {
+                // hints are ready
+                post_webmacs_message("_browserObjectActivated", ["null"]);
+            }
         }
     }
 
@@ -272,6 +277,9 @@ class Hinter {
                 parent_indexes: parent_indexes.slice(1),
                 labels: labels.slice(label_index),
             });
+        } else {
+            // hints are ready
+            post_webmacs_message("_browserObjectActivated", ["null"]);
         }
     }
 
