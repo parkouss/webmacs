@@ -69,6 +69,7 @@ py.test <path_to_webmacs_sources>/tests
 py.test <path_to_webmacs_sources>/tests --no-xvfb
 #+END_SRC
 
+
 * Features
 
 *webmacs* quite mimics the conkeror way of browsing. Short list of the already
@@ -128,10 +129,23 @@ variables using *describe-variables*.
 Also similarly to emacs you can use *C-h k* to describe a keybinding, *C-h c* to
 describe one command and *C-h v* to describe one variable.
 
+
 * Documentation
 
 Documentation is available on [[http://webmacs.readthedocs.io/en/latest/index.html][readthedocs]]. Currently it is for user
 configuration only.
+
+
+* Qt versions support
+
+Every stable Qt version from (and including) 5.7 should work with webmacs.
+
+Note that there are some known limitations:
+
+- spell checking only works with Qt >= 5.8
+- support for iframes is broken with Qt < 5.10 (webcontent-edit mode is
+  unreachable)
+- dev tools only works with Qt >= 5.11
 
 
 * Website is blocked, turn off the extensions
@@ -145,6 +159,7 @@ overcome this.
 For a permanent change, edit the *adblock-urls-rules* variable, to remove some
 urls in there. Note if you set this variable to an empty list, the adblocker
 will be completely disabled. See the [[http://webmacs.readthedocs.io/en/latest/user_configuration.html#variables][variables]] section in the documentation.
+
 
 * Contributions
 
