@@ -31,6 +31,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   **copy-current-link** bound to **c c**, **copy-current-buffer-title** bound to
   **c t**, and copy-current-buffer-url bound to **c u** (all in the webbuffer
   keymap)
+- Added a new method for hinting: alphabet. This allow to navigate only using
+  the home row keys, and without using Enter. Can be enabled by setting the
+  new variable **hint-method** to "alphabet".
+- Added a new variable **hint-alphabet-characters** to specify which characters
+  to use with the alphabet hinting.
+- Added a new variable **hint-node-style** to change the style of the hint div
+  nodes.
 
 ### Changed
 
@@ -39,6 +46,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   **C-x C-b** so there is no visible change using those keybindings.
 - The **c** (copy-link) binding is now available using **c l** (think about Copy
   Link).
+- The css style of the hints has been changed. If you prefer the old style, just
+  set the **hint-node-style** variable to {"background": "red", "color":
+  "white"}.
 
 ## [0.6] - 2018-08-20
 
