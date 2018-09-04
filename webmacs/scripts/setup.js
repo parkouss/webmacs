@@ -103,6 +103,9 @@ if (self === top) {
     register_message_handler("currentLinkUrl",
                              args => post_webmacs_message("currentLinkUrl",
                                                           args));
+    register_message_handler("_browserObjectActivated",
+                             args => post_webmacs_message("_browserObjectActivated",
+                                                          args));
 
     // and now, register the web channel on the top frame.
     function registerWebmacs(w) {
