@@ -39,7 +39,7 @@ SELECTOR_CLICKABLE = (
     " | //xhtml:*[@contenteditable = 'true'] | //svg:a"
 )
 
-SELECTOR_LINK = "//a[@href]"
+SELECTOR_LINK = "//a[@href] | //iframe"
 
 
 class HintPrompt(Prompt):
