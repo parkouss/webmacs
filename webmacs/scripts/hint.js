@@ -377,15 +377,15 @@ class Hinter {
                 frameHint = {window: hint.frame.contentWindow, index: hint_index};
             }
         }
-	if (frameHint) {
-	    post_message(
-		frameHint.window,
-		"hints.frameSelectVisibleHint", {
+	      if (frameHint) {
+	          post_message(
+		            frameHint.window,
+		            "hints.frameSelectVisibleHint", {
                     index: index,
                     parent_indexes: [frameHint.index].concat(args.parent_indexes)
-		}
-	    );
-	}
+		            }
+	          );
+	      }
     }
 
     selectVisibleHint(index) {
