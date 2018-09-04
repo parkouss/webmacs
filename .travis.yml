@@ -6,6 +6,8 @@ python: 3.6
 matrix:
   include:
     - os: linux
+      env: PYQT_VERSION=5.7.1
+    - os: linux
       env: PYQT_VERSION=5.8.2
     - os: linux
       env: PYQT_VERSION=5.9.2
@@ -13,6 +15,7 @@ matrix:
       env: PYQT_VERSION=5.10.1
     - os: linux
       env: PYQT_VERSION=5.11.2
+  fast_finish: true
 
 cache:
   directories:
