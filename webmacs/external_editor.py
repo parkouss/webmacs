@@ -11,10 +11,7 @@ editor_cmd = variables.define_variable(
     " placeholder in the command, as it will be used to open the"
     " temporary file.",
     "emacsclient -c -a '' {file}",
-    conditions=(
-        variables.condition(lambda v: isinstance(v, str),
-                            "Must be an instance of string"),
-    ),
+    type=variables.String(),
 )
 
 

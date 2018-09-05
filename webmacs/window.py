@@ -27,6 +27,7 @@ window_toolbar_on_startup = variables.define_variable(
     "If set to True, the main window(s) will have the navigation toolbar"
     " visible on startup.",
     False,
+    type=variables.Bool(),
 )
 
 

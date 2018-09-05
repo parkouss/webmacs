@@ -29,24 +29,14 @@ hint_method = variables.define_variable(
     "hint-method",
     "Method to hint things in web buffers. One of %s" % (HINT_METHODS,),
     HINT_METHODS[0],
-    conditions=(
-        variables.condition(
-            lambda v: v in HINT_METHODS,
-            "must be one of %s" % (HINT_METHODS,)
-        ),
-    ),
+    type=variables.String(choices=HINT_METHODS),
 )
 
 hint_alphabet_characters = variables.define_variable(
     "hint-alphabet-characters",
     "Which characters to use for alphabet hinting.",
     "asdfghjkl",
-    conditions=(
-        variables.condition(
-            lambda v: isinstance(v, str),
-            "must be one a string of unique letters"
-        ),
-    ),
+    type=variables.String(),
 )
 
 
@@ -68,12 +58,7 @@ hint_node_style = variables.define_variable(
         "fontSize": "13px",
         "textShadow": "1px 1px 0 rgba(0, 0, 0, 0.6)",
     },
-    conditions=(
-        variables.condition(
-            lambda v: isinstance(v, dict),
-            "must be an instance of dict."
-        ),
-    ),
+    type=variables.Dict(variables.String(), variables.String()),
 )
 
 

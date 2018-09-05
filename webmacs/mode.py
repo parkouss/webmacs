@@ -109,13 +109,8 @@ auto_buffer_modes = variables.define_variable(
     " web pages to some mode. If nothing matches the url, standard-mode is"
     " used.",
     (),
-    conditions=(
-        variables.condition(
-            lambda v: isinstance(v, (tuple, list))
-            and all(isinstance(e, tuple) for e in v)
-            and all((isinstance(e[0], str) or hasattr(e[0], "match"))
-                    and e[1] in MODES for e in v),
-            "Must be a list of tuple (regexes, modename)."),
+    type=variables.List(
+        variables.Tuple(variables.String(), variables.String(choices=MODES))
     ),
     callbacks=(
         _set_auto_buffer_modes,

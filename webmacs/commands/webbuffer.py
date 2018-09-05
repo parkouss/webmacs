@@ -35,11 +35,7 @@ switch_buffer_current_color = variables.define_variable(
     "The color to use for the current buffer in the switch-buffer list."
     " Set to an empty string if you don't want a special color.",
     "#c0d5f7",
-    conditions=(
-        variables.condition(
-            lambda v: isinstance(v, str), "Must be an instance of string"
-        ),
-    ),
+    type=variables.String(),
 )
 
 

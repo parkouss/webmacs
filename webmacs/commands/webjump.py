@@ -40,12 +40,7 @@ webjump_default = variables.define_variable(
     "webjump-default",
     "The default webjump",
     "",
-    conditions=(
-        variables.condition(
-            lambda v: not v or v in WEBJUMPS,
-            "Must be one of %s." % (tuple(WEBJUMPS),)
-        ),
-    ),
+    type=variables.String(choices=WEBJUMPS),
 )
 
 

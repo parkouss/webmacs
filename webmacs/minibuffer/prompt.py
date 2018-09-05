@@ -32,18 +32,21 @@ FLASH_DURATION = variables.define_variable(
     "minibuffer-flash-duration",
     "Total duration in seconds of the minibuffer flash animation.",
     0.3,
+    type=variables.Float(min=0.0),
 )
 FLASH_COLOR = variables.define_variable(
     "minibuffer-flash-color",
     "Color for the minibuffer flash animation. Should be given as"
     " an hexadecimal string.",
     "#ff0000",
+    type=variables.String(),
 )
 FLASH_COUNT = variables.define_variable(
     "minibuffer-flash-count",
     "How many flashes should be displayed during the minibuffer"
     " flash animation.",
     2,
+    type=variables.Int(min=0),
 )
 
 

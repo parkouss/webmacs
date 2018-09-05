@@ -31,13 +31,10 @@ from . import variables
 log_to_disk = variables.define_variable(
     "log-to-disk-max-files",
     "Maximum number of log files to keep. Log files are stored in"
-    " ~/.webmacs/logs. Setting this to a number less or"
-    "equal to 0 will deactivate file logging completely.",
+    " ~/.webmacs/logs. Setting this to 0 will deactivate file logging"
+    " completely.",
     0,
-    conditions=(
-        variables.condition(lambda x: isinstance(x, int),
-                            "Must be an int"),
-    ),
+    type=variables.Int(min=0),
 )
 
 

@@ -5,7 +5,7 @@ import logging
 import urllib.request
 import base64
 
-from . import variables, version
+from . import variables
 from .runnable import Runner
 from collections import namedtuple
 
@@ -19,15 +19,7 @@ spell_checking_dictionaries = variables.define_variable(
     "spell-checking-dictionaries",
     "List of dictionaries to use for spell checking. Only usable on Qt >= 5.8",
     (),
-    conditions=(
-        variables.condition(
-            lambda v: isinstance(v, (list, tuple)),
-            "must be a list of strings"
-        ) if version.qt_version >= (5, 8) else variables.condition(
-            lambda v: not bool(v),
-            "Can't be set for Qt < 5.8"
-        ),
-    ),
+    type=variables.List(variables.String()),
 )
 
 

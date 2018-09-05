@@ -22,15 +22,12 @@ from . import variables, hooks
 max_size = variables.define_variable(
     "revive-buffers-limit",
     "The maximum number of killed buffers that can be revived."
-    " If set to a negative number, there is no limit. Default to 10.",
+    " If set to a -1, there is no limit. Default to 10.",
     10,
-    conditions=(
-        variables.condition(lambda v: isinstance(v, int),
-                            "Must be an int"),
-    ),
+    type=variables.Int(min=-1),
     callbacks=(
         lambda v: KilledBuffer.update_max_size(v.value)
-    )
+    ),
 )
 
 

@@ -302,12 +302,7 @@ MINIBUFFER_HEIGHT = variables.define_variable(
     "minibuffer-height",
     "The height in pixel of the minibuffer.",
     25,
-    conditions=(
-        variables.condition(lambda v: isinstance(v, int),
-                            "Must be an instance of int"),
-        variables.condition(lambda v: v > 0,
-                            "Must be greater than 0")
-    ),
+    type=variables.Int(min=1),
     callbacks=(_update_minibuffer_height,)
 )
 
