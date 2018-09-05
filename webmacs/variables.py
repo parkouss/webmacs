@@ -56,6 +56,17 @@ class Type(object):
     def validate(self, value):
         pass
 
+    def _describe(self, result):
+        pass
+
+    def type_name(self):
+        return ""
+
+    def describe(self):
+        result = [self.type_name(), []]
+        self._describe(result[1])
+        return result
+
 
 class ChoiceMixin(object):
     def __init__(self, choices=None, **kwargs):
@@ -67,6 +78,11 @@ class ChoiceMixin(object):
         if self.choices and value not in self.choices:
             raise VariableConditionError("Must be one of %r"
                                          % (tuple(self.choices),))
+
+    def _describe(self, result):
+        if self.choices:
+            result.append("one of %r" % (tuple(self.choices),))
+        super()._describe(result)
 
 
 class RangeMixin(object):
@@ -86,12 +102,22 @@ class RangeMixin(object):
                 "Must be lesser or equal to %s" % self.max
             )
 
+    def _describe(self, result):
+        if self.min is not None:
+            result.append(">= %s" % self.min)
+        if self.max is not None:
+            result.append("<= %s" % self.max)
+        super()._describe(result)
+
 
 class String(ChoiceMixin, Type):
     def validate(self, value):
         if not isinstance(value, str):
             raise VariableConditionError("Must be a string")
         super().validate(value)
+
+    def type_name(self):
+        return "String"
 
 
 class Int(ChoiceMixin, RangeMixin, Type):
@@ -100,6 +126,9 @@ class Int(ChoiceMixin, RangeMixin, Type):
             raise VariableConditionError("Must be an integer")
         super().validate(value)
 
+    def type_name(self):
+        return "Int"
+
 
 class Float(ChoiceMixin, RangeMixin, Type):
     def validate(self, value):
@@ -107,11 +136,17 @@ class Float(ChoiceMixin, RangeMixin, Type):
             raise VariableConditionError("Must be a float")
         super().validate(value)
 
+    def type_name(self):
+        return "Float"
+
 
 class Bool(Type):
     def validate(self, value):
         if not isinstance(value, bool):
             raise VariableConditionError("Must be True or False")
+
+    def type_name(self):
+        return "Bool"
 
 
 class List(Type):
@@ -129,6 +164,14 @@ class List(Type):
                 raise VariableConditionError("List at position %d: %s"
                                              % (i, exc)) from None
 
+    def type_name(self):
+        return "List"
+
+    def describe(self):
+        result = super().describe()
+        result.append({"of": self.type.describe()})
+        return result
+
 
 class Tuple(Type):
     def __init__(self, *types):
@@ -145,6 +188,15 @@ class Tuple(Type):
             except VariableConditionError as exc:
                 raise VariableConditionError("Tuple at position %d: %s"
                                              % (i, exc)) from None
+
+    def type_name(self):
+        return "Tuple"
+
+    def describe(self):
+        result = super().describe()
+        for i, t in enumerate(self.types):
+            result.append({"at index %i" % i: t.describe()})
+        return result
 
 
 class Dict(Type):
@@ -164,6 +216,15 @@ class Dict(Type):
                 self.value_type.validate(v)
             except VariableConditionError as exc:
                 raise VariableConditionError("Value for key %r: %s" % (k, exc))
+
+    def type_name(self):
+        return "Dict"
+
+    def describe(self):
+        result = super().describe()
+        result.append({"key": self.key_type.describe()})
+        result.append({"value": self.key_type.describe()})
+        return result
 
 
 def define_variable(name, doc, value, **kwargs):

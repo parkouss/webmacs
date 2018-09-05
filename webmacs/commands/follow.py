@@ -27,7 +27,7 @@ HINT_METHODS = ("filter", "alphabet")
 
 hint_method = variables.define_variable(
     "hint-method",
-    "Method to hint things in web buffers. One of %s" % (HINT_METHODS,),
+    "Method to hint things in web buffers.",
     HINT_METHODS[0],
     type=variables.String(choices=HINT_METHODS),
 )

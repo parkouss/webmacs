@@ -1,8 +1,24 @@
+{% macro var_type(v) -%}
+{% set desc = {"Type": v.type.describe()}.items() %}
+{%- for k, v in desc recursive %}
+{% set outer_loop = loop %}
+<ul {% if outer_loop.depth == 1 %} style="list-style:none;padding:0;margin:0"  {% endif %}>
+  <li>{{k}}: {{v[0]}}({{ v[1]|join(', ') }})
+    {% for sv in v[2:] %}
+    {{ outer_loop(sv.items()) }}
+    {% endfor %}
+  </li>
+</ul>
+{% endfor %}
+{%- endmacro %}
+
 {% extends "base.html" %}
 
 {% block title %}Variable {{variable.name}}{% endblock %}
 {% block content %}
 <h1>Variable <strong>{{variable.name}}</strong></h1>
+
+{{var_type(variable)}}
 
 <p>Its current value is <pre>{{variable.value}}.</pre></p>
 
