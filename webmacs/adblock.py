@@ -40,13 +40,7 @@ adblock_urls_rules = variables.define_variable(
     "A list of urls to get rules for ad-blocking (using the Adblock format)."
     " The default urls are taken from the easylist site https://easylist.to.",
     DEFAULT_EASYLIST,
-    conditions=(
-        variables.condition(
-            lambda v: (isinstance(v, (tuple, list))
-                       and all(isinstance(s, str) for s in v)),
-            "must be a list of urls"
-        ),
-    ),
+    type=variables.List(variables.String()),
 )
 
 

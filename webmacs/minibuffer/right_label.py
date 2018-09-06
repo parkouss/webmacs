@@ -21,10 +21,7 @@ MINIBUFFER_RIGHTLABEL = variables.define_variable(
     "minibuffer-right-label",
     "Format for displaying some information in right label of minibuffer.",
     "{loading}{mode}: {local_keymap} [{buffer_current}/{buffer_count}]",
-    conditions=(
-        variables.condition(lambda v: isinstance(v, str),
-                            "Must be an instance of string"),
-    ),
+    type=variables.String(),
 )
 
 

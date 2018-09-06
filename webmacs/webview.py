@@ -45,7 +45,8 @@ webview_stylesheet = variables.define_variable(
     padding: 1px;
 }\
 """,
-    callbacks=(_update_stylesheets,)
+    callbacks=(_update_stylesheets,),
+    type=variables.String(),
 )
 
 
