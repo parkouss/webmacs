@@ -1,0 +1,6 @@
+vendor/*/test/** export-ignore
+vendor/*/vendor/depot_tools/** export-ignore
+vendor/*/.gitignore export-ignore
+vendor/*/.gitmodules export-ignore
+vendor/*/.npmignore export-ignore
+vendor/*/.travis.yml export-ignore
