@@ -14,7 +14,7 @@ matrix:
     - os: linux
       env: PYQT_VERSION=5.10.1
     - os: linux
-      env: PYQT_VERSION=5.11.2
+      env: PYQT_VERSION=5.11.2 GENERATE_GIT_ARCHIVE=true
   fast_finish: true
 
 cache:
@@ -29,3 +29,19 @@ install:
 script:
   - flake8 webmacs setup.py tests
   - pytest tests
+
+before_deploy:
+  - python git_archive_all.py webmacs-${TRAVIS_TAG}.tar.gz
+
+deploy:
+  provider: releases
+  api_key:
+    secure: MZSDuOdwUlHn55GfMy4MwkT9ZgDhd5/09gKTH2futOWtF90oIhbIO2a1ZfH8QXPB2AZtISzPFgPgMgFtdCIBkmv7ic5yD0AC+hfb6F8iWsxVaUCBQh6B7g4vUomoAEkr7+pUzjapOuJFSlaIWajSL43WcZb7Ep6gdy8M1bBnj8HsyBug5g5uV0GEFmk55Jwlg1EsXF9Jx23EstEBW1HC/wdywa3vkYZsaCzKSco+L1XU2lVtbrRBuY8SbYyvadeFPkyu315+cFNT+HkdD5yvFjRNFoaSYF4AMskv8LR7cCQ6Z7Hug1huFBNgr+LPVFxfflb+zaEETimLV5BN52pB2udv+RDJu0Xmc2hGcCb3eRrHC/w7DkxXWuldF/g8b2aCmoCUDrca1Dh+ipeXzWKo5yEFgrP4dp8l/q5ClbpH3Qc/o6IUhFvVS7YH8udO7A7bAHcZisDGuSfasQeHSDq28maU0pSH3sB0zcTvcphIzkDUjT7+9peXhn56MWUMKlBRX2JU9eoUCz1dBuxK/XCuRZ0YPHjV3xrDvEIbMBny3kdKHCTkc7rcZZs1QfZgnMmySLbM6uUXpmwxBhH5eIEqdZ5isQn/oCt+G3L99Lp7/sNr+gXJtNuocEzWcryEIeJ2Vi/hL9+Mu/I4TlgyLv6f1RS74Ndp4cPpgCCwGS2yVwY=
+  file: webmacs-${TRAVIS_TAG}.tar.gz
+  skip_cleanup: true
+  on:
+    tags: true
+    repo: parkouss/webmacs
+    branch: master
+    # limit to only one element in the matrix
+    condition: $GENERATE_GIT_ARCHIVE = true
