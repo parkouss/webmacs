@@ -18,6 +18,29 @@ from ..keymaps import Keymap
 KEYMAP = Keymap("minibuffer")
 
 
+WORD_SEPS = "#/.-_:"
+
+
+def move_next_word(edit, forward, mark):
+    action = edit.cursorWordForward if forward else edit.cursorWordBackward
+
+    cursor = edit.cursorPosition()
+    txt = edit.text()
+
+    while True:
+        action(mark)
+        nc = edit.cursorPosition()
+        if nc == cursor:
+            break
+        cursor = nc
+
+        if forward:
+            nc -= 1
+
+        if txt[nc] not in WORD_SEPS:
+            break
+
+
 @KEYMAP.define_key("Tab")
 def complete(ctx):
     input = ctx.minibuffer.input()
@@ -105,7 +128,7 @@ def clean_aindent_bsunindent(ctx):
     if edit.hasSelectedText():
         edit.deselect()
 
-    edit.cursorWordBackward(True)
+    move_next_word(edit, False, True)
     if edit.hasSelectedText():
         edit.del_()
 
@@ -135,14 +158,14 @@ def backward_char(ctx):
 @KEYMAP.define_key("M-Right")
 def forward_word(ctx):
     edit = ctx.minibuffer.input()
-    edit.cursorWordForward(edit.mark())
+    move_next_word(edit, True, edit.mark())
 
 
 @KEYMAP.define_key("M-b")
 @KEYMAP.define_key("M-Left")
 def backward_word(ctx):
     edit = ctx.minibuffer.input()
-    edit.cursorWordBackward(edit.mark())
+    move_next_word(edit, False, edit.mark())
 
 
 @KEYMAP.define_key("M-w")
@@ -173,7 +196,7 @@ def delete_word(ctx):
     if edit.hasSelectedText():
         edit.deselect()
 
-    edit.cursorWordForward(True)
+    move_next_word(edit, True, True)
     if edit.hasSelectedText():
         edit.del_()
 
