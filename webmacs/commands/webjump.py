@@ -208,6 +208,7 @@ class WebJumpPrompt(Prompt):
     history = PromptHistory()
     force_new_buffer = False
     keymap = WEBJUMP_PROMPT_KEYMAP
+    select_current_url = True
 
     def completer_model(self):
         data = []
@@ -231,6 +232,11 @@ class WebJumpPrompt(Prompt):
         self._active_webjump = None
         self._completer = None
         self._popup_sel_model = None
+        if self.select_current_url:
+            url = current_buffer().url().toString()
+            input = minibuffer.input()
+            input.setText(url)
+            input.setSelection(0, len(url))
 
     def eventFilter(self, obj, event):
         # call _text_edited on backspace release, as this is not reported by
@@ -342,16 +348,15 @@ class WebJumpPrompt(Prompt):
                                else "://"))
 
 
-class WebJumpPromptCurrentUrl(WebJumpPrompt):
+class WebJumpPromptAlternateUrl(WebJumpPrompt):
     def enable(self, minibuffer):
         WebJumpPrompt.enable(self, minibuffer)
-        url = current_buffer().url().toString()
-        input = minibuffer.input()
-        input.setText(url)
-        input.setSelection(0, len(url))
+        minibuffer.input().deselect()
 
 
 class DefaultSearchPrompt(WebJumpPrompt):
+    select_current_url = False
+
     def enable(self, minibuffer):
         WebJumpPrompt.enable(self, minibuffer)
         wj = WEBJUMPS.get(webjump_default.value)
@@ -431,10 +436,10 @@ def go_to(ctx):
         ctx.prompt.get_buffer().load(url)
 
 
-@define_command("go-to-selected-url", prompt=WebJumpPromptCurrentUrl)
+@define_command("go-to-alternate-url", prompt=WebJumpPromptAlternateUrl)
 def go_to_selected_url(ctx):
     """
-    Prompt (defaulting to current selection) to open an url or a webjump.
+    Prompt to open an alternative url from the current one.
     """
     go_to(ctx)
 
@@ -451,17 +456,17 @@ def go_to_new_buffer(ctx):
     go_to(ctx)
 
 
-class WebJumpPromptCurrentUrlNewBuffer(WebJumpPromptCurrentUrl):
+class WebJumpPromptAlternateUrlNewBuffer(WebJumpPromptAlternateUrl):
     force_new_buffer = True
 
 
 @define_command(
-    "go-to-selected-url-new-buffer",
-    prompt=WebJumpPromptCurrentUrlNewBuffer
+    "go-to-alternate-url-new-buffer",
+    prompt=WebJumpPromptAlternateUrlNewBuffer
 )
 def go_to_selected_url_new_buffer(ctx):
     """
-    Prompt (defaulting to current selection) to open an url or a webjump.
+    Prompt to open an alternative url from the current one in a new buffer.
     """
     go_to(ctx)
 

@@ -50,6 +50,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - The css style of the hints has been changed. If you prefer the old style, just
   set the **hint-node-style** variable to {"background": "red", "color":
   "white"}.
+- The **go-to** command (bounds to **g**) now set the current url in the
+  minibuffer input and select it.
+- The **go-to-selected-url** and **go-to-selected-url-new-buffer** commands are
+  renamed to **go-to-alternate-url** and **go-to-alternate-url-new-buffer**.
+  Also they do not anymore select the current url, but only set the cursor at
+  the end of the url.
 
 ## [0.6] - 2018-08-20
 
