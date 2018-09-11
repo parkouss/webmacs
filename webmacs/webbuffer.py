@@ -406,7 +406,7 @@ create_buffer = WebBuffer
 
 KEYMAP.define_key("g", "go-to")
 KEYMAP.define_key("s", "search-default")
-KEYMAP.define_key("G", "go-to-selected-url")
+KEYMAP.define_key("G", "go-to-alternate-url")
 KEYMAP.define_key("b", "buffer-history")
 KEYMAP.define_key("F", "go-forward")
 KEYMAP.define_key("B", "go-backward")
