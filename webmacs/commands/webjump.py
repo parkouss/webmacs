@@ -393,15 +393,17 @@ def get_url(prompt):
             return webjump.url
         elif len(args) < 2:
                 # send the url without a search string
-            return webjump.url % ''
+            return webjump.url.replace("%s", "")
 
         else:
             # format the url as entered
             if webjump.protocol:
                 return value
             else:
-                return webjump.url % str(QUrl.toPercentEncoding(args[1]),
-                                         "utf-8")
+                return webjump.url.replace(
+                    "%s",
+                    str(QUrl.toPercentEncoding(args[1]), "utf-8")
+                )
 
     # Look for a bookmark
     bookmarks = {name: url
