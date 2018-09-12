@@ -370,7 +370,7 @@ def get_url(prompt):
     value = prompt.value().strip()
 
     # split webjumps and protocols between command and argument
-    if re.match("^\S+://.*", value):
+    if re.match(r"^\S+://.*", value):
         args = value.split("://", 1)
     else:
         args = value.split(" ", 1)
@@ -388,7 +388,7 @@ def get_url(prompt):
             webjump = WEBJUMPS[candidates[0]]
 
     if webjump:
-        if '%s' not in webjump.url:
+        if not webjump.allow_args:
             # send the url as is
             return webjump.url
         elif len(args) < 2:
