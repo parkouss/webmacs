@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Fix reviving buffers that were not loaded (after restoring a session).
 - Fix hinting urls in iframes when opening in a new buffer.
 - Fixed support for Qt 5.7
+- Fixed requiring escaping of raw % signs in custom webjumps.
 
 ### Added
 

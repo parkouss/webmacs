@@ -370,7 +370,7 @@ def get_url(prompt):
     value = prompt.value().strip()
 
     # split webjumps and protocols between command and argument
-    if re.match("^\S+://.*", value):
+    if re.match(r"^\S+://.*", value):
         args = value.split("://", 1)
     else:
         args = value.split(" ", 1)
@@ -388,20 +388,22 @@ def get_url(prompt):
             webjump = WEBJUMPS[candidates[0]]
 
     if webjump:
-        if '%s' not in webjump.url:
+        if not webjump.allow_args:
             # send the url as is
             return webjump.url
         elif len(args) < 2:
                 # send the url without a search string
-            return webjump.url % ''
+            return webjump.url.replace("%s", "")
 
         else:
             # format the url as entered
             if webjump.protocol:
                 return value
             else:
-                return webjump.url % str(QUrl.toPercentEncoding(args[1]),
-                                         "utf-8")
+                return webjump.url.replace(
+                    "%s",
+                    str(QUrl.toPercentEncoding(args[1]), "utf-8")
+                )
 
     # Look for a bookmark
     bookmarks = {name: url
