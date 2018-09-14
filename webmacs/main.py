@@ -196,6 +196,7 @@ if sys.version_info >= (3, 5):
         if spec is None:
             return None
         user_init = importlib.util.module_from_spec(spec)
+        sys.modules["init"] = user_init
         spec.loader.exec_module(user_init)
         return user_init
 else:
