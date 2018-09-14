@@ -15,6 +15,7 @@ basic usage and keybindings.
    :maxdepth: 2
    :caption: Contents:
 
+   concepts
    user_configuration
    api
 
