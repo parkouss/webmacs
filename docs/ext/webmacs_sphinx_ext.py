@@ -105,11 +105,16 @@ class WebmacsModes(SimpleAutoDirective):
 
 
 class WebmacsKeymaps(SimpleAutoDirective):
+    option_spec = {
+        "only": lambda a: (a or "").replace(" ", "").split(",")
+    }
+
     def _run(self):
         result = self._result
+        keys = self.options.get("only") or sorted(KEYMAPS)
 
         table = [("Name", "Description")]
-        for name in sorted(KEYMAPS):
+        for name in keys:
             km = KEYMAPS[name]
             table.append((name, km.doc or ""))
 
