@@ -40,6 +40,8 @@ if "READTHEDOCS" in os.environ:
             return True
         def __subclasscheck__(self, cls):  # noqa: E301
             return True
+        def __mro_entries__(self, a):
+            return ()
 
     MOCK_MODULES = ["PyQt5", "PyQt5.QtCore", "PyQt5.QtGui",
                     "PyQt5.QtWidgets", "PyQt5.QtWebEngineWidgets",

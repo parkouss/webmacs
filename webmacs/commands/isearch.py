@@ -16,7 +16,7 @@
 from ..minibuffer import Prompt, KEYMAP as MKEYMAP
 from ..keymaps import Keymap
 from ..keyboardhandler import local_keymap
-from ..webbuffer import WebBuffer
+from ..webbuffer import WebBuffer, QWebEnginePage
 from ..commands import define_command
 from ..commands import caret_browsing as caret_browsing_commands
 from ..keymaps.caret_browsing import KEYMAP as CARET_BROWSING_KEYMAP
@@ -122,7 +122,7 @@ def i_search_forward(ctx):
 
 
 class ISearchPromptBackward(ISearchPrompt):
-    isearch_direction = WebBuffer.FindBackward
+    isearch_direction = QWebEnginePage.FindBackward
 
 
 @define_command("i-search-backward", prompt=ISearchPromptBackward)
