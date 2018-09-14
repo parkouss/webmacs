@@ -39,6 +39,12 @@ Those are quite similar to the definitions found in the emacs manual.
     :only: global, webbuffer, webcontent-edit, caret-browsing
 
 
+Web buffers
+***********
+
+Web buffers are like emacs buffers, but for web pages. They are like tabs in
+other browsers, except that they are not bound to any frame or window.
+
 Windows, frames
 ***************
 

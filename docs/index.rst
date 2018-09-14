@@ -16,6 +16,7 @@ basic usage and keybindings.
    :caption: Contents:
 
    concepts
+   basic_usage
    user_configuration
    api
 
