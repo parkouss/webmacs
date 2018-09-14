@@ -67,7 +67,7 @@ For example:
 
 .. code-block:: python
 
-   import .webjumps
+   from . import webjumps
 
 
 ``webjumps.py``
