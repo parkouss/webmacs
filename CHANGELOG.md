@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   to use with the alphabet hinting.
 - Added a new variable **hint-node-style** to change the style of the hint div
   nodes.
+- Added a **close-buffer-close-window** variable to be able to close a window
+  when a buffer is closed.
 
 ### Changed
 
