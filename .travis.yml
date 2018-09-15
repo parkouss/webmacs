@@ -22,13 +22,14 @@ cache:
     - $HOME/.cache/pip
 
 install:
-  - pip install PyQt5==$PYQT_VERSION
+  - pip install PyQt5==$PYQT_VERSION sphinx
   - pip install -r test-requirements.txt
   - sudo apt-get --yes install xvfb herbstluftwm
 
 script:
   - flake8
   - pytest tests
+  - cd docs && READTHEDOCS=1 make html
 
 before_deploy:
   - python git_archive_all.py webmacs-${TRAVIS_TAG}.tar.gz
