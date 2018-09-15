@@ -23,7 +23,7 @@ from PyQt5.QtWebChannel import QWebChannel
 from collections import namedtuple
 
 from .keymaps import BUFFER_KEYMAP as KEYMAP
-from . import hooks
+from . import hooks, variables, windows
 from . import BUFFERS, current_minibuffer, minibuffer_show_info, \
     current_buffer, call_later, current_window, recent_buffers
 from .content_handler import WebContentHandler
@@ -33,6 +33,18 @@ from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .mode import get_mode, Mode, get_auto_modename_for_url
+
+
+close_buffer_close_window = variables.define_variable(
+    "close-buffer-close-window",
+    "Policy to close a window when the last available buffer is closed."
+    " If never, closing a buffer will never close a window."
+    " If all, closing a buffer can close a window, even the last one ("
+    " and so it will exit the application). Finally, all-but-last is like"
+    " all but the last window will never be closed.",
+    "never",
+    type=variables.String(choices=("never", "all", "all-but-last")),
+)
 
 
 # a tuple of QUrl, str to delay loading of a page.
@@ -50,7 +62,19 @@ def close_buffer(wb):
                 # we can close the current view if it is not alone
                 view.main_window.close_view(view)
             else:
-                return
+                close_window = close_buffer_close_window.value
+                if close_window == "never":
+                    # never close the buffer, nor the window
+                    return
+                elif len(windows()) == 1:
+                    # if only one window left and policy is all, quit the app
+                    if close_window == "all":
+                        app().quit()
+                    return
+                else:
+                    # close both the window and the buffer
+                    view.setBuffer(None)
+                    view.main_window.close()
         else:
             # associate the first buffer that does not have any view yet
             view.setBuffer(invisibles[0])
