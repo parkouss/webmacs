@@ -161,7 +161,6 @@ def get_keymap_bindings(keymap_name):
     return KEYMAPS_BINDINGS_CACHE[keymap_name]
 
 
-
 def key_in_keymap_role(name, rawtext, text, lineno, inliner, options={},
                        content=[]):
     env = inliner.document.settings.env
@@ -173,7 +172,7 @@ def key_in_keymap_role(name, rawtext, text, lineno, inliner, options={},
         )
     keys = get_keymap_bindings(km)
     if text not in keys:
-        inliner.reporter.error("No such key: %s in keymap %s" % (text, keymap))
+        inliner.reporter.error("No such key: %s in keymap %s" % (text, km))
     node = nodes.strong(text=text)
     return [node], []
 
