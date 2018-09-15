@@ -55,12 +55,54 @@ following commands:
   variable.
 
 
-Navigation
-**********
-
 .. current-keymap:: webbuffer
 
-When you are in the :keymap:`webbuffer` keymap:
+
+Visiting urls
+*************
+
+An easy way to go to a new url is to type :key:`g`. This calls the :cmd:`go-to`
+command, that lets you type an url or a webjump. Pressing **Return** will
+then open it in the current web buffer.
+
+For example, try typing: **g g<tab> webmacs <Return>**. This should open a new
+google page with the query webmacs.
+
+.. note::
+
+  Typing **C-u** before :key:`g` will open the url or webjump in a new buffer.
+
+
+Navigating through buffer history
+*********************************
+
+- :key:`B` goes backward in the buffer history
+- :key:`F` goes forward in the buffer history
+- :key:`b` shows current buffer's history as a list in the minibuffer. You can
+  select the url you want by fuzzy-matching text of the url or title page, or
+  just use the arrow keys (or better, standard emacs bindings such as **C-n**,
+  **C-p**, **C-v**, **M-v**, etc).
+
+.. note::
+
+  Most of the lists displayed in the minibuffer can be narrowed down using the
+  above techniques.
+
+
+Navigating through global history
+*********************************
+
+Type :key:`h` to display a list of every visited urls (those are saved in a
+database file and are persistent in your profile). Select one to open it in the
+current buffer.
+
+.. note::
+
+  Use **C-u** before :key:`h` to open the url in a new buffer.
+
+
+Scrolling in current web buffer
+*******************************
 
 - :key:`C-n` or :key:`n` scroll the current buffer down a bit.
 - :key:`C-p` or :key:`p` scroll the current buffer up a bit.
@@ -75,8 +117,6 @@ When you are in the :keymap:`webbuffer` keymap:
 
 Zooming
 *******
-
-When you are in the :keymap:`webbuffer` keymap:
 
 - :key:`+` zoom in.
 - :key:`-` zoom out.
@@ -94,9 +134,8 @@ Link hinting
 Link hinting is used to navigate through visible links of the current web
 buffer's page using the keyboard only.
 
-When you are in the :keymap:`webbuffer` keymap, press :key:`f`. You should see
-the minibuffer right label displaying that you are in the :keymap:`hint` keymap,
-and the links on the page highlighted.
+Press :key:`f`. You should see the minibuffer right label displaying that you
+are in the :keymap:`hint` keymap, and the links on the page highlighted.
 
 .. current-keymap:: hint
 
