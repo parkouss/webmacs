@@ -157,7 +157,7 @@ KEYMAPS_BINDINGS_CACHE = {}
 def get_keymap_bindings(keymap_name):
     if keymap_name not in KEYMAPS_BINDINGS_CACHE:
         KEYMAPS_BINDINGS_CACHE[keymap_name] \
-            = {k: v for k, v in KEYMAPS[keymap_name].all_bindings()}
+            = {k: v for k, v in KEYMAPS[keymap_name].all_bindings(raw_fn=True)}
     return KEYMAPS_BINDINGS_CACHE[keymap_name]
 
 

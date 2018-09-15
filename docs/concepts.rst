@@ -45,8 +45,17 @@ Web buffers
 Web buffers are like emacs buffers, but for web pages. They are like tabs in
 other browsers, except that they are not bound to any frame or window.
 
-Windows, frames
-***************
+Windows, views (or frames)
+**************************
 
 Unlike the terminology in emacs, a window is a what we nowadays usually call a
-window and frames are contained in windows.
+window and views (sometimes called frames) are contained in windows.
+
+Minibuffer
+**********
+
+The minibuffer is what can be seen at the bottom of a webmacs window. It
+displays some information on the right, like the currently active keymap and the
+number of opened buffers. When webmacs is waiting some information from you, the
+**minibuffer input** is shown: it's a text edit field in which you can type some
+text.

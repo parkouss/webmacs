@@ -350,7 +350,7 @@ class InternalKeymap(object):
     def traverse_commands(self, acc_fn):
         self._traverse_commands([], acc_fn)
 
-    def all_bindings(self):
+    def all_bindings(self, raw_fn=False):
         """
         Returns the list of bindings as (keychord, command-name) tuples.
         """
@@ -358,10 +358,9 @@ class InternalKeymap(object):
 
         def add(prefix, cmd):
             if isinstance(cmd, str):
-                acc.append((
-                    " ".join(str(k) for k in prefix),
-                    cmd
-                ))
+                acc.append((" ".join(str(k) for k in prefix), cmd))
+            elif raw_fn:
+                acc.append((" ".join(str(k) for k in prefix), cmd.__name__))
         self.traverse_commands(add)
         return acc
 

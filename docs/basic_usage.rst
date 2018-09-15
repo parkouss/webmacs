@@ -20,9 +20,9 @@ Running a command using its name
 It is always possible to run a command using its name. Some commands does not
 have default key bindings and thought requires to be called this way. To call a
 command using its name, use the **M-x** keybinding, then select in the list (or
-type) the command you want to run, followed by **Ret** (the Enter key).
+type) the command you want to run, followed by **Return** (the Enter key).
 
-For example, **M-x** toggle-toolbar <Ret> will toggle the webmac's toolbar.
+For example, **M-x** toggle-toolbar <Return> will toggle the webmac's toolbar.
 
 
 Live documentation
@@ -50,6 +50,9 @@ following commands:
   Self-documentation is super useful for many things. If you want for example to
   define a custom binding for a command but you don't know its name, you can
   always use :key:`C-h k` to help you.
+
+  Also, do not hesitate to use :key:`C-h v` to see the description of a
+  variable.
 
 
 Navigation
@@ -91,4 +94,37 @@ Link hinting
 Link hinting is used to navigate through visible links of the current web
 buffer's page using the keyboard only.
 
+When you are in the :keymap:`webbuffer` keymap, press :key:`f`. You should see
+the minibuffer right label displaying that you are in the :keymap:`hint` keymap,
+and the links on the page highlighted.
 
+.. current-keymap:: hint
+
+Hinting in webmacs can be done using two methods: filter (the default) and
+alphabet. You can use the variable :var:`hint-method` to change it.
+
+filter
+------
+
+This is conkeror-like method. There is one active hint. Typing text will narrow
+down the hint selection by fuzzy matching against the link's texts. It is also
+possible to directly type the number of the link to activate it, and to cycle
+the visible hints (next, previous) to change the active hint.
+
+Keybindings are as follow:
+
+- :key:`C-n` activate next visible hint
+- :key:`C-p` activate previous visible hint
+
+Note to validate hinting, :key:`Return` has to be pressed.
+
+alphabet
+--------
+
+This is the method used by default in vimium for example. There is no active
+hint, and to each link some characters are associated: there must be entered all
+to validate hinting.
+
+Note usually the home row on the keyboard is used to pick up the characters
+randomly. This is configured with the variable :var:`hint-alphabet-characters`,
+defaulting to the home row characters of a qwerty keyboard.
