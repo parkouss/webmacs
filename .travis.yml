@@ -27,7 +27,7 @@ install:
   - sudo apt-get --yes install xvfb herbstluftwm
 
 script:
-  - flake8 webmacs setup.py tests
+  - flake8
   - pytest tests
 
 before_deploy:

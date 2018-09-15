@@ -51,6 +51,7 @@ class SimpleAutoDirective(Directive):
 class WebmacsCommands(SimpleAutoDirective):
     def _run(self):
         result = self._result
+
         def get_doc(cmd):
             if isinstance(cmd, InteractiveCommand):
                 cmd = cmd.binding
@@ -114,6 +115,7 @@ class WebmacsKeymaps(SimpleAutoDirective):
 
         for line in as_rest_table(table):
             result.append(line, "")
+
 
 def setup(app):
     app.add_directive("webmacs-commands", WebmacsCommands)
