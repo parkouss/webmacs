@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Fix hinting urls in iframes when opening in a new buffer.
 - Fixed support for Qt 5.7
 - Fixed requiring escaping of raw % signs in custom webjumps.
+- Fixed zoom-normal was bound to **0** instead of **=**.
 
 ### Added
 
