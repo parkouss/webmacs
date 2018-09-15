@@ -31,15 +31,15 @@ Live documentation
 webmacs is self-documenting. You can have access to it easily by running the
 following commands:
 
-- **describe-commands** to let you see all available commands.
-- **describe-command** (bound to **C-h c** to let you choose one command and get
+- :cmd:`describe-commands` to let you see all available commands.
+- :cmd:`describe-command` (bound to **C-h c** to let you choose one command and get
   a detailed description.
-- **describe-variables** to let you see all the available variables.
-- **describe-variable** (bound to **C-h v**) to let you choose one variable and
+- :cmd:`describe-variables` to let you see all the available variables.
+- :cmd:`describe-variable` (bound to **C-h v**) to let you choose one variable and
   get a detailed description.
-- **describe-key** (bound to **C-h k** to discover what a key binding would
+- :cmd:`describe-key` (bound to **C-h k** to discover what a key binding would
   trigger.
-- **describe-bindings** to see the list of every keymaps, with the bindings and
+- :cmd:`describe-bindings` to see the list of every keymaps, with the bindings and
   commands they contain.
 
 
@@ -53,7 +53,7 @@ following commands:
 Navigation
 **********
 
-When you are in the webbuffer keymap:
+When you are in the :keymap:`webbuffer` keymap:
 
 - **C-n** or **n** scroll the current buffer down a bit.
 - **C-p** or **p** scroll the current buffer up a bit.
@@ -69,7 +69,7 @@ When you are in the webbuffer keymap:
 Zooming
 *******
 
-When you are in the webbuffer keymap:
+When you are in the :keymap:`webbuffer` keymap:
 
 - **+** zoom in.
 - **-** zoom out.
