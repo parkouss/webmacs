@@ -151,6 +151,17 @@ class CurrentKeymapDirective(Directive):
         return []
 
 
+KEYMAPS_BINDINGS_CACHE = {}
+
+
+def get_keymap_bindings(keymap_name):
+    if keymap_name not in KEYMAPS_BINDINGS_CACHE:
+        KEYMAPS_BINDINGS_CACHE[keymap_name] \
+            = {k: v for k, v in KEYMAPS[keymap_name].all_bindings()}
+    return KEYMAPS_BINDINGS_CACHE[keymap_name]
+
+
+
 def key_in_keymap_role(name, rawtext, text, lineno, inliner, options={},
                        content=[]):
     env = inliner.document.settings.env
@@ -160,8 +171,7 @@ def key_in_keymap_role(name, rawtext, text, lineno, inliner, options={},
         inliner.reporter.error(
             "no current keymap. Use the current-keymap directive."
         )
-    keymap = KEYMAPS[km]
-    keys =  {k: v for k, v in keymap.all_bindings()}
+    keys = get_keymap_bindings(km)
     if text not in keys:
         inliner.reporter.error("No such key: %s in keymap %s" % (text, keymap))
     node = nodes.strong(text=text)
