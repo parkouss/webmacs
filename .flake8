@@ -1,0 +1,7 @@
+[flake8]
+exclude = ./vendor/,
+          ./build/,
+          ./dist/,
+          ./webmacs.egg-info/,
+          # exclude virtual envs
+          ./venv*,

@@ -30,15 +30,15 @@ if "READTHEDOCS" in os.environ:
     class Mock(object):
         def __init__(self, *a, **kw):
             pass
-        def __getattr__(self, name):
+        def __getattr__(self, name):  # noqa: E301
             return Mock()
-        def __call__(self, *a, **kw):
+        def __call__(self, *a, **kw):  # noqa: E301
             return Mock()
-        def __iter__(self):
+        def __iter__(self):  # noqa: E301
             return iter(())
-        def __instancecheck__(self, instance):
+        def __instancecheck__(self, instance):  # noqa: E301
             return True
-        def __subclasscheck__(self, cls):
+        def __subclasscheck__(self, cls):  # noqa: E301
             return True
 
     MOCK_MODULES = ["PyQt5", "PyQt5.QtCore", "PyQt5.QtGui",
@@ -48,7 +48,7 @@ if "READTHEDOCS" in os.environ:
                     "_adblock", "dateparser"]
     sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-import webmacs
+import webmacs  # noqa: E402
 
 
 # -- General configuration ------------------------------------------------
@@ -203,6 +203,3 @@ texinfo_documents = [
      author, 'webmacs', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-
