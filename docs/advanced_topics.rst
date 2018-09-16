@@ -15,6 +15,18 @@ It is possible to manage multiple views in webmacs window:
 - :key:`C-x 1` maximize the current view, closing every other view.
 
 
+Managing windows
+****************
+
+You can also manage multiple windows:
+
+
+- :cmd:`make-window` to create a new window.
+- :cmd:`other-window` to navigate through windows.
+- :cmd:`close-window` to close the current window.
+- :cmd:`close-other-windows` to close all but the current window.
+
+
 Caret browsing
 **************
 
