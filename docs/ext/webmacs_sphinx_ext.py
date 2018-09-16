@@ -1,3 +1,5 @@
+import re
+
 from docutils.parsers.rst import Directive
 from docutils.statemachine import ViewList
 from docutils import nodes
@@ -152,6 +154,7 @@ class CurrentKeymapDirective(Directive):
 
 
 KEYMAPS_BINDINGS_CACHE = {}
+RE_KEY_MAP = re.compile(r"^(.*) \(([\w-]+)\)$")
 
 
 def get_keymap_bindings(keymap_name):
@@ -163,13 +166,18 @@ def get_keymap_bindings(keymap_name):
 
 def key_in_keymap_role(name, rawtext, text, lineno, inliner, options={},
                        content=[]):
-    env = inliner.document.settings.env
-    try:
-        km = env.ref_context["webmacs:keymap"]
-    except KeyError:
-        inliner.reporter.error(
-            "no current keymap. Use the current-keymap directive."
-        )
+    m = RE_KEY_MAP.match(text)
+    if m:
+        text = m.group(1)
+        km = m.group(2)
+    else:
+        env = inliner.document.settings.env
+        try:
+            km = env.ref_context["webmacs:keymap"]
+        except KeyError:
+            inliner.reporter.error(
+                "no current keymap. Use the current-keymap directive."
+            )
     keys = get_keymap_bindings(km)
     if text not in keys:
         inliner.reporter.error("No such key: %s in keymap %s" % (text, km))

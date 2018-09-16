@@ -4,9 +4,10 @@ Basic usage
 Don't panic
 ***********
 
-When you are stuck in some command and you are unsure what to do, press **C-g**.
-This binding usually let you get out of the current action - you may have to
-press it more than once. **C-g** is the universal *get me out of there* command.
+When you are stuck in some command or text field and you are unsure what to do,
+press **C-g**. This binding usually let you get out of the current action - you
+may have to press it more than once. **C-g** is the universal *get me out of
+there* command.
 
 .. note::
 
@@ -14,32 +15,34 @@ press it more than once. **C-g** is the universal *get me out of there* command.
   activate the :keymap:`webbuffer` keymap.
 
 
+.. current-keymap:: global
+
+
 Running a command using its name
 ********************************
 
 It is always possible to run a command using its name. Some commands does not
-have default key bindings and thought requires to be called this way. To call a
-command using its name, use the **M-x** keybinding, then select in the list (or
-type) the command you want to run, followed by **Return** (the Enter key).
+have default key bindings and so requires to be called this way. To call a
+command using its name, use the :key:`M-x` keybinding, then select in the list
+(or type) the command you want to run, followed by **Return** (the Enter key).
 
-For example, **M-x** toggle-toolbar <Return> will toggle the webmac's toolbar.
+For example, :key:`M-x` toggle-toolbar <Return> will toggle the webmac's
+toolbar.
 
 
 Live documentation
 ******************
 
-.. current-keymap:: global
-
 webmacs is self-documenting. You can have access to it easily by running the
 following commands:
 
-- :cmd:`describe-commands` to let you see all available commands.
-- :cmd:`describe-command` (bound to :key:`C-h c` to let you choose one command
-  and get a detailed description.
-- :cmd:`describe-variables` to let you see all the available variables.
-- :cmd:`describe-variable` (bound to :key:`C-h v`) to let you choose one
-  variable and get a detailed description.
-- :cmd:`describe-key` (bound to :key:`C-h k` to discover what a key binding
+- :cmd:`describe-commands` to see all available commands.
+- :cmd:`describe-command` (bound to :key:`C-h c`) to choose one command and get
+  a detailed description.
+- :cmd:`describe-variables` to see all the available variables.
+- :cmd:`describe-variable` (bound to :key:`C-h v`) to choose one variable and
+  get a detailed description.
+- :cmd:`describe-key` (bound to :key:`C-h k`) to discover what a key binding
   would trigger.
 - :cmd:`describe-bindings` to see the list of every keymaps, with the bindings
   and commands they contain.
@@ -73,20 +76,84 @@ google page with the query webmacs.
   Typing **C-u** before :key:`g` will open the url or webjump in a new buffer.
 
 
+Link hinting
+************
+
+Link hinting is used to navigate through visible links of the current web
+buffer's page using the keyboard only.
+
+Press :key:`f`. You should see the minibuffer right label displaying that you
+are in the :keymap:`hint` keymap, and the links on the page highlighted.
+
+.. current-keymap:: hint
+
+Hinting in webmacs can be done using two methods: filter (the default) and
+alphabet. You can use the variable :var:`hint-method` to change it.
+
+filter
+------
+
+There is one active hint. Typing text will narrow down the hint selection by
+fuzzy matching against the link's texts. It is also possible to directly type
+the number of the link to activate it, and to cycle the visible hints (next,
+previous) to change the active hint.
+
+Keybindings are as follow:
+
+- :key:`C-n` activate next visible hint
+- :key:`C-p` activate previous visible hint
+
+Note to validate hinting, :key:`Return` has to be pressed.
+
+alphabet
+--------
+
+This is the method used by default in vimium for example. There is no active
+hint, and to each link some characters are associated: there must be entered all
+to validate hinting.
+
+Note usually the home row on the keyboard is used to pick up the characters
+randomly. This is configured with the variable :var:`hint-alphabet-characters`,
+defaulting to the home row characters of a qwerty keyboard.
+
+
+Buffer selection
+****************
+
+Use :key:`C-x b (global)` to open a list on top of the minibuffer of the
+currently opened buffers, then select one in there to switch to it. You can
+select the buffer you want to switch to by fuzzy-matching text of the url or
+title page, or just use the arrow keys (or better, standard emacs bindings such
+as **C-n**, **C-p**, **C-v**, **M-v**, etc).
+
+.. note::
+
+  Most of the lists displayed in the minibuffer works in the same way and have
+  the same basic bindings.
+
+The command is called :cmd:`switch-recent-buffer`.
+
+.. note::
+
+  The above command order the buffers so the most recently used is on top. If
+  you want the buffers to be ordeded by their numbers, you can call the
+  command :cmd:`switch-buffer`.
+
+
+You can also navigate to the next or previous buffer by using respectively
+:key:`M-n (global)` and :key:`M-p (global)`.
+
+
+.. current-keymap:: webbuffer
+
+
 Navigating through buffer history
 *********************************
 
 - :key:`B` goes backward in the buffer history
 - :key:`F` goes forward in the buffer history
-- :key:`b` shows current buffer's history as a list in the minibuffer. You can
-  select the url you want by fuzzy-matching text of the url or title page, or
-  just use the arrow keys (or better, standard emacs bindings such as **C-n**,
-  **C-p**, **C-v**, **M-v**, etc).
-
-.. note::
-
-  Most of the lists displayed in the minibuffer can be narrowed down using the
-  above techniques.
+- :key:`b` shows current buffer's history as a list in the minibuffer and allows
+  to navigate in there easily.
 
 
 Navigating through global history
@@ -126,44 +193,3 @@ Zooming
 
   There are variants for the zoom, using the Control modifier (:key:`C-+`,
   :key:`C--`, and :key:`C-=` that are used for text zoom only.
-
-
-Link hinting
-************
-
-Link hinting is used to navigate through visible links of the current web
-buffer's page using the keyboard only.
-
-Press :key:`f`. You should see the minibuffer right label displaying that you
-are in the :keymap:`hint` keymap, and the links on the page highlighted.
-
-.. current-keymap:: hint
-
-Hinting in webmacs can be done using two methods: filter (the default) and
-alphabet. You can use the variable :var:`hint-method` to change it.
-
-filter
-------
-
-This is conkeror-like method. There is one active hint. Typing text will narrow
-down the hint selection by fuzzy matching against the link's texts. It is also
-possible to directly type the number of the link to activate it, and to cycle
-the visible hints (next, previous) to change the active hint.
-
-Keybindings are as follow:
-
-- :key:`C-n` activate next visible hint
-- :key:`C-p` activate previous visible hint
-
-Note to validate hinting, :key:`Return` has to be pressed.
-
-alphabet
---------
-
-This is the method used by default in vimium for example. There is no active
-hint, and to each link some characters are associated: there must be entered all
-to validate hinting.
-
-Note usually the home row on the keyboard is used to pick up the characters
-randomly. This is configured with the variable :var:`hint-alphabet-characters`,
-defaulting to the home row characters of a qwerty keyboard.
