@@ -17,6 +17,7 @@ basic usage and keybindings.
 
    concepts
    basic_usage
+   advanced_topics
    user_configuration
    api
 
