@@ -206,6 +206,14 @@ to the previous match.
   :key:`C-r` can also be used to start incremental search.
 
 
+Copying links
+*************
+
+- :key:`c u` to copy the url of the current buffer.
+- :key:`c l` to copy a visible link in the buffer (by hinting).
+- :key:`c c` to copy the currently selected link.
+
+
 Zooming
 *******
 
