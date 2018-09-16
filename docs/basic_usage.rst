@@ -71,7 +71,7 @@ then open it in the current web buffer.
 For example, try typing: **g g<tab> webmacs <Return>**. This should open a new
 google page with the query webmacs.
 
-.. note::
+.. important::
 
   Typing **C-u** before :key:`g` will open the url or webjump in a new buffer.
 
@@ -117,16 +117,19 @@ randomly. This is configured with the variable :var:`hint-alphabet-characters`,
 defaulting to the home row characters of a qwerty keyboard.
 
 
-Buffer selection
+.. current-keymap:: webbuffer
+
+
+Managing buffers
 ****************
 
-Use :key:`C-x b (global)` to open a list on top of the minibuffer of the
-currently opened buffers, then select one in there to switch to it. You can
-select the buffer you want to switch to by fuzzy-matching text of the url or
-title page, or just use the arrow keys (or better, standard emacs bindings such
-as **C-n**, **C-p**, **C-v**, **M-v**, etc).
+You can switch to a buffer using :key:`C-x b (global)`, which opens a list on
+top of the minibuffer. Select the buffer you want to switch to by fuzzy-matching
+text of the url or title page, or just use the arrow keys (or better, standard
+emacs bindings such as **C-n**, **C-p**, **C-v**, **M-v**, etc) and validate
+with **Return**.
 
-.. note::
+.. important::
 
   Most of the lists displayed in the minibuffer works in the same way and have
   the same basic bindings.
@@ -144,7 +147,15 @@ You can also navigate to the next or previous buffer by using respectively
 :key:`M-n (global)` and :key:`M-p (global)`.
 
 
-.. current-keymap:: webbuffer
+A buffer can be closed by just pressing :key:`q`. When you are running
+:cmd:`switch-buffer` or :cmd:`switch-recent-buffer`, pressing :key:`C-k
+(buffer-list)` will also kills the buffer currently highlighted in the list.
+
+
+.. important::
+
+  If you killed a buffer by accident, no worries! Just use :key:`C-x r (global)`
+  to resurrect it.
 
 
 Navigating through buffer history

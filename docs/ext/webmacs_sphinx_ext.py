@@ -154,7 +154,7 @@ class CurrentKeymapDirective(Directive):
 
 
 KEYMAPS_BINDINGS_CACHE = {}
-RE_KEY_MAP = re.compile(r"^(.*) \(([\w-]+)\)$")
+RE_KEY_MAP = re.compile(r"^(.*)\s+\(([\w-]+)\)$")
 
 
 def get_keymap_bindings(keymap_name):
