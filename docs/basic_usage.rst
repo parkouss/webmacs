@@ -182,6 +182,19 @@ Scrolling in current web buffer
 - :key:`M-<` lets you go to the top of the page.
 - :key:`M->` lets you go to the bottom of the page.
 
+
+Searching in current web buffer
+*******************************
+
+Type :key:`C-s` to start incremental search. Then you can type the text you are
+looking for. Press :key:`C-s` again to go to the next match, or :key:`C-r` to go
+to the previous match.
+
+.. note::
+
+  :key:`C-r` can also be used to start incremental search.
+
+
 Zooming
 *******
 
