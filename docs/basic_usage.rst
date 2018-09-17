@@ -77,6 +77,8 @@ google page with the query webmacs.
   Typing **C-u** before :key:`g` will open the url or webjump in a new buffer.
 
 
+.. _link_hinting:
+
 Link hinting
 ************
 
@@ -215,9 +217,31 @@ Copying links
 *************
 
 - :key:`c u` to copy the url of the current buffer.
-- :key:`c l` to copy a visible link in the buffer (by hinting).
+- :key:`c l` to copy a visible link in the buffer (by :term:`hinting`).
 - :key:`c c` to copy the currently selected link.
 - :key:`c t` to copy the current buffer page title.
+
+
+Downloading
+***********
+
+A download can be started by clicking on a link or button or :term:`hinting`.
+
+When a download is about to be started, the :term:`minibuffer` will propose to
+either **download** or **open** it.
+
+- **download** will start downloading, and save the file in your hard drive.
+- **open** will temporarily download, then will open the file with the given
+  command. A list of available commands is shown in the minibuffer completion
+  list. Note when the command will exit, the file will be automatically deleted
+  from your hard drive.
+
+  .. note::
+
+    open is useful for viewing pdf files for example, as you can use your
+    preferred pdf file viewer to read it.
+
+The list of downloads can be accessed using the :cmd:`downloads` command.
 
 
 Zooming

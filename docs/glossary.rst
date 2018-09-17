@@ -18,6 +18,12 @@ Glossary
     See :ref:`Commands <user_conf_commands>` for a list of commands, or better
     use the :cmd:`describe-commands` command to get live documentation.
 
+  hinting
+   hinting is used to navigate through visible links and objects of the current
+   web buffer's page using the keyboard only.
+
+   See :ref:`link_hinting` for more information.
+
   key binding
   key bindings
     A **key binding** is a combination of key presses used to trigger commands.
