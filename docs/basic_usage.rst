@@ -217,6 +217,7 @@ Copying links
 - :key:`c u` to copy the url of the current buffer.
 - :key:`c l` to copy a visible link in the buffer (by hinting).
 - :key:`c c` to copy the currently selected link.
+- :key:`c t` to copy the current buffer page title.
 
 
 Zooming
