@@ -2,17 +2,23 @@
 
 *webmacs* is yet another browser for keyboard-based web navigation.
 
-I started to wrote this as I was a fan user of [[http://conkeror.org/][conkeror]],
-but unfortunately with Firefox quantum it is no longer working.
+It mainly target emacs-like navigation, and started as a clone (in terms of
+features) of [[http://conkeror.org/][conkeror]].
+
+See the documentation manual: https://webmacs.readthedocs.io/en/latest/
 
 webmacs is based on qt webengine and written mainly in Python (version 3).
 
 
-* Can I use it on a day to day use ?
+* Features
 
-I started to use it as my main web browser both at work and home, so I believe
-yes. Though there are some corner cases and bugs and sometimes I have to fall
-back to some other browser (namely Firefox).
+Short list of features:
+
+- keyboard navigation everywhere (including basic emacs movements in editable
+  web content)
+- Integrated, fast ad-blocker
+- [[https://webmacs.readthedocs.io/en/latest/basic_usage.html#live-documentation][live documentation]]
+- [[https://webmacs.readthedocs.io/en/latest/user_configuration.html][highly customizable using Python]]
 
 
 * Installation
@@ -68,72 +74,6 @@ py.test <path_to_webmacs_sources>/tests
 # you can run them with the windows visible:
 py.test <path_to_webmacs_sources>/tests --no-xvfb
 #+END_SRC
-
-
-* Features
-
-*webmacs* quite mimics the conkeror way of browsing. Short list of the already
- supported features:
-
-- navigate through hints (shortcut: *f*)
-- go to url or webjump (shortcut: *g*)
-- navigate backward (shortcut: *B*)
-- navigate forward (shortcut: *F*)
-- go to with a default browser webjump (shortcut *s*)
-- switch buffer (shortcut *C-x b*)
-- close current buffer (shortcut *C-x k*, shortcut *q*)
-- open a new view (shortcuts *C-x 3* to split right, *C-x 2* to split bottom)
-- switch view (shortcut *C-x o*)
-- close view (shortcut *C-x 0*)
-- maximize view (shortcut *C-x 1*)
-- history access (shortcut *h*)
-- ad blocking using [[https://easylist.to/][easylist]]. Implemented in C for high
-  performances.
-- for go-to and history command, the prefix *C-u* opens the url in a new
-  buffer.
-- handle basic authentication
-- handle basic certificates errors
-- automatic save/restore of passwords
-- a simple download-manager (go to webmacs://downloads)
-- fuzzy matching an completion nearly everywhere (using *Tab* and *Enter* to
- validate)
-- emacs like incremental search: starts with *C-s* or *C-r*
-- emacs-like navigation key bindings in the page (shortcuts: *C-n*, *C-p* to
-  move up and down a little, *C-v*, *M-v* to move the page up and down a bit
-  more, *M->* to scroll at the bottom and *M-<* to scroll at the top.
-- emacs like navigation binding inside editable web content (*C-f*, *C-b*,
-  *M-f*, *M-b*, *C-n*, *C-p*, ...)
-- as in emacs, *C-g* to get out of something.
-- call command by name (shortcut *M-x*)
-- command history within a session in minibuffer input (shortcut *M-n*, *M-p*)
-- user configuration written in Python, giving lots of power to
-  customize webmacs.
-- copy link by hinting (shortcut *c l*). Copy active link url with *c c*,
-  current buffer url with *c u*, and current buffer title with *c t*.
-- caret navigation. (shortcut *C*) to initialize caret navigation, then navigate
-  using (*C-f*, *C-b*, *M-f*, *M-b*, *C-n*, *C-p*, ...) or the arrow keys. It is
-  possible to select some web content using *C-Space* to activate/deactivate the
-  mark. Once there is a selection, *M-w* will copy it. It is also possible to
-  navigate quickly using the incremental search, though this is working well
-  with Qt >= 5.10.
-- bookmarks (*M* to add a bookmark, *m* to open the bookmark list)
-- zoom in and out, using *+* and *-*. *=* to reset the zoom.
-- zoom (text only) using *C-+*, *C--* and *C-=*.
-- edit text fields with an external editor (defaulting to emacsclient): *C-x e*
-
-
-Note you can see all the commands live using *describe-commands* (*M-x*
-describe-commands RET), all the bindings using *describe-bindings*, and
-variables using *describe-variables*.
-
-Also similarly to emacs you can use *C-h k* to describe a keybinding, *C-h c* to
-describe one command and *C-h v* to describe one variable.
-
-
-* Documentation
-
-Documentation is available on [[http://webmacs.readthedocs.io/en/latest/index.html][readthedocs]]. Currently it is for user
-configuration only.
 
 
 * Qt versions support

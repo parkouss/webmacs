@@ -1,3 +1,5 @@
+import re
+
 from docutils.parsers.rst import Directive
 from docutils.statemachine import ViewList
 from docutils import nodes
@@ -105,16 +107,82 @@ class WebmacsModes(SimpleAutoDirective):
 
 
 class WebmacsKeymaps(SimpleAutoDirective):
+    option_spec = {
+        "only": lambda a: (a or "").replace(" ", "").split(",")
+    }
+
     def _run(self):
         result = self._result
+        keys = self.options.get("only") or sorted(KEYMAPS)
 
         table = [("Name", "Description")]
-        for name in sorted(KEYMAPS):
+        for name in keys:
             km = KEYMAPS[name]
             table.append((name, km.doc or ""))
 
         for line in as_rest_table(table):
             result.append(line, "")
+
+
+def webmacs_role(data):
+    """
+    Create a simple role function handler that check for the text to be in the
+    given data, and just create a strong node for the it.
+    """
+    def role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+        if text not in data:
+            inliner.reporter.error("No such %s: %s" % (name, text))
+        node = nodes.strong(text=text)
+        return [node], []
+    return role
+
+
+class CurrentKeymapDirective(Directive):
+    has_content = False
+    required_arguments = 1
+    optional_arguments = 0
+    final_argument_whitespace = False
+    option_spec = {}
+
+    def run(self):
+        env = self.state.document.settings.env
+        keymap = self.arguments[0].strip()
+        if keymap not in KEYMAPS:
+            self.state_machine.reporter.error("No such keymap: %s" % keymap)
+        env.ref_context['webmacs:keymap'] = keymap
+        return []
+
+
+KEYMAPS_BINDINGS_CACHE = {}
+RE_KEY_MAP = re.compile(r"^(.*)\s+\(([\w-]+)\)$")
+
+
+def get_keymap_bindings(keymap_name):
+    if keymap_name not in KEYMAPS_BINDINGS_CACHE:
+        KEYMAPS_BINDINGS_CACHE[keymap_name] \
+            = {k: v for k, v in KEYMAPS[keymap_name].all_bindings(raw_fn=True)}
+    return KEYMAPS_BINDINGS_CACHE[keymap_name]
+
+
+def key_in_keymap_role(name, rawtext, text, lineno, inliner, options={},
+                       content=[]):
+    m = RE_KEY_MAP.match(text)
+    if m:
+        text = m.group(1)
+        km = m.group(2)
+    else:
+        env = inliner.document.settings.env
+        try:
+            km = env.ref_context["webmacs:keymap"]
+        except KeyError:
+            inliner.reporter.error(
+                "no current keymap. Use the current-keymap directive."
+            )
+    keys = get_keymap_bindings(km)
+    if text not in keys:
+        inliner.reporter.error("No such key: %s in keymap %s" % (text, km))
+    node = nodes.strong(text=text)
+    return [node], []
 
 
 def setup(app):
@@ -123,3 +191,11 @@ def setup(app):
     app.add_directive("webmacs-variables", WebmacsVariables)
     app.add_directive("webmacs-modes", WebmacsModes)
     app.add_directive("webmacs-keymaps", WebmacsKeymaps)
+    app.add_directive("current-keymap", CurrentKeymapDirective)
+
+    # use them to ensure doc is not outdated, making references to things that
+    # do not exists.
+    app.add_role("cmd", webmacs_role(COMMANDS))
+    app.add_role("var", webmacs_role(VARIABLES))
+    app.add_role("keymap", webmacs_role(KEYMAPS))
+    app.add_role("key", key_in_keymap_role)

@@ -145,14 +145,14 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
         self.reply_template(job, "keymap", {
             "name": keymap,
             "keymap": km,
-            "bindings": _get_keymap_bindings(km),
+            "bindings": km.all_bindings(),
         })
 
     @register_page()
     def bindings(self, job, _, name):
         bindings = {}
         for kname, km in KEYMAPS.items():
-            bindings[kname] = _get_keymap_bindings(km)
+            bindings[kname] = km.all_bindings()
 
         self.reply_template(job, name, {"bindings": bindings,
                                         "keymaps": KEYMAPS})
@@ -234,19 +234,6 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
             "modname": modname,
             "all_keys": all_keys,
         })
-
-
-def _get_keymap_bindings(km):
-    acc = []
-
-    def add(prefix, cmd):
-        if isinstance(cmd, str):
-            acc.append((
-                " ".join(str(k) for k in prefix),
-                cmd
-            ))
-    km.traverse_commands(add)
-    return acc
 
 
 def get_src_url(obj):

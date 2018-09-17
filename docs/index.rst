@@ -8,15 +8,18 @@ Welcome to webmacs's documentation!
 
 **webmacs** is yet another browser for keyboard-based web navigation.
 
-Please see `the github repository <https://github.com/parkouss/webmacs>`_ for
-basic usage and keybindings.
+Code is hosted on a `github repository <https://github.com/parkouss/webmacs>`_.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   concepts
+   basic_usage
+   advanced_topics
    user_configuration
    api
+   glossary
 
 
 Indices and tables
