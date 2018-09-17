@@ -5,12 +5,14 @@ Please be sure to understand the following basic webmacs concepts before going
 further reading the documentation.
 
 
+.. _concept_commands:
+
 Commands, key bindings and keymaps
 **********************************
 
 Those are quite similar to the definitions found in the emacs manual.
 
-- A **command** is a named action doable in the browser. For example
+- A :term:`command` is a named action doable in the browser. For example
   :cmd:`follow` is the command that allow to start hinting links to navigate.
 
 - A **key binding** is a combination of key presses used to trigger commands.

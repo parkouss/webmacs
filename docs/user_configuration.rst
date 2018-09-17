@@ -141,6 +141,8 @@ A keymap object in user configuration is retrieved with
 :func:`webmacs.keymaps.keymap`.
 
 
+.. _user_conf_commands:
+
 Commands
 --------
 

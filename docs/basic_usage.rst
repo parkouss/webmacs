@@ -21,10 +21,11 @@ there* command.
 Running a command using its name
 ********************************
 
-It is always possible to run a command using its name. Some commands does not
-have default key bindings and so requires to be called this way. To call a
-command using its name, use the :key:`M-x` keybinding, then select in the list
-(or type) the command you want to run, followed by **Return** (the Enter key).
+It is always possible to run a :term:`command` using its name. Some commands
+does not have default key bindings and so requires to be called this way. To
+call a command using its name, use the :key:`M-x` keybinding, then select in the
+list (or type) the command you want to run, followed by **Return** (the Enter
+key).
 
 For example, :key:`M-x` toggle-toolbar <Return> will toggle the webmac's
 toolbar.
