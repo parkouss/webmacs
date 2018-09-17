@@ -65,3 +65,20 @@ You can select some text and copy it using:
 
   It is also great to start caret browsing after an incremental search, as the
   caret will be at the beginning of the current web selection.
+
+
+Bookmarks
+*********
+
+Bookmarks are like a dictionary of urls. Each bookmark must have a unique name.
+Bookmarks are stored in the profile, and so are persistent across sessions.
+
+It is possible to manage bookmarks using:
+
+- :key:`M` to create a bookmark.
+- :key:`m` to open the bookmark list.
+
+When in the bookmark list, you can:
+
+- :key:`Return (bookmarks-list)` to open the bookmark url in the current buffer
+- :key:`C-k (bookmarks-list)` to remove the highlighted bookmark.
