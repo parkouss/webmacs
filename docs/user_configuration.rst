@@ -77,10 +77,10 @@ For example:
    print("definition of my custom webjumps should go there.")
 
 
+.. _user_conf_variables:
+
 Variables
 *********
-
-Some behaviors of *webmacs* can be customized using variables.
 
 It is possible to change a variable in the configuration using
 :func:`webmacs.variables.set`:
@@ -91,6 +91,8 @@ It is possible to change a variable in the configuration using
 
    variables.set("webjump-default", "google ")
 
+
+.. _user_conf_all_variables:
 
 Here is the list of the variables:
 
@@ -127,7 +129,10 @@ Example:
 Binding keys
 ************
 
-In webmacs, like in emacs, it is possible to bind a key to command on a given keymap.
+In webmacs, like in emacs, it is possible to bind a key to command on a given
+keymap.
+
+.. _user_conf_keymaps:
 
 Keymaps
 -------
@@ -151,6 +156,8 @@ Here is the list of the currently available commands:
 .. webmacs-commands::
 
 
+.. _user_conf_binding_keys:
+
 Binding a command to a keymap
 -----------------------------
 
@@ -172,7 +179,7 @@ You should use :meth:`webmacs.keymaps.Keymap.define_key`. Here is an example:
 
    The global buffer should not define single letter keychords, as you
    won't be able to type that letter in editable fields, thus this is
-   possible in the webbuffer keymap.
+   possible in the webbuffer :term:`keymap`.
 
 .. _user_conf_webjumps:
 

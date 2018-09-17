@@ -15,7 +15,7 @@ Those are quite similar to the definitions found in the emacs manual.
 - A :term:`command` is a named action doable in the browser. For example
   :cmd:`follow` is the command that allow to start hinting links to navigate.
 
-- A **key binding** is a combination of key presses used to trigger commands.
+- A :term:`key binding` is a combination of key presses used to trigger commands.
   Key bindings are represented as in emacs, for example **C-x C-b** means
   holding the Control key while pressing x, then b on the keyboard.
 
@@ -35,10 +35,10 @@ Those are quite similar to the definitions found in the emacs manual.
     while in the :keymap:`webbuffer` keymap will trigger the :cmd:`follow`
     command.
 
-- A **keymap** is an object holding a mapping between key bindings and commands,
-  so that a command can be triggered by pressing keyboard keys. There is one
-  global keymap, and one active local keymap usually activated at the same
-  time - the local keymap changes interactively depending on the context.
+- A :term:`keymap` is an object holding a mapping between key bindings and
+  commands, so that a command can be triggered by pressing keyboard keys. There
+  is one global keymap, and one active local keymap usually activated at the
+  same time - the local keymap changes interactively depending on the context.
 
   Some important keymaps:
 
@@ -49,20 +49,12 @@ Those are quite similar to the definitions found in the emacs manual.
 Web buffers
 ***********
 
-Web buffers are like emacs buffers, but for web pages. They are like tabs in
-other browsers, except that they are not bound to any frame or window.
+A :term:`web buffer` is like an emacs buffer, but for a web page. Buffers are
+like tabs in other browsers, except that they are not bound to any view or
+window.
 
-Windows, views (or frames)
-**************************
+Windows, views
+**************
 
 Unlike the terminology in emacs, a window is a what we nowadays usually call a
-window and views (sometimes called frames) are contained in windows.
-
-Minibuffer
-**********
-
-The minibuffer is what can be seen at the bottom of a webmacs window. It
-displays some information on the right, like the currently active keymap and the
-number of opened buffers. When webmacs is waiting some information from you, the
-**minibuffer input** is shown: it's a text edit field in which you can type some
-text.
+window and :term:`views` (sometimes called frames) are contained in windows.

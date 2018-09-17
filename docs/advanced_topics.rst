@@ -3,10 +3,13 @@ Advanced topics
 
 .. current-keymap:: global
 
+
+.. _managing_views:
+
 Managing views
 **************
 
-It is possible to manage multiple views in webmacs window:
+It is possible to manage multiple :term:`views` in a webmacs window:
 
 - :key:`C-x 2` split the current view in two horizontally.
 - :key:`C-x 3` split the current view in two vertically.
