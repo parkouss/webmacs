@@ -20,6 +20,7 @@ basic usage and keybindings.
    advanced_topics
    user_configuration
    api
+   glossary
 
 
 Indices and tables

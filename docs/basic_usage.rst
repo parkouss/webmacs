@@ -65,8 +65,8 @@ Visiting urls
 *************
 
 An easy way to go to a new url is to type :key:`g`. This calls the :cmd:`go-to`
-command, that lets you type an url or a webjump. Pressing **Return** will
-then open it in the current web buffer.
+command, that lets you type an url or a :term:`webjump`. Pressing **Return**
+will then open it in the current web buffer.
 
 For example, try typing: **g g<tab> webmacs <Return>**. This should open a new
 google page with the query webmacs.

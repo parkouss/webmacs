@@ -51,7 +51,7 @@ opening the given url for example.
    It is not required to create an init function in the user configuration
    _\_init_\_.py file. Only do so if you want to change the default webmacs
    initialization. Other changes can be applied early, directly at the module
-   level, such as defining **webjumps** or **binding keys**.
+   level, such as defining :term:`webjumps` or **binding keys**.
 
 
 Using more than one configuration file
@@ -172,18 +172,12 @@ You should use :meth:`webmacs.keymaps.Keymap.define_key`. Here is an example:
    won't be able to type that letter in editable fields, thus this is
    possible in the webbuffer keymap.
 
+.. _user_conf_webjumps:
 
 Webjumps
 ********
 
-Webjumps represents a quick way to access some urls, possibly with a
-variable part. A webjump name becomes a part of the webmacs "go-to"
-bar, so for example you can type:
-
-``google foo bar``
-
-to execute a google query with "foo bar" terms. Here is the
-implementation of the google webjump:
+Here is the implementation of the google :term:`webjump`:
 
 .. literalinclude:: ../webmacs/default_webjumps.py
    :start-after: # ----------- doc example
