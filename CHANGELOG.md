@@ -43,6 +43,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   nodes.
 - Added a **close-buffer-close-window** variable to be able to close a window
   when a buffer is closed.
+- **C-g** in webbuffer is now bound to **buffer-escape** instead of
+  **buffer-unselect**, which does the same thing and send the Escape too (which
+  closes popup and other things).
 
 ### Changed
 

@@ -448,6 +448,20 @@ def buffer_unselect(ctx):
     ctx.buffer.triggerAction(WebBuffer.Unselect)
 
 
+@define_command("buffer-escape")
+def buffer_escape(ctx):
+    """
+    Clear selection or menus in the current buffer.
+
+    The implementation clear the selection in the buffer if there is any, else
+    it sends the Escape key which usually close whatever takes the focus.
+    """
+    if ctx.buffer.hasSelection():
+        buffer_unselect(ctx)
+    else:
+        send_key_event(ctx.sender, KeyPress.from_str("Esc"))
+
+
 class KilledBufferTableModel(QAbstractTableModel):
     def __init__(self):
         QAbstractTableModel.__init__(self)
