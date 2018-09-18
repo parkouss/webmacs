@@ -88,19 +88,6 @@ Note that there are some known limitations:
 - dev tools only works with Qt >= 5.11
 
 
-* Website is blocked, turn off the extensions
-
-This message will appear in the browser when the url was filtered by the
-ad-blocker.
-
-You can temporarily disable the ad-blocker with *M-x toggle-ad-block* to
-overcome this.
-
-For a permanent change, edit the *adblock-urls-rules* variable, to remove some
-urls in there. Note if you set this variable to an empty list, the adblocker
-will be completely disabled. See the [[http://webmacs.readthedocs.io/en/latest/user_configuration.html#variables][variables]] section in the documentation.
-
-
 * Contributions
 
 Contributions are much welcome! Writing this browser is exciting and I love

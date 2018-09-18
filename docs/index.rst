@@ -19,6 +19,7 @@ Code is hosted on a `github repository <https://github.com/parkouss/webmacs>`_.
    advanced_topics
    user_configuration
    api
+   faq
    glossary
 
 
