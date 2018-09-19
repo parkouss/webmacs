@@ -23,7 +23,8 @@ from PyQt5.QtGui import (QOpenGLContext, QOpenGLVersionProfile,
                          QOffscreenSurface)
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWebEngineWidgets import QWebEngineProfile
-from PyQt5.QtCore import QT_VERSION_STR, QT_VERSION  # noqa: F401
+from PyQt5.QtCore import (QT_VERSION_STR, PYQT_VERSION_STR,  # noqa: F401
+                          QT_VERSION, PYQT_VERSION)
 from . import __version__ as WEBMACS_VERSION_STR  # noqa: F401
 
 
@@ -85,7 +86,8 @@ def QT_VERSION_CHECK(major, minor=0, patch=0):
 
 class QtVersionChecker(object):
     def __init__(self):
-        self.version = QT_VERSION
+        # consider the lower version between pyqt and qt.
+        self.version = min(QT_VERSION, PYQT_VERSION)
 
     def __eq__(self, other):
         return self.version == QT_VERSION_CHECK(*other)
