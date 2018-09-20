@@ -23,7 +23,8 @@ from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
 
 from PyQt5.QtWebEngineWidgets import QWebEngineDownloadItem
 
-from .prompts import DlChooseActionPrompt, DlOpenActionPrompt, DlPrompt
+from .prompts import (DlChooseActionPrompt, DlOpenActionPrompt, DlPrompt,
+                      OverwriteFilePrompt)
 from .. import current_minibuffer
 from .. import hooks
 
@@ -136,6 +137,10 @@ class DownloadManager(QObject):
             path = minibuff.do_prompt(prompt)
             if path is None:
                 return
+
+            if os.path.isfile(path):
+                if not minibuff.do_prompt(OverwriteFilePrompt(path)):
+                    return
 
             dl.setPath(path)
             logging.info("Downloading %s...", dl.path())

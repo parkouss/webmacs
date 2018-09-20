@@ -15,7 +15,11 @@
 
 import os
 
-from ..minibuffer.prompt import Prompt, FSModel, PromptTableModel
+from ..minibuffer.prompt import Prompt, FSModel, PromptTableModel, YesNoPrompt
+
+
+def OverwriteFilePrompt(path):
+    return YesNoPrompt("File {} already exists. Overwrite it?".format(path))
 
 
 class DlChooseActionPrompt(Prompt):
