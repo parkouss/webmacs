@@ -130,7 +130,14 @@ def parse_args(argv=None):
     parser.add_argument("url", nargs="?",
                         help="url to open")
 
-    return parser.parse_args(argv)
+    opts = parser.parse_args(argv)
+
+    # handle local file path
+    if opts.url and os.path.exists(opts.url) \
+       and not os.path.isabs(opts.url):
+        opts.url = os.path.realpath(opts.url)
+
+    return opts
 
 
 def init(opts):
