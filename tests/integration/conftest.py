@@ -4,8 +4,6 @@ import time
 import subprocess
 
 from PyQt5.QtTest import QTest
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import QEvent, QTimer
 
 from webmacs.application import Application, _app_requires
@@ -26,17 +24,6 @@ def get_test_page(name):
     if name.endswith(".html"):
         return os.path.join(THIS_DIR, name)
     return os.path.join(THIS_DIR, name, "index.html")
-
-
-def iter_widgets_for_events(w):
-    # web engine views hide the widget that receive events.
-    # this function tries to workaround that.
-    if isinstance(w, QWebEngineView):
-        for c in w.children():
-            if isinstance(c, QWidget):
-                yield c
-    else:
-        yield w
 
 
 @pytest.fixture(scope="session")
@@ -203,24 +190,19 @@ class TestSession(object):
         )
         self.check_javascript(script, True, buffer=buffer)
 
-    def keyclick(self, key, widget=None, **kwargs):
-        widget = widget or self.qapp.focusWidget()
-        for w in iter_widgets_for_events(widget):
-            QTest.keyClick(w, key, **kwargs)
+    def keyclick(self, key, **kwargs):
+        QTest.keyClick(self.qapp.focusWindow(), key, **kwargs)
 
-    def keyclicks(self, keys, widget=None, **kwargs):
-        widget = widget or self.qapp.focusWidget()
-        for w in iter_widgets_for_events(widget):
-            QTest.keyClicks(w, keys, **kwargs)
+    def keyclicks(self, keys, **kwargs):
+        for key in keys:
+            self.keyclick(key, **kwargs)
 
     def wkeyclicks(self, shortcut, widget=None):
-        widget = widget or self.qapp.focusWidget()
+        widget = widget or self.qapp.focusWindow()
         keys = [KeyPress.from_str(k) for k in shortcut.split()]
-        for w in iter_widgets_for_events(widget):
-            for key in keys:
-                self.qapp.postEvent(w, key.to_qevent(QEvent.KeyPress))
-                self.qapp.postEvent(w, key.to_qevent(QEvent.KeyRelease))
-        self.qapp.processEvents()
+        for key in keys:
+            evt = key.to_qevent(QEvent.KeyPress)
+            self.keyclick(evt.key(), modifier=evt.modifiers())
 
 
 class Waiter(object):

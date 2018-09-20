@@ -16,6 +16,7 @@
 import logging
 
 from PyQt5.QtCore import QObject, QEvent
+from PyQt5.QtGui import QWindow
 
 from .keymaps import KeyPress, GLOBAL_KEYMAP, CHAR2KEY
 from . import hooks
@@ -31,7 +32,14 @@ class LocalKeymapSetter(QObject):
 
     def eventFilter(self, obj, evt):
         # event filter on the global app is required to avoid click on webviews
-        if self.enabled_minibuffer and evt.type() in (
+        t = evt.type()
+
+        if t == QEvent.KeyPress and isinstance(obj, QWindow):
+            return KEY_EATER.event_filter(obj, evt)
+        elif t == QEvent.ShortcutOverride:
+            # disable automatic shortcuts in browser, like C-a
+            return True
+        elif self.enabled_minibuffer and t in (
                 QEvent.MouseButtonPress,
                 QEvent.MouseButtonDblClick,
                 QEvent.MouseButtonRelease,

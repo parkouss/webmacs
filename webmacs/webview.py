@@ -19,7 +19,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget
 from PyQt5.QtCore import QEvent
 
-from .keyboardhandler import local_keymap, set_local_keymap, KEY_EATER, \
+from .keyboardhandler import local_keymap, set_local_keymap, \
     LOCAL_KEYMAP_SETTER
 from . import windows, variables
 from .application import app
@@ -149,18 +149,12 @@ class InternalWebView(QWebEngineView):
         return QWebEngineView.event(self, evt)
 
     def eventFilter(self, obj, evt):
-        t = evt.type()
-        if t == QEvent.KeyPress:
-            return KEY_EATER.event_filter(obj, evt)
-
         view = self._view
         if not view:
             return False
 
-        if t == QEvent.ShortcutOverride:
-            # disable automatic shortcuts in browser, like C-a
-            return True
-        elif t == QEvent.MouseButtonPress:
+        t = evt.type()
+        if t == QEvent.MouseButtonPress:
             if view != view.main_window.current_webview():
                 view.set_current()
         elif t == QEvent.FocusIn:

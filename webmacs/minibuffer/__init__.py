@@ -24,7 +24,7 @@ from .keymap import KEYMAP
 from .prompt import Prompt
 from .. import variables
 from .. import windows
-from ..keyboardhandler import KEY_EATER, LOCAL_KEYMAP_SETTER
+from ..keyboardhandler import LOCAL_KEYMAP_SETTER
 
 
 class Popup(QTableView):
@@ -147,10 +147,7 @@ class MinibufferInput(QLineEdit):
 
     def event(self, evt):
         t = evt.type()
-        if t == QEvent.KeyPress:
-            if KEY_EATER.event_filter(self, evt):
-                return True
-        elif t == QEvent.Show:
+        if t == QEvent.Show:
             LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, True)
         elif t == QEvent.Hide:
             LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, False)
