@@ -136,10 +136,6 @@ class InternalWebView(QWebEngineView):
         view.layout().addWidget(self)
 
     def detach(self):
-        if self.page():
-            # remove the associated page view (might be causing a crash from
-            # close_buffer when calling ~QWebEnginePage())
-            self.page().setView(None)
         if self._view:
             self._view.layout().removeWidget(self)
             self.setParent(None)

@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Fixed
 
 - webmacs command line now handle correctly opening relative local file paths.
+- Fixed scrolling top or bottom when switching view, and losing focus sometimes.
 
 ## [0.7] - 2018-09-20
 

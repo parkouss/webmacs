@@ -81,6 +81,9 @@ def close_buffer(wb):
 
     internal_view = wb.internal_view()
     if internal_view:
+        # remove the associated internal page view (might be causing a crash
+        # from when calling ~QWebEnginePage())
+        wb.setView(None)
         internal_view.detach()
         internal_view.deleteLater()
 
