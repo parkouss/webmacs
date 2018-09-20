@@ -23,7 +23,7 @@ from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
 
 from PyQt5.QtWebEngineWidgets import QWebEngineDownloadItem
 
-from ..minibuffer.prompt import Prompt, FSModel, PromptTableModel
+from .prompts import DlChooseActionPrompt, DlOpenActionPrompt, DlPrompt
 from .. import current_minibuffer
 from .. import hooks
 
@@ -39,67 +39,6 @@ STATE_STR = {
 
 def state_str(state):
     return STATE_STR.get(state, "Unknown state")
-
-
-class DlChooseActionPrompt(Prompt):
-    complete_options = {
-        "match": Prompt.FuzzyMatch,
-        "complete-empty": True,
-    }
-    value_return_index_data = True
-
-    def __init__(self, path, mimetype):
-        Prompt.__init__(self, None)
-        self.__actions = [
-            ("download", "download file on disk"),
-            ("open", "open file with external command"),
-        ]
-        name = os.path.basename(path)
-        if len(name) > 33:
-            name = name[:30] + "..."
-        self.label = "File {} [{}]: ".format(name, mimetype)
-
-    def completer_model(self):
-        return PromptTableModel(self.__actions)
-
-    def enable(self, minibuffer):
-        super().enable(minibuffer)
-        minibuffer.input().popup().selectRow(0)
-
-
-class DlOpenActionPrompt(Prompt):
-    complete_options = {
-        "match": Prompt.FuzzyMatch,
-        "complete-empty": True,
-    }
-    label = "Open file with:"
-    value_return_index_data = True
-
-    def __init__(self):
-        Prompt.__init__(self, None)
-
-    def completer_model(self):
-        return PromptTableModel([[e] for e in list_executables()])
-
-
-class DlPrompt(Prompt):
-    complete_options = {
-        "autocomplete": True
-    }
-
-    def __init__(self, path, mimetype):
-        Prompt.__init__(self, None)
-        self.label = "Download file [{}]:".format(mimetype)
-        self._dlpath = path
-
-    def completer_model(self):
-        # todo, not working
-        model = FSModel(self)
-        return model
-
-    def enable(self, minibuffer):
-        super().enable(minibuffer)
-        minibuffer.input().setText(self._dlpath)
 
 
 def download_to_json(dlitem):
@@ -230,24 +169,6 @@ class DownloadManager(QObject):
             os.unlink(path)
         except Exception:
             pass
-
-
-def list_executables():
-    try:
-        paths = os.environ["PATH"].split(os.pathsep)
-    except KeyError:
-        return []
-
-    executables = []
-    for path in paths:
-        try:
-            for file_ in os.listdir(path):
-                if os.access(os.path.join(path, file_), os.X_OK):
-                    executables.append(file_)
-        except Exception:
-            pass
-
-    return executables
 
 
 def get_shell():
