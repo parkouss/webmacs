@@ -49,6 +49,9 @@ if "READTHEDOCS" in os.environ:
                     "PyQt5.QtNetwork",
                     "_adblock", "dateparser"]
     sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+    # the version number is not important, though it must be an int.
+    sys.modules["PyQt5.QtCore"].QT_VERSION \
+        = sys.modules["PyQt5.QtCore"].PYQT_VERSION = 330497
 
 import webmacs  # noqa: E402
 
