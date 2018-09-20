@@ -243,6 +243,11 @@ either **download** or **open** it.
 
 The list of downloads can be accessed using the :cmd:`downloads` command.
 
+.. seealso::
+
+  See the :var:`default-download-dir` and :var:`keep-temporary-download-dir`
+  variables.
+
 
 Zooming
 *******
