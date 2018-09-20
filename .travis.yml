@@ -29,7 +29,7 @@ install:
 script:
   - flake8
   - pytest tests
-  - cd docs && READTHEDOCS=1 make html
+  - cd docs && READTHEDOCS=1 make html && cd ..
 
 before_deploy:
   - python git_archive_all.py webmacs-${TRAVIS_TAG}.tar.gz
