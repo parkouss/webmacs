@@ -14,9 +14,11 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import re
 import json
 import shlex
 import logging
+import itertools
 
 from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
     QProcess
@@ -25,8 +27,68 @@ from PyQt5.QtWebEngineWidgets import QWebEngineDownloadItem
 
 from .prompts import (DlChooseActionPrompt, DlOpenActionPrompt, DlPrompt,
                       OverwriteFilePrompt)
-from .. import current_minibuffer
-from .. import hooks
+from .. import current_minibuffer, hooks, variables
+
+
+default_download_dir = variables.define_variable(
+    "default-download-dir",
+    "Change the default download dir.",
+    "",
+    type=variables.String(),
+)
+
+TEMPORARY_DOWNLOAD_DIR = None
+keep_temporary_download_dir = variables.define_variable(
+    "keep-temporary-download-dir",
+    "If set to True, the download dir proposed will be the last used one.",
+    False,
+    type=variables.Bool(),
+)
+
+
+def get_user_download_dir():
+    """
+    Returns the directory the user wants to put its download in.
+
+    Return None if there is no specific directory.
+    """
+    if keep_temporary_download_dir.value and TEMPORARY_DOWNLOAD_DIR:
+        return TEMPORARY_DOWNLOAD_DIR
+    return default_download_dir.value or None
+
+
+def extract_suggested_filename(path):
+    """
+    Split path from chromium into (dirname, filename).
+
+    Chromium always propose paths in ~/Download, so this method removes suffix
+    like (1) to get the "original" suggested filename.
+    """
+    path, fname = os.path.split(path)
+    fname = re.sub(r'\([0-9]+\)(?=\.|$)', "", fname)
+    return path, fname
+
+
+def find_unique_suggested_path(dirname, filename):
+    """
+    Do the same logic as chromium does to create a unique path suggestion.
+    """
+    fnames = set(os.listdir(dirname))
+
+    if filename not in fnames:
+        return os.path.join(dirname, filename)
+
+    parts = filename.split(".", 1)
+    if len(parts) == 1:
+        name, ext = parts[0], ""
+    else:
+        name, ext = parts[0], "." + parts[1]
+
+    counter = itertools.count(1)
+    while True:
+        newfname = "{}({}){}".format(name, next(counter), ext)
+        if newfname not in fnames:
+            return os.path.join(dirname, newfname)
 
 
 STATE_STR = {
@@ -132,8 +194,18 @@ class DownloadManager(QObject):
             self._start_download(dl)
 
         elif action == "download":
+            path = dl.path()
+            user_dir = get_user_download_dir()
+            if user_dir is not None:
+                _, name = extract_suggested_filename(path)
+                try:
+                    path = find_unique_suggested_path(user_dir, name)
+                except OSError as exc:
+                    logging.warning(
+                        "Can't use user_dir %s: %s", user_dir, str(exc)
+                    )
 
-            prompt = DlPrompt(dl.path(), dl.mimeType())
+            prompt = DlPrompt(path, dl.mimeType())
             path = minibuff.do_prompt(prompt)
             if path is None:
                 return
@@ -143,6 +215,10 @@ class DownloadManager(QObject):
                     return
 
             dl.setPath(path)
+            if keep_temporary_download_dir.value:
+                global TEMPORARY_DOWNLOAD_DIR
+                TEMPORARY_DOWNLOAD_DIR = os.path.dirname(path)
+
             logging.info("Downloading %s...", dl.path())
 
             def finished():
