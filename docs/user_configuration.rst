@@ -118,7 +118,6 @@ Example:
 
 .. code-block:: python
 
-   import re
    from webmacs import variables
 
    variables.set("auto-buffer-modes", [
