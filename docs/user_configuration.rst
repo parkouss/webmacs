@@ -118,12 +118,11 @@ Example:
 
 .. code-block:: python
 
-   import re
    from webmacs import variables
 
    variables.set("auto-buffer-modes", [
       (".*www.gnu.org.*", "no-keybindings"),
-      (re.compile("https://mail.google.com/.*"), "no-keybindings")
+      ("https://mail.google.com/.*", "no-keybindings")
   ])
 
 Binding keys
