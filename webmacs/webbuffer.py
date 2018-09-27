@@ -87,6 +87,11 @@ def close_buffer(wb):
         internal_view.detach()
         internal_view.deleteLater()
 
+    # clear the web channel. Might be causing a crash when calling
+    # ~QWebEnginePage()
+    wb.webChannel().deleteLater()
+    wb.setWebChannel(None)
+
     BUFFERS.remove(wb)
     wb.deleteLater()
     hooks.webbuffer_closed(wb)
