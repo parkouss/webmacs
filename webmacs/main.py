@@ -69,7 +69,7 @@ def setup_logging(level, webcontent_level):
              webcontent_level)):
         logger.setLevel(logging.DEBUG)
         handler = logging.StreamHandler()
-        fmt = logging.Formatter("%(levelname)s: %(message)s")
+        fmt = logging.Formatter(format)
         handler.setFormatter(fmt)
         handler.setLevel(lvl)
         logger.addHandler(handler)
