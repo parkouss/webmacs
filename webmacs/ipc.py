@@ -103,6 +103,23 @@ class IpcServer(QObject):
         return instances
 
     @classmethod
+    def instance_send(cls, instance, data, cb=None):
+        """
+        Send some data to a webmacs instance asynchronously.
+        """
+        conn = cls.check_server_connection(instance)
+        if conn is None:
+            return
+
+        def callback(result):
+            conn.clear()
+            if cb is not None:
+                cb(result)
+
+        conn.message_received.connect(callback)
+        conn.send_data(data)
+
+    @classmethod
     def check_server_connection(cls, instance=None):
         sock = QLocalSocket()
         sock.connectToServer(cls.get_sock_name(instance))

@@ -29,6 +29,7 @@ from .. import BUFFERS, windows, variables
 from ..mode import MODES
 from ..window import Window
 from ..session import session_clean, session_load
+from ..ipc import IpcServer
 
 
 class CommandsListPrompt(Prompt):
@@ -575,3 +576,25 @@ def restore_session(ctx):
         w = Window()
         w.current_webview().setBuffer("about:blank")
         w.show()
+
+
+class InstancesListPrompt(Prompt):
+    label = "webmacs instances: "
+    complete_options = {
+        "match": Prompt.FuzzyMatch,
+        "complete-empty": True,
+    }
+    history = PromptHistory()
+
+    def completer_model(self):
+        model = QStringListModel(self)
+        model.setStringList(IpcServer.list_all_instances(check=False))
+        return model
+
+
+@define_command("raise-instance", prompt=InstancesListPrompt)
+def raise_instance(ctx):
+    """
+    Raise the current window of the selected instance.
+    """
+    IpcServer.instance_send(ctx.prompt.value(), {})
