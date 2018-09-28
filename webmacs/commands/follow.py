@@ -42,7 +42,7 @@ hint_alphabet_characters = variables.define_variable(
 
 hint_node_style = variables.define_variable(
     "hint-node-style",
-    "The style to apply to the hint div. Note that it is a dict of javascript"
+    "The style to apply to the hint div. Note that it is a dict of JavaScript"
     " style property names to values. See"
     " https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style.",
     {
@@ -152,7 +152,7 @@ class HintPrompt(Prompt):
                         Qt.Key_Meta,
                         Qt.Key_unknown,
                         Qt.Key_Return,
-                        ):
+                ):
                     self.numbers = ""
                     self._update_label()
             elif self.method == "alphabet":

@@ -119,7 +119,7 @@ def _get_or_create_buffer(win):
 @define_command("split-view-right")
 def split_window_right(ctx):
     """
-    Create a new view on right of the current one.
+    Create a new view on the right of the current one.
     """
     win = ctx.window
     view = win.create_webview_on_right()
@@ -218,7 +218,7 @@ def maximise_view(ctx):
 @define_command("toggle-ad-block")
 def toggle_ad_block(ctx):
     """
-    Toggle ad blocking on or off.
+    Toggle ad-blocking on or off.
     """
     from .webbuffer import reload_buffer_no_cache
 
@@ -235,6 +235,7 @@ def toggle_toolbar(ctx):
 
 
 class VisitedLinksModel(PromptTableModel):
+
     def __init__(self, parent):
         visitedlinks = app().visitedlinks()
         PromptTableModel.__init__(self, visitedlinks.visited_urls())
@@ -301,6 +302,7 @@ def visited_links_history(ctx):
 
 
 class BookmarksModel(VisitedLinksModel):
+
     def __init__(self, parent):
         bookmarks = app().bookmarks()
         PromptTableModel.__init__(self, bookmarks.list())
@@ -498,6 +500,7 @@ def describe_command(ctx):
 
 
 class ReportCallHandler(CallHandler):
+
     def __init__(self, prompt):
         CallHandler.__init__(self)
         self.prompt = prompt

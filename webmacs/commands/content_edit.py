@@ -48,7 +48,7 @@ def run_js(ctx, cmd, cb=None):
 def cancel(ctx):
     """
     If a mark is active, clear that but keep the focus. If there is no
-    mark active, then just unfocus the editable js object.
+    active mark, then just unfocus the editable js object.
     """
     if ctx.buffer.hasSelection():
         run_js(ctx, "textedit.clear_mark();")
@@ -163,7 +163,7 @@ def delete_word_backward(ctx):
 @define_command("content-edit-copy")
 def copy(ctx):
     """
-    Copy browser text field selection in the clipboard.
+    Copy browser text field selection to the clipboard.
     """
     ctx.buffer.set_text_edit_mark(False)
     run_js(ctx, "textedit.copy_text(true);")
@@ -172,7 +172,7 @@ def copy(ctx):
 @define_command("content-edit-cut")
 def cut(ctx):
     """
-    Cut browser text field selection in the clipboard.
+    Cut browser text field selection to the clipboard.
     """
     run_js(ctx, "textedit.copy_text();",
            delete_selection(ctx))
