@@ -233,7 +233,7 @@ either **download** or **open** it.
 - **download** will start downloading, and save the file to your hard drive.
 - **open** will download to a temporary directory, then open the file with the given
   command. A list of available commands is shown in the minibuffer completion
-list. Note that when the command exits, the file will be automatically deleted
+  list. Note that when the command exits, the file will be automatically deleted
   from your hard drive.
 
   .. note::
