@@ -126,7 +126,9 @@ def parse_args(argv=None):
                         choices=("info", "warning", "error", "critical"))
 
     parser.add_argument("-i", "--instance", default="default",
-                        help="Create or reuse a named webmacs instance.")
+                        help="Create or reuse a named webmacs instance."
+                        " If the given instance name is the empty string, an"
+                        " automatically generated name will be used.")
 
     parser.add_argument("--list-instances", action="store_true",
                         help="List running instances and exit.")
@@ -228,6 +230,11 @@ def main():
         for instance in IpcServer.list_all_instances():
             print(instance)
         sys.exit(0)
+    elif not opts.instance:
+        # pick a random instance name.
+        uniq = [int(n) for n in IpcServer.list_all_instances(check=False)
+                if n.isdigit()]
+        opts.instance = str(max(uniq) + 1) if uniq else "1"
 
     conf_path = os.path.join(os.path.expanduser("~"), ".webmacs")
     if not os.path.isdir(conf_path):
