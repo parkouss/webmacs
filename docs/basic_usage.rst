@@ -170,8 +170,8 @@ Navigating through buffer history
 
 - :key:`B` goes backward in the buffer history
 - :key:`F` goes forward in the buffer history
-- :key:`b` shows the current buffer's history as a list in the :term:`minibuffer`,
-and allows to easily navigate it.
+- :key:`b` shows the current buffer's history as a list in the
+  :term:`minibuffer`, and allows to easily navigate it.
 
 
 Navigating through global history

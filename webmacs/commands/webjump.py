@@ -152,7 +152,8 @@ class WebJumpRequestCompleter(WebJumpCompleter):
         URL that will provide completion. The returned value can be none
         if no URL is suitable for the given text.
     :param extract_completions_fn: a function that takes the bytes of the
-        request reply, and must convert them to the completions (a string list).
+        request reply, and must convert them to the completions
+        (a string list).
     """
 
     def __init__(self, url_fn, extract_completions_fn):
