@@ -125,8 +125,11 @@ def parse_args(argv=None):
                         default="critical",
                         choices=("info", "warning", "error", "critical"))
 
-    parser.add_argument("-i", "--instance",
+    parser.add_argument("-i", "--instance", default="default",
                         help="Create or reuse a named webmacs instance.")
+
+    parser.add_argument("--list-instances", action="store_true",
+                        help="List running instances and exit.")
 
     parser.add_argument("url", nargs="?",
                         help="url to open")
@@ -221,6 +224,11 @@ else:
 def main():
     opts = parse_args()
 
+    if opts.list_instances:
+        for instance in IpcServer.list_all_instances():
+            print(instance)
+        sys.exit(0)
+
     conf_path = os.path.join(os.path.expanduser("~"), ".webmacs")
     if not os.path.isdir(conf_path):
         os.makedirs(conf_path)
@@ -257,7 +265,7 @@ def main():
     app = Application(conf_path, [
         # The first argument passed to the QApplication args defines
         # the x11 property WM_CLASS.
-        "webmacs" if not opts.instance
+        "webmacs" if opts.instance == "default"
         else "webmacs-%s" % opts.instance
     ])
     server = IpcServer(opts.instance)

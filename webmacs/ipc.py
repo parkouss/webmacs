@@ -17,8 +17,10 @@ import os
 import json
 import struct
 import logging
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, Qt
+from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, Qt, \
+    QDir
 from PyQt5.QtNetwork import QLocalServer, QLocalSocket
+from . import version
 
 
 HEADER_FMT = "!I"
@@ -73,9 +75,32 @@ class IPcReader(QObject):
 class IpcServer(QObject):
     @classmethod
     def get_sock_name(cls, instance):
-        if instance is None:
+        if instance == "default":
             return "webmacs.ipc"
         return "webmacs.{}.ipc".format(instance)
+
+    @classmethod
+    def list_all_instances(cls, check=True):
+        if version.is_windows:
+            logging.error(
+                "list all instances is not supported on windows"
+            )
+            return []
+        # from qt sources, named pipes are created in QDir.tempPath()
+        instances = [
+            n[8:-4] or "default"
+            for n in os.listdir(QDir.tempPath())
+            if n.startswith("webmacs.") and n.endswith(".ipc")
+        ]
+        if check:
+            new_instances = []
+            for instance in instances:
+                local = cls.check_server_connection(instance)
+                if local is not None:
+                    local.clear()
+                    new_instances.append(instance)
+            instances = new_instances
+        return instances
 
     @classmethod
     def check_server_connection(cls, instance=None):
