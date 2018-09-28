@@ -102,9 +102,10 @@ def _app_requires():
 class Application(QApplication):
     INSTANCE = None
 
-    def __init__(self, conf_path, args):
+    def __init__(self, conf_path, args, instance_name="default"):
         QApplication.__init__(self, args)
         self.__class__.INSTANCE = self
+        self.instance_name = instance_name
 
         if (version.opengl_vendor() == 'nouveau' and
             not (os.environ.get('LIBGL_ALWAYS_SOFTWARE') == '1'

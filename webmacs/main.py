@@ -274,7 +274,7 @@ def main():
         # the x11 property WM_CLASS.
         "webmacs" if opts.instance == "default"
         else "webmacs-%s" % opts.instance
-    ])
+    ], instance_name=opts.instance)
     server = IpcServer(opts.instance)
     atexit.register(server.cleanup)
 

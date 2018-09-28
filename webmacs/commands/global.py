@@ -598,3 +598,11 @@ def raise_instance(ctx):
     Raise the current window of the selected instance.
     """
     IpcServer.instance_send(ctx.prompt.value(), {})
+
+
+@define_command("current-instance")
+def current_instance(ctx):
+    """
+    Show the current instance name.
+    """
+    ctx.minibuffer.show_info("Current instance name: %s" % app().instance_name)
