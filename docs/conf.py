@@ -22,7 +22,10 @@ import sys
 sys.path.insert(0, os.path.join(os.path.abspath("."), "ext"))
 sys.path.insert(0, os.path.abspath('..'))
 
-if "READTHEDOCS" in os.environ:
+# Generating doc don't work without that flag. That could be fixed but anyway
+# on readthedocs we can't install binary package so we are stuck for now trying
+# to mock everything.
+if True or "READTHEDOCS" in os.environ:
     # We can not install webmacs on readthedocs, as it requires to
     # buid some C extensions (from dateparser, PyQt5, ...). The
     # alternative is to mock any dependency used by webmacs.
