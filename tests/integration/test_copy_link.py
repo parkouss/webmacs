@@ -1,4 +1,4 @@
-from webmacs import CommandContext
+from webmacs.keyboardhandler import CommandContext
 from webmacs.application import app
 from webmacs.commands import COMMANDS
 

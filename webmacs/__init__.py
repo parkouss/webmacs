@@ -137,17 +137,3 @@ def call_later(fn, msec=0):
     events in the qt event loop.
     """
     QTimer.singleShot(msec, fn)
-
-
-class CommandContext(object):
-    def __init__(self):
-        self.window = current_window()
-        self.view = self.window.current_webview() if self.window else None
-        self.buffer = self.view.buffer() if self.view else None
-        self.prompt = None
-
-    @property
-    def minibuffer(self):
-        win = self.window
-        if win:
-            return win.minibuffer()
