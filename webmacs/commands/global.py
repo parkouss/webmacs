@@ -23,8 +23,8 @@ from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
 from ..webbuffer import create_buffer
 from ..keymaps import Keymap, KeyPress
-from ..keyboardhandler import current_prefix_arg, send_key_event, \
-    local_keymap, KEY_EATER, CallHandler
+from ..keyboardhandler import send_key_event, local_keymap, KEY_EATER, \
+    CallHandler
 from .. import BUFFERS, windows, variables
 from ..mode import MODES
 from ..window import Window
@@ -261,7 +261,7 @@ class VisitedLinksPrompt(Prompt):
 
     def enable(self, minibuffer):
         Prompt.enable(self, minibuffer)
-        self.new_buffer = current_prefix_arg() == (4,)
+        self.new_buffer = self.ctx.current_prefix_arg == (4,)
         if self.new_buffer:
             minibuffer.label.setText(minibuffer.label.text() + " (new buffer)")
 
@@ -410,7 +410,7 @@ def send_left(ctx):
 
 
 def _open_url(ctx, url):
-    if current_prefix_arg() == (4,):
+    if ctx.current_prefix_arg == (4,):
         buffer = create_buffer()
         ctx.current_view.setBuffer(buffer)
     else:

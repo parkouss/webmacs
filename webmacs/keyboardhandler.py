@@ -30,7 +30,7 @@ class CommandContext(object):
         self.window = current_window()
         self.view = self.window.current_webview() if self.window else None
         self.buffer = self.view.buffer() if self.view else None
-        self.current_prefix_arg = current_prefix_arg()
+        self.current_prefix_arg = KEY_EATER._prefix_arg
         self.prompt = None
 
     @property
@@ -144,7 +144,7 @@ class KeyEater(object):
         self._use_global_keymap = True
         self.universal_key = KeyPress.from_str("C-u")
         self._prefix_arg = None
-        self._reset_prefix_arg = False
+        self._prefix_arg_keys = []
         self._allowed_universal_keys = {}
         for i in "1234567890":
             self._allowed_universal_keys[CHAR2KEY[i]] \
@@ -190,20 +190,19 @@ class KeyEater(object):
             self._prefix_arg = int(str(self._prefix_arg) + numstr)
 
     def _show_info_kbd(self, extra=""):
+        all_presses = self._prefix_arg_keys + self._keypresses
         minibuffer_show_info(
-            " ".join((str(k) for k in self._keypresses)) + extra
+            " ".join((str(k) for k in all_presses)) + extra
         )
 
     def _handle_keypress(self, sender, keypress):
-        if self._reset_prefix_arg:
-            self._reset_prefix_arg = False
-            self._prefix_arg = None
-        if keypress == self.universal_key:
+        if keypress == self.universal_key and not self._keypresses:
             if isinstance(self._prefix_arg, tuple):
                 self._prefix_arg = (self._prefix_arg[0] * 4,)
             else:
                 self._prefix_arg = (4,)
-                self._keypresses = []
+            self._prefix_arg_keys.append(keypress)
+            self._show_info_kbd()
             return True
         if self._prefix_arg is not None:
             try:
@@ -213,7 +212,8 @@ class KeyEater(object):
             else:
                 if not keypress.has_any_modifier():
                     func()
-                    self._add_keypress(keypress)
+                    self._prefix_arg_keys.append(keypress)
+                    self._show_info_kbd()
                     return True
 
         result = None
@@ -227,19 +227,24 @@ class KeyEater(object):
         if not result:
             if len(self._keypresses) > 1:
                 self._show_info_kbd(" is undefined.")
+            else:
+                minibuffer_show_info("")
             self._keypresses = []
             self.call_handler.no_call(sender, keymap, keypress)
+            self._prefix_arg = None
+            self._prefix_arg_keys = []
             return False
 
         if result.complete:
             self._show_info_kbd()
             self._keypresses = []
-            self._reset_prefix_arg = True
             try:
                 self.call_handler.call(sender, keymap, keypress,
                                        result.command)
             except Exception:
                 logging.exception("Error calling command:")
+            self._prefix_arg = None
+            self._prefix_arg_keys = []
         else:
             self._show_info_kbd(" -")
             self.call_handler.partial_call(sender, keymap, keypress)
@@ -288,7 +293,3 @@ def set_local_keymap(keymap):
 
 def set_global_keymap_enabled(enable):
     KEY_EATER.set_global_keymap_enabled(enable)
-
-
-def current_prefix_arg():
-    return KEY_EATER._prefix_arg

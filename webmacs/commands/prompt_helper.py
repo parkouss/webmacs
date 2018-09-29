@@ -1,4 +1,3 @@
-from ..keyboardhandler import current_prefix_arg
 from ..webbuffer import create_buffer
 from .. import current_buffer
 
@@ -10,7 +9,7 @@ class PromptNewBuffer(object):
     """
     def __init__(self, ctx, force_new_buffer=False):
         self.ctx = ctx
-        self.new_buffer = force_new_buffer or current_prefix_arg() == (4,)
+        self.new_buffer = force_new_buffer or ctx.current_prefix_arg == (4,)
 
     def __bool__(self):
         return self.new_buffer
