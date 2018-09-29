@@ -64,7 +64,11 @@ class Profile(object):
         self.q_profile.setPersistentCookiesPolicy(
             QWebEngineProfile.ForcePersistentCookies)
 
-        self.session_file = os.path.join(path, "session.json")
+        if app.instance_name == "default":
+            session_fname = "session.json"
+        else:
+            session_fname = "session-{}.json".format(app.instance_name)
+        self.session_file = os.path.join(path, session_fname)
 
         self.visitedlinks \
             = VisitedLinks(os.path.join(path, "visitedlinks.db"))
