@@ -17,7 +17,7 @@ import itertools
 import os
 from PyQt5.QtCore import QStringListModel, QModelIndex
 
-from . import define_command, COMMANDS
+from . import define_command, COMMANDS, register_prompt_opener_commands
 from ..minibuffer import Prompt, KEYMAP
 from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
@@ -258,24 +258,10 @@ class VisitedLinksPrompt(Prompt):
         "complete-empty": True,
     }
     keymap = VISITEDLINKS_KEYMAP
-
-    def enable(self, minibuffer):
-        Prompt.enable(self, minibuffer)
-        self.new_buffer = self.ctx.current_prefix_arg == (4,)
-        if self.new_buffer:
-            minibuffer.label.setText(minibuffer.label.text() + " (new buffer)")
+    value_return_index_data = True
 
     def completer_model(self):
         return VisitedLinksModel(self)
-
-    def get_buffer(self):
-        if self.new_buffer:
-            buf = create_buffer()
-            view = self.ctx.window.current_webview()
-            view.setBuffer(buf)
-        else:
-            buf = self.ctx.buffer
-        return buf
 
 
 @VISITEDLINKS_KEYMAP.define_key("C-k")
@@ -290,16 +276,11 @@ def visited_links_remove_entry(ctx):
     pinput.completer_model().remove_history_entry(selection)
 
 
-@define_command("visited-links-history", prompt=VisitedLinksPrompt)
-def visited_links_history(ctx):
-    """
-    Prompt to open a link previously visited.
-    """
-    prompt = ctx.prompt
-    index = prompt.index()
-    if index.isValid():
-        url = index.internalPointer()
-        prompt.get_buffer().load(url)
+register_prompt_opener_commands(
+    "visited-links-history",
+    VisitedLinksPrompt,
+    "Prompt to open a link previously visited",
+)
 
 
 class BookmarksModel(VisitedLinksModel):
@@ -325,12 +306,11 @@ class BookmarksPrompt(VisitedLinksPrompt):
         return BookmarksModel(self)
 
 
-@define_command("bookmark-open", prompt=BookmarksPrompt)
-def open_bookmark(ctx):
-    """
-    Prompt to open a bookmark.
-    """
-    visited_links_history(ctx)
+register_prompt_opener_commands(
+    "bookmark-open",
+    BookmarksPrompt,
+    "Prompt to open a bookmark",
+)
 
 
 class BookmarkAddPrompt(Prompt):

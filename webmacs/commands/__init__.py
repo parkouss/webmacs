@@ -15,6 +15,7 @@
 
 from ..minibuffer import Prompt
 from .. import COMMANDS
+from .. import url_opener
 
 
 class InteractiveCommand(object):
@@ -66,3 +67,55 @@ def define_command(name, binding=None, **args):
             command.binding = func
             return func
         return wrapper
+
+
+class Opener(object):
+    CURRENT_BUFFER = 1
+    NEW_BUFFER = 2
+
+    def __init__(self, prompt_ctor):
+        self.prompt_ctor = prompt_ctor
+
+    def prompt_open(self, method, ctx):
+        prompt = self.prompt_ctor(ctx)
+        if method == self.NEW_BUFFER:
+            prompt.label += " (new buffer)"
+        return prompt
+
+    def open(self, method, ctx, prompt, url):
+        opts = {}
+        if method == self.NEW_BUFFER:
+            opts["new_buffer"] = True
+        url_opener.url_open(ctx, url, **opts)
+
+    def closed(self, method, ctx, prompt):
+        pass
+
+    def run(self, method, ctx):
+        prompt = self.prompt_open(method, ctx)
+        url = ctx.minibuffer.do_prompt(prompt)
+        if url:
+            self.open(method, ctx, prompt, url)
+        self.closed(method, ctx, prompt)
+
+
+def register_prompt_opener_commands(name, opener, doc):
+    if not isinstance(opener, Opener):
+        opener = Opener(opener)
+
+    @define_command(name + "-new-buffer")
+    def open_new_buffer(ctx):
+        opener.run(Opener.NEW_BUFFER, ctx)
+
+    @define_command(name)
+    def open(ctx):
+        if ctx.current_prefix_arg == (4,):
+            return open_new_buffer(ctx)
+
+        opener.run(Opener.CURRENT_BUFFER, ctx)
+
+    open.__name__ = name.replace("-", "_")
+    open_new_buffer.__name__ = open.__name__ + "_new_buffer"
+
+    open.__doc__ = doc + "."
+    open_new_buffer.__doc__ = doc + " in a new buffer."

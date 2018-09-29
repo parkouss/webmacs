@@ -24,12 +24,11 @@ from PyQt5.QtNetwork import QNetworkRequest
 from ..minibuffer.prompt import Prompt, PromptTableModel, PromptHistory
 from ..minibuffer.keymap import KEYMAP as MINIBUF_KEYMAP
 from .. keymaps import Keymap
-from ..commands import define_command
+from ..commands import register_prompt_opener_commands
 from .. import current_buffer
 from ..application import app
 from .. import variables
 from .. import version
-from .. import url_opener
 
 
 WebJump = namedtuple(
@@ -356,133 +355,92 @@ class WebJumpPrompt(Prompt):
                 chosen_text + (" " if not WEBJUMPS[chosen_text].protocol
                                else "://"))
 
+    def value(self):
+        value = super().value()
+        if value is None:
+            return
 
-def get_url(prompt):
-    value = prompt.value().strip()
-
-    # split webjumps and protocols between command and argument
-    if re.match(r"^\S+://.*", value):
-        args = value.split("://", 1)
-    else:
-        args = value.split(" ", 1)
-    command = args[0]
-
-    # Look for webjumps
-    webjump = None
-    if command in WEBJUMPS:
-        webjump = WEBJUMPS[command]
-    else:
-        # Look for a incomplete webjump, accepting a candidate
-        # if there is a single option
-        candidates = [wj for wj in WEBJUMPS if wj.startswith(command)]
-        if len(candidates) == 1:
-            webjump = WEBJUMPS[candidates[0]]
-
-    if webjump:
-        if not webjump.allow_args:
-            # send the url as is
-            return webjump.url
-        elif len(args) < 2:
-                # send the url without a search string
-            return webjump.url.replace("%s", "")
-
+        # split webjumps and protocols between command and argument
+        if re.match(r"^\S+://.*", value):
+            args = value.split("://", 1)
         else:
-            # format the url as entered
-            if webjump.protocol:
-                return value
+            args = value.split(" ", 1)
+        command = args[0]
+
+        # Look for webjumps
+        webjump = None
+        if command in WEBJUMPS:
+            webjump = WEBJUMPS[command]
+        else:
+            # Look for a incomplete webjump, accepting a candidate
+            # if there is a single option
+            candidates = [wj for wj in WEBJUMPS if wj.startswith(command)]
+            if len(candidates) == 1:
+                webjump = WEBJUMPS[candidates[0]]
+
+        if webjump:
+            if not webjump.allow_args:
+                # send the url as is
+                return webjump.url
+            elif len(args) < 2:
+                    # send the url without a search string
+                return webjump.url.replace("%s", "")
+
             else:
-                return webjump.url.replace(
-                    "%s",
-                    str(QUrl.toPercentEncoding(args[1]), "utf-8")
-                )
+                # format the url as entered
+                if webjump.protocol:
+                    return value
+                else:
+                    return webjump.url.replace(
+                        "%s",
+                        str(QUrl.toPercentEncoding(args[1]), "utf-8")
+                    )
 
-    # Look for a bookmark
-    bookmarks = {name: url
-                 for url, name in prompt.bookmarks}
-    if value in bookmarks:
-        return bookmarks[value]
+        # Look for a bookmark
+        bookmarks = {name: url
+                     for url, name in self.bookmarks}
+        if value in bookmarks:
+            return bookmarks[value]
 
-    # Look for a incomplete bookmarks, accepting a candidate
-    # if there is a single option
-    candidates = [bm for bm in bookmarks if bm.startswith(command)]
-    if len(candidates) == 1:
-        return bookmarks[candidates[0]]
+        # Look for a incomplete bookmarks, accepting a candidate
+        # if there is a single option
+        candidates = [bm for bm in bookmarks if bm.startswith(command)]
+        if len(candidates) == 1:
+            return bookmarks[candidates[0]]
 
-    # No webjump, no bookmark, look for a url
-    if "://" not in value:
-        url = QUrl.fromUserInput(value)
-        if url.isValid():
-            # default scheme is https for us
-            if url.scheme() == "http":
-                url.setScheme("https")
-            return url
-    return value
-
-
-def _go_to(ctx, prompt_options, open_options):
-    prompt = WebJumpPrompt(ctx)
-    if open_options.get("new_buffer"):
-        prompt_options["label"] = prompt.label + " (new buffer)"
-    for name, value in prompt_options.items():
-        setattr(prompt, name, value)
-    if ctx.minibuffer.do_prompt(prompt):
-        url = get_url(prompt)
-        if url:
-            url_opener.url_open(ctx, url, **open_options)
+        # No webjump, no bookmark, look for a url
+        if "://" not in value:
+            url = QUrl.fromUserInput(value)
+            if url.isValid():
+                # default scheme is https for us
+                if url.scheme() == "http":
+                    url.setScheme("https")
+                return url
+        return value
 
 
-@define_command("go-to")
-def go_to(ctx):
-    """
-    Prompt to open a URL or a webjump.
-    """
-    if ctx.current_prefix_arg == (4,):
-        return go_to_new_buffer(ctx)
-
-    _go_to(ctx, {"default_input": "current_url"}, {})
+def wj_prompt(default_input):
+    def prompt_ctor(ctx):
+        p = WebJumpPrompt(ctx)
+        p.default_input = default_input
+        return p
+    return prompt_ctor
 
 
-@define_command("go-to-alternate-url")
-def go_to_selected_url(ctx):
-    """
-    Prompt to open an alternative URL from the current one.
-    """
-    if ctx.current_prefix_arg == (4,):
-        return go_to_selected_url_new_buffer(ctx)
+register_prompt_opener_commands(
+    "go-to",
+    wj_prompt("current_url"),
+    "Prompt to open a URL or a webjump",
+)
 
-    _go_to(ctx, {}, {})
+register_prompt_opener_commands(
+    "go-to-alternate-url",
+    wj_prompt("alternate"),
+    "Prompt to open an alternative URL from the current one",
+)
 
-
-@define_command("go-to-new-buffer")
-def go_to_new_buffer(ctx):
-    """
-    Prompt to open a URL or webjump in a new buffer.
-    """
-    _go_to(ctx, {"default_input": "current_url"}, {"new_buffer": True})
-
-
-@define_command("go-to-alternate-url-new-buffer")
-def go_to_selected_url_new_buffer(ctx):
-    """
-    Prompt to open an alternative URL from the current one in a new buffer.
-    """
-    _go_to(ctx, {}, {"new_buffer": True})
-
-
-@define_command("search-default")
-def search_default(ctx):
-    """
-    Prompt to open a URL with the default webjump.
-    """
-    if ctx.current_prefix_arg == (4,):
-        return search_default_new_buffer(ctx)
-
-    _go_to(ctx, {"default_input": "default_webjump"}, {})
-
-
-@define_command("search-default-new-buffer")
-def search_default_new_buffer(ctx):
-    """
-    Prompt to open a URL with the default webjump.
-    """
-    _go_to(ctx, {"default_input": "default_webjump"}, {"new_buffer": True})
+register_prompt_opener_commands(
+    "search-default",
+    wj_prompt("default_webjump"),
+    "Prompt to open a URL with the default webjump",
+)
