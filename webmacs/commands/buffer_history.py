@@ -83,6 +83,7 @@ class BufferHistoryListPrompt(Prompt):
         "match": Prompt.FuzzyMatch,
         "complete-empty": True,
     }
+    value_return_index_data = True
 
     def enable(self, minibuffer):
         self.page_history = current_buffer().history()
@@ -96,11 +97,12 @@ class BufferHistoryListPrompt(Prompt):
         return BufferHistoryTableModel(self._items)
 
 
-@define_command("buffer-history", prompt=BufferHistoryListPrompt)
+@define_command("buffer-history")
 def buffer_history(ctx):
     """
     Prompt to navigate in the local buffer history.
     """
-    selected = ctx.prompt.index()
-    if selected.row() >= 0:
-        ctx.prompt.page_history.goToItem(selected.internalPointer())
+    prompt = BufferHistoryListPrompt(ctx)
+    item = ctx.minibuffer.do_prompt(prompt)
+    if item:
+        prompt.page_history.goToItem(item)

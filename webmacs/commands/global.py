@@ -55,13 +55,15 @@ def quit(ctx):
     app().quit()
 
 
-@define_command("M-x", prompt=CommandsListPrompt, visible=False)
+@define_command("M-x", visible=False)
 def commands(ctx):
     """
     Prompt for a command name to execute.
     """
+    prompt = CommandsListPrompt(ctx)
+    value = ctx.minibuffer.do_prompt(prompt)
     try:
-        COMMANDS[ctx.prompt.value()](ctx)
+        COMMANDS[value](ctx)
     except KeyError:
         pass
 
@@ -324,22 +326,23 @@ class BookmarkAddPrompt(Prompt):
         input.setSelection(0, len(url))
 
 
-@define_command("bookmark-add", prompt=BookmarkAddPrompt)
+@define_command("bookmark-add")
 def bookmark_add(ctx):
     """
     Create or rename a bookmark for the current url.
     """
-    minibuff = ctx.minibuffer
-    url = ctx.prompt.value()
+    prompt = BookmarkAddPrompt(ctx)
+    url = ctx.minibuffer.do_prompt(prompt)
+    if not url:
+        return
 
     otherprompt = Prompt(ctx)
     otherprompt.label = "bookmark's name: "
-    name = minibuff.do_prompt(otherprompt)
+    name = ctx.minibuffer.do_prompt(otherprompt)
 
     if name:
         app().bookmarks().set(url, name)
-        minibuff.show_info("Bookmark {} created."
-                           .format(name))
+        ctx.minibuffer.show_info("Bookmark {} created.".format(name))
 
 
 class ModesPrompt(Prompt):
@@ -348,6 +351,7 @@ class ModesPrompt(Prompt):
         "match": Prompt.FuzzyMatch,
         "complete-empty": True,
     }
+    value_return_index_data = True
 
     def completer_model(self):
         return PromptTableModel([
@@ -355,14 +359,15 @@ class ModesPrompt(Prompt):
         ])
 
 
-@define_command("buffer-set-mode", prompt=ModesPrompt)
+@define_command("buffer-set-mode")
 def buffer_set_mode(ctx):
     """
     Change the mode of the current buffer.
     """
-    index = ctx.prompt.index()
-    if index.isValid():
-        ctx.buffer.set_mode(index.internalPointer())
+    prompt = ModesPrompt(ctx)
+    mode = ctx.minibuffer.do_prompt(prompt)
+    if mode:
+        ctx.buffer.set_mode(mode)
 
 
 @define_command("send-key-down")
@@ -453,12 +458,12 @@ class VariableListPrompt(Prompt):
         return model
 
 
-@define_command("describe-variable", prompt=VariableListPrompt)
+@define_command("describe-variable")
 def describe_variable(ctx):
     """
     Prompt for a variable name to describe.
     """
-    variable = ctx.prompt.value()
+    variable = ctx.minibuffer.do_prompt(VariableListPrompt(ctx))
     if variable in variables.VARIABLES:
         buffer = create_buffer("webmacs://variable/%s" % variable)
         ctx.view.setBuffer(buffer)
@@ -469,12 +474,12 @@ class DescribeCommandsListPrompt(CommandsListPrompt):
     history = PromptHistory()
 
 
-@define_command("describe-command", prompt=DescribeCommandsListPrompt)
+@define_command("describe-command")
 def describe_command(ctx):
     """
     Prompt for a command name to describe.
     """
-    command = ctx.prompt.value()
+    command = ctx.minibuffer.do_prompt(DescribeCommandsListPrompt(ctx))
     if command in COMMANDS:
         buffer = create_buffer("webmacs://command/%s" % command)
         ctx.view.setBuffer(buffer)
@@ -517,6 +522,7 @@ class ReportCallHandler(CallHandler):
 
 class BindingPrompt(Prompt):
     label = "describe key: "
+    called_with = None
 
     def enable(self, minibuffer):
         self.keymap = local_keymap()
@@ -528,16 +534,21 @@ class BindingPrompt(Prompt):
         KEY_EATER.set_call_handler(self.orig_handler)
         Prompt.close(self)
 
+    def value(self):
+        return self.called_with
 
-@define_command("describe-key", prompt=BindingPrompt)
+
+@define_command("describe-key")
 def describe_binding(ctx):
     """
     Retrieve the command called by the given binding.
     """
-    url = "webmacs://key/{key}?command={command}&keymap={keymap}".format(
-        **ctx.prompt.called_with
-    )
-    ctx.view.setBuffer(create_buffer(url))
+    called_with = ctx.minibuffer.do_prompt(BindingPrompt(ctx))
+    if called_with:
+        url = "webmacs://key/{key}?command={command}&keymap={keymap}".format(
+            **called_with
+        )
+        ctx.view.setBuffer(create_buffer(url))
 
 
 @define_command("restore-session")

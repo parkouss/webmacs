@@ -212,23 +212,22 @@ register_prompt_opener_commands(
 )
 
 
-@define_command("copy-link", prompt=CopyLinkPrompt)
+@define_command("copy-link")
 def copy_link(ctx):
     """
     Hint links in the buffer to copy them.
     """
-    prompt = ctx.prompt
-    buff = prompt.page
+    prompt = CopyLinkPrompt(ctx)
+    if not ctx.minibuffer.do_prompt(prompt):
+        return
     url = None
-    buff.stop_select_browser_objects()
+    ctx.buffer.stop_select_browser_objects()
 
     if prompt.numbers == "0":
         # special case, copy current url
-        url = str(buff.url().toEncoded(), "utf-8")
+        url = str(ctx.buffer.url().toEncoded(), "utf-8")
     else:
-        bo = prompt.browser_object_activated
-        if "url" in bo:
-            url = bo["url"]
+        url = prompt.browser_object_activated.get("url")
 
     if url:
         app().clipboard().setText(url)

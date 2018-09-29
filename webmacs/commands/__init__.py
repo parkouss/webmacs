@@ -15,7 +15,6 @@
 
 import inspect
 
-from ..minibuffer import Prompt
 from .. import COMMANDS
 from .. import url_opener
 
@@ -27,38 +26,19 @@ class InteractiveCommand(object):
     A prompt class can be given to get an argument using the minibuffer prompt.
 
     :param binding: a callable to run when invoking the command.
-    :param prompt: a Prompt derived class
     :param visible: whether or not to list the command using M-x
     """
-    __slots__ = ("binding", "prompt", "visible")
+    __slots__ = ("binding", "visible")
 
-    def __init__(self, binding, prompt=None, visible=True):
+    def __init__(self, binding, visible=True):
         self.binding = binding
-        self.prompt = prompt
         self.visible = visible
-        if prompt is not None:
-            assert issubclass(prompt, Prompt), \
-                "prompt should be a Prompt subclass"
 
     def getdoc(self):
         return inspect.getdoc(self.binding)
 
     def __call__(self, ctx):
-        if self.prompt:
-            prompt = self.prompt(ctx)
-
-            def call():
-                ctx.prompt = prompt
-                try:
-                    self.binding(ctx)
-                finally:
-                    # to avoid reference cycle
-                    ctx.prompt = None
-
-            prompt.finished.connect(call)
-            ctx.minibuffer.do_prompt(prompt)
-        else:
-            self.binding(ctx)
+        return self.binding(ctx)
 
 
 def define_command(name, binding=None, **args):
