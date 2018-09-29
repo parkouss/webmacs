@@ -239,7 +239,7 @@ either **download** or **open** it.
   .. note::
 
     open is useful for viewing PDF files for example, as you can use your
-     favourite PDF file viewer to read it.
+    favorite PDF file viewer to read it.
 
 The list of downloads can be accessed using the :cmd:`downloads` command.
 
@@ -259,4 +259,4 @@ Zooming
 .. note::
 
   There are variants for the zoom, using the Control modifier (:key:`C-+`,
-  :key:`C--`, and :key:`C-=` that are used for text zoom only.
+  :key:`C--`, and :key:`C-=`) that are used for text zoom only.
