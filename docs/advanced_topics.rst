@@ -13,7 +13,7 @@ It is possible to manage multiple :term:`views` in a webmacs window:
 
 - :key:`C-x 2` split the current view in two horizontally.
 - :key:`C-x 3` split the current view in two vertically.
-- :key:`C-x o` navigates in current window views.
+- :key:`C-x o` navigate in current window views.
 - :key:`C-x 0` close the current view.
 - :key:`C-x 1` maximize the current view, closing every other view.
 
@@ -40,7 +40,7 @@ useful for copying text inside a web page without using the mouse.
 
 It is enabled by pressing :key:`C (webbuffer)`.
 
-Then you can navigate using arrow keys or standard emacs bindings:
+Then you can navigate using arrow keys or standard Emacs bindings:
 
 - :key:`C-n` to go to the next line.
 - :key:`C-p` to go to the previous line.
@@ -70,8 +70,8 @@ You can select some text and copy it using:
 Bookmarks
 *********
 
-Bookmarks are like a dictionary of urls. Each bookmark must have a unique name.
-Bookmarks are stored in the profile, and so are persistent across sessions.
+Bookmarks are like a dictionary of URLs. Each bookmark must have a unique name.
+Bookmarks are stored in the profile, and hence are persistent across sessions.
 
 It is possible to manage bookmarks using:
 
@@ -80,5 +80,5 @@ It is possible to manage bookmarks using:
 
 When in the bookmark list, you can:
 
-- :key:`Return (bookmarks-list)` to open the bookmark url in the current buffer
+- :key:`Return (bookmarks-list)` to open the bookmark URL in the current buffer
 - :key:`C-k (bookmarks-list)` to remove the highlighted bookmark.

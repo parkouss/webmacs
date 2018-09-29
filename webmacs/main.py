@@ -40,7 +40,7 @@ log_to_disk = variables.define_variable(
 
 def signal_wakeup(app):
     """
-    Allow to be notified in python for signals when in long-running calls from
+    Allow to be notified in Python for signals when in long-running calls from
     the C or c++ side, like QApplication.exec_().
 
     See https://stackoverflow.com/a/37229299.
@@ -87,6 +87,7 @@ def setup_logging_on_disk(log_dir, backup_count=5):
     webcontent = logging.getLogger("webcontent")
 
     class Formatter(logging.Formatter):
+
         def formatMessage(self, record):
             fmt = ("%(levelname)s %(name)s: [%(url)s] %(message)s"
                    if record.name == "webcontent"
@@ -115,9 +116,9 @@ def parse_args(argv=None):
                         choices=("debug", "info", "warning",
                                  "error", "critical"))
 
-    # There is no such javascript error level, critical - still since there
-    # is some logs that are printed anyway and that it is easier to implement
-    # let's keep the critical level.
+    # There is no such JavaScript error level, critical - still since there
+    # are some logs that are printed anyway and that it is easier to implement.
+    # Let's keep the critical level.
     parser.add_argument("-w", "--webcontent-log-level",
                         help="Set the log level for the web contents,"
                         " defaults to %(default)s.",
@@ -144,7 +145,7 @@ def init(opts):
     """
     Default initialization of webmacs.
 
-    If an url is given on the command line, it opens it. Else it try
+    If a URL is given on the command line, this method opens it. Else, it tries
     to load the buffers that were opened the last time webmacs has
     exited. If none of that works, the default is to open a buffer
     with an url to the duckduck go search engine.

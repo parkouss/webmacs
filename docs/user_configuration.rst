@@ -1,26 +1,26 @@
 User configuration
 ==================
 
-**webmacs** can be configured by writing Python code. The files should lives in
+**webmacs** can be configured by writing Python code. The files should live in
 a ``~/.webmacs/init`` directory, starting with an ``__init__.py`` file.
 
 If this file exists, it will be loaded early in the application.
 
-Note you have the full power of Python in there, and as it is loaded early you
-can change and adapt nearly everything of the webmacs behavior.
+Note that you have the full power of Python in there, and as it is loaded early,
+you can change and adapt nearly every aspect of the webmacs behavior.
 
 .. note::
 
    Only the documented functions and objects here are considered stable (meaning
-   it won't change without change notes and explanations). The other api you can
-   use is considered internal and might change without notification.
+   they will not change without change notes and explanations). Any other API
+   you can use is considered internal and might change without notification.
 
 
 The init function
 *****************
 
 You can write a function **init** that would be called when webmacs is about to
-start. This function must takes one parameter (usually named *opts*), that
+start. This function must take one parameter (usually named *opts*), that
 contains the result of the parsed command line. For now, there is only one
 useful parameter:
 
@@ -42,8 +42,8 @@ example:
        webmacs.main.init(opts)
 
 
-The default webmacs.main.init function is responsible restoring the session, or
-opening the given url for example.
+The default webmacs.main.init function is responsible for restoring the session,
+or opening the given URL, for example.
 
 
 .. note::
@@ -58,7 +58,7 @@ Using more than one configuration file
 **************************************
 
 It is possible to write more than one configuration file. The
-directory where the ``__init__.py`` file lives is a python package, so
+directory where the ``__init__.py`` file lives is a Python package, so
 it is possible to just use relative imports.
 
 For example:
@@ -103,7 +103,7 @@ Modes
 *****
 
 Modes are used to bind keymaps to a web buffer, by assigning the buffer a given
-mode. By default all buffers are using the "standard-mode".
+mode. By default, all buffers use the "standard-mode".
 
 Here is the list of the pre-defined modes:
 
@@ -128,7 +128,7 @@ Example:
 Binding keys
 ************
 
-In webmacs, like in emacs, it is possible to bind a key to command on a given
+In webmacs, like in Emacs, it is possible to bind a key to a command on a given
 keymap.
 
 .. _user_conf_keymaps:
@@ -136,8 +136,9 @@ keymap.
 Keymaps
 -------
 
-Here is the list of available keymaps. Note you can see them live (with their
-associated key bindings) in webmacs by running the command `describe-bindings`.
+Here is the list of available keymaps. Note that you can see them live (with
+their associated key bindings) in webmacs by running the command
+`describe-bindings`.
 
 .. webmacs-keymaps::
 
@@ -177,7 +178,7 @@ You should use :meth:`webmacs.keymaps.Keymap.define_key`. Here is an example:
 .. note::
 
    The global buffer should not define single letter keychords, as you
-   won't be able to type that letter in editable fields, thus this is
+   won't be able to type that letter in editable fields; though, this is
    possible in the webbuffer :term:`keymap`.
 
 .. _user_conf_webjumps:
@@ -201,6 +202,6 @@ You can implement your own webjumps, or override the existing
 ones. See :func:`webmacs.commands.webjump.define_webjump` and the
 example above.
 
-By default in webmacs, pressing the ``s`` key will call the command
-``search-default``, wich will use the duckduckgo webjump. To change
-that default, change the value of the variable *webjump-default*.
+Pressing the ``s`` key will call the command
+``search-default``, wich will, by default, use the Google webjump. To change
+this default, change the value of the variable *webjump-default*.

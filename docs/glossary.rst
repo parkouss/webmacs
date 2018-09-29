@@ -7,7 +7,7 @@ Glossary
   web buffer
     The content of a web page, not including its window or view.
 
-    You can learn the basics of buffer handing in :ref:`managing_buffers`.
+    You can learn the basics of buffer handling in :ref:`managing_buffers`.
 
   command
   commands
@@ -15,12 +15,12 @@ Glossary
 
     See :ref:`concept_commands` for a detailed description.
 
-    See :ref:`Commands <user_conf_commands>` for a list of commands, or better
+    See :ref:`Commands <user_conf_commands>` for a list of commands; or better,
     use the :cmd:`describe-commands` command to get live documentation.
 
   hinting
-   hinting is used to navigate through visible links and objects of the current
-   web buffer's page using the keyboard only.
+   Hinting is used to navigate through the visible links and objects of the
+   current web buffer's page, using the keyboard only.
 
    See :ref:`link_hinting` for more information.
 
@@ -38,19 +38,20 @@ Glossary
 
     See :ref:`concept_commands` for a detailed description.
 
-    See :ref:`Keymaps <user_conf_keymaps>` for a list of keymaps, or better use
+    See :ref:`Keymaps <user_conf_keymaps>` for a list of keymaps; or better, use
     the :cmd:`describe-bindings` command to get live documentation.
 
   minibuffer
     The minibuffer is what can be seen at the bottom of a webmacs window. It
-    displays some information on the right, like the currently active keymap and
-    the number of opened buffers.
+    displays some information on the right, such as the currently active keymap
+    and the number of open buffers.
 
   minibuffer input
-    When webmacs is waiting some information from you, the **minibuffer input**
-    is shown: it's a text edit field in which you can type some text.
+    When webmacs is waiting for some information from you, the
+    **minibuffer input** is shown: it's a text edit field in which you can type
+    some text.
 
-    Often there also is a completion list above the minibuffer input.
+    Often, there also is a completion list above the minibuffer input.
 
   variable
   variables
@@ -58,8 +59,8 @@ Glossary
 
     See :ref:`user_conf_variables` for variables configuration.
 
-    See :ref:`All variables <user_conf_all_variables>` to see all the variables,
-    or better use :cmd:`describe-variables` to get live documentation.
+    See :ref:`All variables <user_conf_all_variables>` to see all the variables;
+    or better, use :cmd:`describe-variables` to get live documentation.
 
   view
   views
@@ -70,10 +71,10 @@ Glossary
 
   webjump
   webjumps
-    A Webjump represents a quick way to access an url, possibly with a variable
+    A Webjump represents a quick way to access a URL, possibly with a variable
     part. A webjump name becomes a part of the webmacs :cmd:`go-to` command, so
-    for example you can type ``google foo bar`` to execute a google query with
+    for example you can type ``google foo bar`` to execute a Google query with
     "foo bar" terms.
 
     See :ref:`user_conf_webjumps` to see the builtins webjumps and how to
-    configure you owns.
+    configure your owns.

@@ -40,6 +40,7 @@ switch_buffer_current_color = variables.define_variable(
 
 
 class BufferTableModel(QAbstractTableModel):
+
     def __init__(self, buffers):
         QAbstractTableModel.__init__(self)
         self._buffers = list(buffers)
@@ -129,6 +130,7 @@ class BufferListPrompt(Prompt):
 
 
 class RecentBufferListPrompt(BufferListPrompt):
+
     def ordered_buffers(self):
         return recent_buffers()
 
@@ -453,8 +455,8 @@ def buffer_escape(ctx):
     """
     Clear selection or menus in the current buffer.
 
-    The implementation clear the selection in the buffer if there is any, else
-    it sends the Escape key which usually close whatever takes the focus.
+    The implementation clears the selection in the buffer if there is any, else
+    it sends the Escape key which usually closes whatever takes the focus.
     """
     if ctx.buffer.hasSelection():
         buffer_unselect(ctx)
@@ -463,6 +465,7 @@ def buffer_escape(ctx):
 
 
 class KilledBufferTableModel(QAbstractTableModel):
+
     def __init__(self):
         QAbstractTableModel.__init__(self)
         self._buffers = list(KilledBuffer.all)
@@ -526,7 +529,7 @@ def revive_buffer(ctx):
 @define_command("copy-current-link")
 def copy_current_link(ctx):
     """
-    Copy the current link in the clipboard.
+    Copy the current link to the clipboard.
     """
 
     # note the implementation does not rely on the CopyLinkToClipboard action
@@ -552,7 +555,7 @@ def copy_current_link(ctx):
 @define_command("copy-current-buffer-url")
 def copy_buffer_url(ctx):
     """
-    Copy the url of the current buffer to the clipboard.
+    Copy the URL of the current buffer to the clipboard.
     """
     url = str(ctx.buffer.url().toEncoded(), "utf-8")
     app().clipboard().setText(url)

@@ -57,7 +57,7 @@ def up(ctx):
 @define_command("caret-browsing-backward-char")
 def left_char(ctx):
     """
-    Move the caret to one character backward.
+    Move the caret one character backward.
     """
     call_js(ctx, "CaretBrowsing.move('backward', 'character');")
 
@@ -65,7 +65,7 @@ def left_char(ctx):
 @define_command("caret-browsing-backward-word")
 def left_word(ctx):
     """
-    Move the caret to one word backward.
+    Move the caret one word backward.
     """
     call_js(ctx, "CaretBrowsing.move('backward', 'word');")
 
@@ -73,7 +73,7 @@ def left_word(ctx):
 @define_command("caret-browsing-forward-char")
 def right_char(ctx):
     """
-    Move the caret to one character forward.
+    Move the caret one character forward.
     """
     call_js(ctx, "CaretBrowsing.move('forward', 'character');")
 
@@ -81,7 +81,7 @@ def right_char(ctx):
 @define_command("caret-browsing-forward-word")
 def right_word(ctx):
     """
-    Move the caret to one word forward.
+    Move the caret one word forward.
     """
     call_js(ctx, "CaretBrowsing.move('forward', 'word');")
 

@@ -48,13 +48,13 @@ def define_webjump(name, url, doc="", complete_fn=None, protocol=False):
     """
     Define a webjump.
 
-    A webjump is a quick way to access an url, optionally with a
-    variable section (for example an url for a google search). A
-    function might be given to provide auto-completion.
+    A webjump is a quick way to access a URL, optionally with a
+    variable section (for example a URL for a Google search). A
+    function may be given to provide auto-completion.
 
     :param name: the name of the webjump.
     :param url: the url of the webjump. If the url contains "%s", it is
-        assumed that it as a variable part.
+        assumed that it has a variable part.
     :param doc: associated documentation for the webjump.
     :param complete_fn: a function that should create a suitable
         :class:`WebJumpCompleter` to provide auto-completion, or None if there
@@ -74,7 +74,7 @@ def define_webjump(name, url, doc="", complete_fn=None, protocol=False):
 
 
 def define_protocol(name, doc="", complete_fn=None):
-    define_webjump(name, name+"://%s", doc, complete_fn, True)
+    define_webjump(name, name + "://%s", doc, complete_fn, True)
 
 
 def set_default(name):
@@ -89,6 +89,7 @@ def set_default(name):
 
 
 class WebJumpCompleter(QObject):
+
     """
     Provides auto-completion in webjumps.
 
@@ -97,10 +98,10 @@ class WebJumpCompleter(QObject):
     method :meth:`complete` is called with the current text, asking for
     completion.
 
-    The signal `completed` must be then be emitted with the list of possible
+    The signal `completed` must then be emitted with the list of possible
     completions.
 
-    Note there is no underlying thread in the completion framework.
+    Note that there is no underlying thread in the completion framework.
     """
     completed = Signal(list)
 
@@ -118,14 +119,16 @@ class WebJumpCompleter(QObject):
 
 
 class SyncWebJumpCompleter(WebJumpCompleter):
+
     """
     A simple completer that provides completion given a function.
 
-    This completer will block the ui, use it with care.
+    This completer will block the UI: use it with care.
 
     :param complete_fn: a function that takes the current string, and must
-        returns the possible completions as a list of strings.
+        return the possible completions as a list of strings.
     """
+
     def __init__(self, complete_fn):
         WebJumpCompleter.__init__(self)
         self.complete_fn = complete_fn
@@ -139,17 +142,20 @@ def empty_completer():
 
 
 class WebJumpRequestCompleter(WebJumpCompleter):
+
     """
-    A completer that execute a web request to provide completion.
+    A completer that executes a Web request to provide completion.
 
-    This completer will not block the ui.
+    This completer will not block the UI.
 
-    :param url_fn: a function that takes the text to complete, and returns an
-        url that will provide completion. The returns can be none if no url is
-        suitable for the given text.
+    :param url_fn: a function that takes the text to complete, and returns a
+        URL that will provide completion. The returned value can be none
+        if no URL is suitable for the given text.
     :param extract_completions_fn: a function that takes the bytes of the
-        request reply, and must convert it to the completions (a string list).
+        request reply, and must convert them to the completions
+        (a string list).
     """
+
     def __init__(self, url_fn, extract_completions_fn):
         WebJumpCompleter.__init__(self)
         self.url_fn = url_fn
@@ -281,7 +287,7 @@ class WebJumpPrompt(Prompt):
                 m_input.popup().selectionModel()\
                                .selectionChanged.connect(
                                    self._popup_selection_changed
-                               )
+                )
 
     def _popup_selection_changed(self, _sel, _desel):
         # try to abort any completion if the user select something in
@@ -349,6 +355,7 @@ class WebJumpPrompt(Prompt):
 
 
 class WebJumpPromptAlternateUrl(WebJumpPrompt):
+
     def enable(self, minibuffer):
         WebJumpPrompt.enable(self, minibuffer)
         minibuffer.input().deselect()
@@ -431,7 +438,7 @@ def get_url(prompt):
 @define_command("go-to", prompt=WebJumpPrompt)
 def go_to(ctx):
     """
-    Prompt to open an url or a webjump.
+    Prompt to open a URL or a webjump.
     """
     url = get_url(ctx.prompt)
     if url:
@@ -441,7 +448,7 @@ def go_to(ctx):
 @define_command("go-to-alternate-url", prompt=WebJumpPromptAlternateUrl)
 def go_to_selected_url(ctx):
     """
-    Prompt to open an alternative url from the current one.
+    Prompt to open an alternative URL from the current one.
     """
     go_to(ctx)
 
@@ -453,7 +460,7 @@ class WebJumpPromptNewUrl(WebJumpPrompt):
 @define_command("go-to-new-buffer", prompt=WebJumpPromptNewUrl)
 def go_to_new_buffer(ctx):
     """
-    Prompt to open an url or webjump in a new buffer.
+    Prompt to open a URL or webjump in a new buffer.
     """
     go_to(ctx)
 
@@ -468,7 +475,7 @@ class WebJumpPromptAlternateUrlNewBuffer(WebJumpPromptAlternateUrl):
 )
 def go_to_selected_url_new_buffer(ctx):
     """
-    Prompt to open an alternative url from the current one in a new buffer.
+    Prompt to open an alternative URL from the current one in a new buffer.
     """
     go_to(ctx)
 
@@ -476,7 +483,7 @@ def go_to_selected_url_new_buffer(ctx):
 @define_command("search-default", prompt=DefaultSearchPrompt)
 def search_default(ctx):
     """
-    Prompt to open an url with the default webjump.
+    Prompt to open a URL with the default webjump.
     """
     go_to(ctx)
 
@@ -489,6 +496,6 @@ class DefaultSearchPromptNewBuffer(DefaultSearchPrompt):
     "search-default-new-buffer", prompt=DefaultSearchPromptNewBuffer)
 def search_default_new_buffer(ctx):
     """
-    Prompt to open an url with the default webjump.
+    Prompt to open a URL with the default webjump.
     """
     go_to_new_buffer(ctx)
