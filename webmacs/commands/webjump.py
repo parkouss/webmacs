@@ -27,9 +27,9 @@ from .. keymaps import Keymap
 from ..commands import define_command
 from .. import current_buffer
 from ..application import app
-from .prompt_helper import PromptNewBuffer
 from .. import variables
 from .. import version
+from .. import url_opener
 
 
 WebJump = namedtuple(
@@ -213,9 +213,8 @@ class WebJumpPrompt(Prompt):
         "match": Prompt.SimpleMatch
     }
     history = PromptHistory()
-    force_new_buffer = False
     keymap = WEBJUMP_PROMPT_KEYMAP
-    select_current_url = True
+    default_input = "alternate"
 
     def completer_model(self):
         data = []
@@ -230,8 +229,6 @@ class WebJumpPrompt(Prompt):
     def enable(self, minibuffer):
         self.bookmarks = app().bookmarks().list()
         Prompt.enable(self, minibuffer)
-        self.new_buffer = PromptNewBuffer(self.ctx, self.force_new_buffer)
-        self.new_buffer.enable(minibuffer)
         minibuffer.input().textEdited.connect(self._text_edited)
         minibuffer.input().installEventFilter(self)
         self._wc_model = QStringListModel()
@@ -239,11 +236,19 @@ class WebJumpPrompt(Prompt):
         self._active_webjump = None
         self._completer = None
         self._popup_sel_model = None
-        if self.select_current_url:
+        input = minibuffer.input()
+        if self.default_input in ("current_url", "alternate"):
             url = current_buffer().url().toString()
-            input = minibuffer.input()
             input.setText(url)
             input.setSelection(0, len(url))
+            if self.default_input == "alternate":
+                input.deselect()
+        elif self.default_input == "default_webjump":
+            wj = WEBJUMPS.get(webjump_default.value)
+            if wj:
+                input.setText(
+                    wj.name + ("://" if wj.protocol else " ")
+                )
 
     def eventFilter(self, obj, event):
         # call _text_edited on backspace release, as this is not reported by
@@ -329,9 +334,6 @@ class WebJumpPrompt(Prompt):
         self._wb_model.deleteLater()
         self._wc_model.deleteLater()
 
-    def get_buffer(self):
-        return self.new_buffer.get_buffer()
-
     def _on_completion_activated(self, index):
         super()._on_completion_activated(index)
 
@@ -353,25 +355,6 @@ class WebJumpPrompt(Prompt):
             self.minibuffer.input().setText(
                 chosen_text + (" " if not WEBJUMPS[chosen_text].protocol
                                else "://"))
-
-
-class WebJumpPromptAlternateUrl(WebJumpPrompt):
-
-    def enable(self, minibuffer):
-        WebJumpPrompt.enable(self, minibuffer)
-        minibuffer.input().deselect()
-
-
-class DefaultSearchPrompt(WebJumpPrompt):
-    select_current_url = False
-
-    def enable(self, minibuffer):
-        WebJumpPrompt.enable(self, minibuffer)
-        wj = WEBJUMPS.get(webjump_default.value)
-        if wj:
-            minibuffer.input().setText(
-                wj.name + ("://" if wj.protocol else " ")
-            )
 
 
 def get_url(prompt):
@@ -436,67 +419,70 @@ def get_url(prompt):
     return value
 
 
-@define_command("go-to", prompt=WebJumpPrompt)
+def _go_to(ctx, prompt_options, open_options):
+    prompt = WebJumpPrompt(ctx)
+    if open_options.get("new_buffer"):
+        prompt_options["label"] = prompt.label + " (new buffer)"
+    for name, value in prompt_options.items():
+        setattr(prompt, name, value)
+    if ctx.minibuffer.do_prompt(prompt):
+        url = get_url(prompt)
+        if url:
+            url_opener.url_open(ctx, url, **open_options)
+
+
+@define_command("go-to")
 def go_to(ctx):
     """
     Prompt to open a URL or a webjump.
     """
-    url = get_url(ctx.prompt)
-    if url:
-        ctx.prompt.get_buffer().load(url)
+    if ctx.current_prefix_arg == (4,):
+        return go_to_new_buffer(ctx)
+
+    _go_to(ctx, {"default_input": "current_url"}, {})
 
 
-@define_command("go-to-alternate-url", prompt=WebJumpPromptAlternateUrl)
+@define_command("go-to-alternate-url")
 def go_to_selected_url(ctx):
     """
     Prompt to open an alternative URL from the current one.
     """
-    go_to(ctx)
+    if ctx.current_prefix_arg == (4,):
+        return go_to_selected_url_new_buffer(ctx)
+
+    _go_to(ctx, {}, {})
 
 
-class WebJumpPromptNewUrl(WebJumpPrompt):
-    force_new_buffer = True
-
-
-@define_command("go-to-new-buffer", prompt=WebJumpPromptNewUrl)
+@define_command("go-to-new-buffer")
 def go_to_new_buffer(ctx):
     """
     Prompt to open a URL or webjump in a new buffer.
     """
-    go_to(ctx)
+    _go_to(ctx, {"default_input": "current_url"}, {"new_buffer": True})
 
 
-class WebJumpPromptAlternateUrlNewBuffer(WebJumpPromptAlternateUrl):
-    force_new_buffer = True
-
-
-@define_command(
-    "go-to-alternate-url-new-buffer",
-    prompt=WebJumpPromptAlternateUrlNewBuffer
-)
+@define_command("go-to-alternate-url-new-buffer")
 def go_to_selected_url_new_buffer(ctx):
     """
     Prompt to open an alternative URL from the current one in a new buffer.
     """
-    go_to(ctx)
+    _go_to(ctx, {}, {"new_buffer": True})
 
 
-@define_command("search-default", prompt=DefaultSearchPrompt)
+@define_command("search-default")
 def search_default(ctx):
     """
     Prompt to open a URL with the default webjump.
     """
-    go_to(ctx)
+    if ctx.current_prefix_arg == (4,):
+        return search_default_new_buffer(ctx)
+
+    _go_to(ctx, {"default_input": "default_webjump"}, {})
 
 
-class DefaultSearchPromptNewBuffer(DefaultSearchPrompt):
-    force_new_buffer = True
-
-
-@define_command(
-    "search-default-new-buffer", prompt=DefaultSearchPromptNewBuffer)
+@define_command("search-default-new-buffer")
 def search_default_new_buffer(ctx):
     """
     Prompt to open a URL with the default webjump.
     """
-    go_to_new_buffer(ctx)
+    _go_to(ctx, {"default_input": "default_webjump"}, {"new_buffer": True})

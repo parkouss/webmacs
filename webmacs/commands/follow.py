@@ -19,8 +19,8 @@ from ..minibuffer import Prompt, KEYMAP as MKEYMAP
 from ..keymaps import Keymap, KeyPress
 from ..commands import define_command
 from ..application import app
-from .prompt_helper import PromptNewBuffer
 from .. import variables
+from .. import url_opener
 
 
 HINT_METHODS = ("filter", "alphabet")
@@ -166,20 +166,6 @@ class HintPrompt(Prompt):
         return super(HintPrompt, self).eventFilter(obj, event)
 
 
-class FollowPrompt(HintPrompt):
-    label = "follow:"
-    hint_selector = SELECTOR_CLICKABLE
-
-    def enable(self, minibuffer):
-        self.new_buffer = PromptNewBuffer(self.ctx)
-        if self.new_buffer:
-            self.hint_selector = SELECTOR_LINK
-        super(FollowPrompt, self).enable(minibuffer)
-        self.new_buffer.enable(minibuffer)
-        if self.new_buffer:
-            self.label = minibuffer.label.text()
-
-
 class CopyLinkPrompt(HintPrompt):
     label = "copy link:"
     hint_selector = SELECTOR_LINK
@@ -193,20 +179,38 @@ class CopyLinkPrompt(HintPrompt):
         return res
 
 
-@define_command("follow", prompt=FollowPrompt)
+@define_command("follow")
 def follow(ctx):
     """
     Hint links in the buffer and follow them on selection.
     """
-    prompt = ctx.prompt
-    buff = prompt.page
-    buff.stop_select_browser_objects()
-    if not prompt.new_buffer:
-        buff.focus_active_browser_object()
-    elif "url" in prompt.browser_object_activated:
-        prompt.new_buffer.get_buffer().load(
-            prompt.browser_object_activated["url"]
-        )
+    if ctx.current_prefix_arg == (4,):
+        return follow_new_buffer(ctx)
+
+    prompt = HintPrompt(ctx)
+    prompt.label = "follow:"
+    prompt.hint_selector = SELECTOR_CLICKABLE
+    if ctx.minibuffer.do_prompt(prompt):
+        ctx.buffer.focus_active_browser_object()
+    ctx.buffer.stop_select_browser_objects()
+
+
+@define_command("follow-new-buffer")
+def follow_new_buffer(ctx):
+    """
+    Hint links in the buffer and follow them on selection in a new buffer.
+    """
+    prompt = HintPrompt(ctx)
+    prompt.label = "follow: (new buffer)"
+    prompt.hint_selector = SELECTOR_LINK
+    if ctx.minibuffer.do_prompt(prompt):
+        if "url" in prompt.browser_object_activated:
+            url_opener.url_open(
+                ctx,
+                prompt.browser_object_activated["url"],
+                new_buffer=True,
+            )
+    ctx.buffer.stop_select_browser_objects()
 
 
 @define_command("copy-link", prompt=CopyLinkPrompt)
