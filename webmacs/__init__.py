@@ -140,9 +140,7 @@ def call_later(fn, msec=0):
 
 
 class CommandContext(object):
-    def __init__(self, sender, keypress):
-        self.sender = sender
-        self.keypress = keypress
+    def __init__(self):
         self.window = current_window()
         self.view = self.window.current_webview() if self.window else None
         self.buffer = self.view.buffer() if self.view else None

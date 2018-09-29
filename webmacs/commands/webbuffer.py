@@ -285,7 +285,7 @@ def scroll_page_down(ctx):
     """
     Scroll the current buffer one page down.
     """
-    send_key_event(ctx.sender, KeyPress.from_str("PageDown"))
+    send_key_event(KeyPress.from_str("PageDown"))
 
 
 @define_command("scroll-page-up")
@@ -293,7 +293,7 @@ def scroll_page_up(ctx):
     """
     Scroll the current buffer one page up.
     """
-    send_key_event(ctx.sender, KeyPress.from_str("PageUp"))
+    send_key_event(KeyPress.from_str("PageUp"))
 
 
 @define_command("scroll-top")
@@ -301,7 +301,7 @@ def scroll_top(ctx):
     """
     Scroll the current buffer to the top.
     """
-    send_key_event(ctx.sender, KeyPress.from_str("Home"))
+    send_key_event(KeyPress.from_str("Home"))
 
 
 @define_command("scroll-bottom")
@@ -309,7 +309,7 @@ def scroll_bottom(ctx):
     """
     Scroll the current buffer to the bottom.
     """
-    send_key_event(ctx.sender, KeyPress.from_str("End"))
+    send_key_event(KeyPress.from_str("End"))
 
 
 @define_command("webcontent-copy")
@@ -461,7 +461,7 @@ def buffer_escape(ctx):
     if ctx.buffer.hasSelection():
         buffer_unselect(ctx)
     else:
-        send_key_event(ctx.sender, KeyPress.from_str("Esc"))
+        send_key_event(KeyPress.from_str("Esc"))
 
 
 class KilledBufferTableModel(QAbstractTableModel):

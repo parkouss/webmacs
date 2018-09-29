@@ -243,7 +243,7 @@ class CallHandler(object):
             except KeyError:
                 raise KeyError("No such command: %s" % command)
 
-        command(CommandContext(sender, keypress))
+        command(CommandContext())
 
     def no_call(self, sender, keymap, keypress):
         pass
@@ -255,11 +255,12 @@ class CallHandler(object):
 KEY_EATER = KeyEater()
 
 
-def send_key_event(obj, keypress):
+def send_key_event(keypress):
     from .application import app as _app
     app = _app()
-    app.postEvent(obj, keypress.to_qevent(QEvent.KeyPress))
-    app.postEvent(obj, keypress.to_qevent(QEvent.KeyRelease))
+    w = app.focusWindow()
+    app.postEvent(w, keypress.to_qevent(QEvent.KeyPress))
+    app.postEvent(w, keypress.to_qevent(QEvent.KeyRelease))
 
 
 def local_keymap():

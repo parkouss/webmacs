@@ -33,8 +33,9 @@ def send_raw_key(ctx, key, with_ctrl=False, auto_shift=True):
     if with_ctrl:
         modifiers |= Qt.ControlModifier
 
-    a.postEvent(ctx.sender, QKeyEvent(QEvent.KeyPress, key, modifiers))
-    a.postEvent(ctx.sender, QKeyEvent(QEvent.KeyRelease, key, modifiers))
+    w = app().focusWindow()
+    a.postEvent(w, QKeyEvent(QEvent.KeyPress, key, modifiers))
+    a.postEvent(w, QKeyEvent(QEvent.KeyRelease, key, modifiers))
 
 
 def run_js(ctx, cmd, cb=None):
