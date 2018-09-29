@@ -10,6 +10,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - webmacs command line now handle correctly opening relative local file paths.
 - Fixed scrolling top or bottom when switching view, and losing focus sometimes.
+- Use one session file per webmacs instance.
+
+### Added
+
+- Added a **--list-instances** command line flag, allowing to list current
+  running instances.
+- Passing an empty string to the **--instance** command line flag will generate
+  a new unique instance name.
+- Added a **raise-instance** command, to raise the current window of another
+  webmacs instance.
+- Added a **current-instance** command that show the name of the current
+  instance name.
 
 ## [0.7] - 2018-09-20
 
