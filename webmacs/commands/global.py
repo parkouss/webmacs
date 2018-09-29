@@ -585,19 +585,35 @@ class InstancesListPrompt(Prompt):
         "complete-empty": True,
     }
     history = PromptHistory()
+    exclude_self_instance = True
+
+    def __init__(self, ctx):
+        super().__init__(ctx)
+        instances = IpcServer.list_all_instances(check=False)
+        if self.exclude_self_instance:
+            current = app().instance_name
+            instances = [i for i in instances if i != current]
+        self.instances = instances
 
     def completer_model(self):
         model = QStringListModel(self)
-        model.setStringList(IpcServer.list_all_instances(check=False))
+        model.setStringList(self.instances)
         return model
 
 
-@define_command("raise-instance", prompt=InstancesListPrompt)
+@define_command("raise-instance")
 def raise_instance(ctx):
     """
     Raise the current window of the selected instance.
     """
-    IpcServer.instance_send(ctx.prompt.value(), {})
+    prompt = InstancesListPrompt(ctx)
+    if not prompt.instances:
+        ctx.minibuffer.show_info("There is only one instance running: %s"
+                                 % app().instance_name)
+    else:
+        value = ctx.minibuffer.do_prompt(prompt)
+        if value:
+            IpcServer.instance_send(value, {})
 
 
 @define_command("current-instance")
