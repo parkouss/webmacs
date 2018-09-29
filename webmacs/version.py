@@ -32,6 +32,9 @@ is_mac = sys.platform.startswith('darwin')
 is_linux = sys.platform.startswith('linux')
 is_windows = sys.platform.startswith('win')
 is_posix = os.name == 'posix'
+# this is required as we mock extension modules to generate the doc and
+# sometimes that needs manual work for autodoc to works well.
+building_doc = "sphinx" in sys.modules
 
 
 def opengl_vendor():  # pragma: no cover

@@ -29,6 +29,7 @@ from .. import current_buffer
 from ..application import app
 from .prompt_helper import PromptNewBuffer
 from .. import variables
+from .. import version
 
 
 WebJump = namedtuple(
@@ -88,7 +89,7 @@ def set_default(name):
     webjump_default.set_value(name)
 
 
-class WebJumpCompleter(QObject):
+class WebJumpCompleter(object if version.building_doc else QObject):
 
     """
     Provides auto-completion in webjumps.
