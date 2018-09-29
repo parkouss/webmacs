@@ -122,5 +122,5 @@ def register_prompt_opener_commands(name, opener, doc):
     open.__name__ = name.replace("-", "_")
     open_new_buffer.__name__ = open.__name__ + "_new_buffer"
 
-    open.__doc__ = doc + "."
+    open.__doc__ = doc + "." + "\n\n You can use C-u to open in a new buffer."
     open_new_buffer.__doc__ = doc + " in a new buffer."
