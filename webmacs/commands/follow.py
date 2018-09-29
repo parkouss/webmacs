@@ -190,7 +190,7 @@ class FollowPrompt(HintPrompt):
 class FollowOpener(Opener):
     def prompt_open(self, method, ctx):
         prompt = super().prompt_open(method, ctx)
-        if method == self.NEW_BUFFER:
+        if method != self.CURRENT_BUFFER:
             prompt.hint_selector = SELECTOR_LINK
         return prompt
 

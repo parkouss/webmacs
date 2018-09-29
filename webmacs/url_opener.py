@@ -14,9 +14,10 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 from .webbuffer import create_buffer
+from .window import Window
 
 
-def url_open(ctx, url, instance=None, new_buffer=False):
+def url_open(ctx, url, instance=None, new_window=False, new_buffer=False):
     """
     Open an url.
     """
@@ -24,9 +25,17 @@ def url_open(ctx, url, instance=None, new_buffer=False):
 
     buffer = None
 
-    if new_buffer:
+    if new_buffer or new_window:
         buffer = create_buffer()
-        ctx.view.setBuffer(buffer)
+        if new_window:
+            w = Window()
+            w.current_webview().setBuffer(buffer)
+            buffer.load(url)  # load before showing
+            w.show()
+            w.activateWindow()
+            return
+        else:
+            ctx.view.setBuffer(buffer)
     else:
         buffer = ctx.buffer
 
