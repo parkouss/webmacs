@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
+import inspect
+
 from ..minibuffer import Prompt
 from .. import COMMANDS
 from .. import url_opener
@@ -37,6 +39,9 @@ class InteractiveCommand(object):
         if prompt is not None:
             assert issubclass(prompt, Prompt), \
                 "prompt should be a Prompt subclass"
+
+    def getdoc(self):
+        return inspect.getdoc(self.binding)
 
     def __call__(self, ctx):
         if self.prompt:
