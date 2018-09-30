@@ -506,7 +506,7 @@ class ReportCallHandler(CallHandler):
         self.prompt.minibuffer.input().setText("%s -"
                                                % self.keys_as_text())
 
-    def call(self, sender, keymap, keypress, command):
+    def call(self, ctx, keymap, keypress, command):
         self.key_presses.append(keypress)
         if not isinstance(command, str):
             command = "{}:{}".format(command.__module__,

@@ -238,13 +238,14 @@ class KeyEater(object):
         if result.complete:
             self._show_info_kbd()
             self._keypresses = []
+            ctx = CommandContext()
+            self._prefix_arg = None
+            self._prefix_arg_keys = []
             try:
-                self.call_handler.call(sender, keymap, keypress,
+                self.call_handler.call(ctx, keymap, keypress,
                                        result.command)
             except Exception:
                 logging.exception("Error calling command:")
-            self._prefix_arg = None
-            self._prefix_arg_keys = []
         else:
             self._show_info_kbd(" -")
             self.call_handler.partial_call(sender, keymap, keypress)
@@ -256,14 +257,14 @@ class CallHandler(object):
     def __init__(self):
         self._commands = COMMANDS
 
-    def call(self, sender, keymap, keypress, command):
+    def call(self, ctx, keymap, keypress, command):
         if isinstance(command, str):
             try:
                 command = self._commands[command]
             except KeyError:
                 raise KeyError("No such command: %s" % command)
 
-        command(CommandContext())
+        command(ctx)
 
     def no_call(self, sender, keymap, keypress):
         pass
