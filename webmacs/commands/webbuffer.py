@@ -109,6 +109,7 @@ class BufferListPrompt(Prompt):
         "complete-empty": True,
     }
     keymap = BUFFERLIST_KEYMAP
+    value_return_index_data = True
 
     def completer_model(self):
         return BufferTableModel(self.ordered_buffers())
@@ -169,24 +170,24 @@ def show_buffer(buffer, view):
     view.setBuffer(buffer)
 
 
-@define_command("switch-buffer", prompt=BufferSwitchListPrompt)
+@define_command("switch-buffer")
 def switch_buffer(ctx):
     """
     Prompt to select a buffer to display in the current view.
     """
-    selected = ctx.prompt.index()
-    if selected.row() >= 0:
-        show_buffer(selected.internalPointer(), ctx.view)
+    buffer = ctx.minibuffer.do_prompt(BufferSwitchListPrompt(ctx))
+    if buffer:
+        show_buffer(buffer, ctx.view)
 
 
-@define_command("switch-recent-buffer", prompt=RecentBufferSwitchListPrompt)
+@define_command("switch-recent-buffer")
 def switch_recent_buffer(ctx):
     """
     Prompt to select a buffer to display in the current view.
     """
-    selected = ctx.prompt.index()
-    if selected.row() >= 0:
-        show_buffer(selected.internalPointer(), ctx.view)
+    buffer = ctx.minibuffer.do_prompt(RecentBufferSwitchListPrompt(ctx))
+    if buffer:
+        show_buffer(buffer, ctx.view)
 
 
 def _next_buffer(ctx, reverse=False):
@@ -227,7 +228,7 @@ class OpenDevToolsPrompt(BufferListPrompt):
         minibuffer.input().popup().selectRow(0)
 
 
-@define_command("open-dev-tools", prompt=OpenDevToolsPrompt)
+@define_command("open-dev-tools")
 def open_dev_tools(ctx):
     """
     Opens a dev tool page for a buffer.
@@ -235,9 +236,8 @@ def open_dev_tools(ctx):
     if version.qt_version < (5, 11):
         ctx.minibuffer.show_info("Only available with qt version >= 5.11")
         return
-    selected = ctx.prompt.index()
-    if selected.row() >= 0:
-        buffer = selected.internalPointer()
+    buffer = ctx.minibuffer.do_prompt(OpenDevToolsPrompt(ctx))
+    if buffer:
         dev_tools = create_buffer()
         buffer.setDevToolsPage(dev_tools)
 
@@ -360,16 +360,16 @@ def buffer_close(ctx):
     close_buffer(ctx.buffer)
 
 
-@define_command("close-other-buffers", prompt=BufferKillListPrompt)
+@define_command("close-other-buffers")
 def close_other_buffers(ctx):
     """
     Close all but one buffer.
     """
     # Select a buffer
-    selected = ctx.prompt.index()
-    if selected.row() >= 0:
+    buffer = ctx.minibuffer.do_prompt(BufferKillListPrompt(ctx))
+    if buffer:
         # Get all other buffers and kill them
-        for wb in [b for b in BUFFERS if b != selected.internalPointer()]:
+        for wb in [b for b in BUFFERS if b != buffer]:
             close_buffer(wb)
 
 
@@ -513,16 +513,14 @@ class KilledBufferListPrompt(Prompt):
             minibuffer.input().popup().selectRow(0)
 
 
-@define_command("revive-buffer", prompt=KilledBufferListPrompt)
+@define_command("revive-buffer")
 def revive_buffer(ctx):
     """
     Revive a previously killed buffer in the current view.
     """
-    selected = ctx.prompt.index()
-    if selected.row() >= 0:
-        killed_buffer = selected.internalPointer()
+    killed_buffer = ctx.minibuffer.do_prompt(KilledBufferListPrompt(ctx))
+    if killed_buffer:
         buff = killed_buffer.revive()
-
         ctx.window.current_webview().setBuffer(buff)
 
 

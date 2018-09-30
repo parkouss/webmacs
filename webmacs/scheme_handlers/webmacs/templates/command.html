@@ -5,7 +5,7 @@
 <h1>Command: {{command_name}}</h1>
 
 <p>See the <a href="{{command_src_url}}">source code</a>.</p>
-<p>{{command.binding.__doc__}}</p>
+<p><pre>{{command.getdoc()}}</pre></p>
 
 {% if used_in_keymaps %}
 <h2>This command is bound to:</h2>

@@ -113,21 +113,21 @@ class ISearchPrompt(Prompt):
             caret_browsing_commands.init(self.ctx)
 
 
-@define_command("i-search-forward", prompt=ISearchPrompt)
+@define_command("i-search-forward")
 def i_search_forward(ctx):
     """
     Begin an incremental search (forward).
     """
-    pass
+    ctx.minibuffer.do_prompt(ISearchPrompt(ctx))
 
 
 class ISearchPromptBackward(ISearchPrompt):
     isearch_direction = QWebEnginePage.FindBackward
 
 
-@define_command("i-search-backward", prompt=ISearchPromptBackward)
+@define_command("i-search-backward")
 def i_search_backward(ctx):
     """
     Begin an incremental search (backward).
     """
-    pass
+    ctx.minibuffer.do_prompt(ISearchPromptBackward(ctx))

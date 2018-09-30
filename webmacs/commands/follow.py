@@ -17,9 +17,9 @@ from PyQt5.QtCore import QEvent, Qt
 
 from ..minibuffer import Prompt, KEYMAP as MKEYMAP
 from ..keymaps import Keymap, KeyPress
-from ..commands import define_command
+from ..commands import define_command, register_prompt_opener_commands, \
+    Opener
 from ..application import app
-from .prompt_helper import PromptNewBuffer
 from .. import variables
 
 
@@ -116,10 +116,6 @@ class HintPrompt(Prompt):
         )
         minibuffer.input().installEventFilter(self)
 
-    def close(self):
-        self.page.stop_select_browser_objects()
-        super(HintPrompt, self).close()
-
     def on_browser_object_activated(self, bo):
         self.browser_object_activated = bo
         self.minibuffer.input().set_right_italic_text(bo.get("url", ""))
@@ -165,19 +161,8 @@ class HintPrompt(Prompt):
                         return True
         return super(HintPrompt, self).eventFilter(obj, event)
 
-
-class FollowPrompt(HintPrompt):
-    label = "follow:"
-    hint_selector = SELECTOR_CLICKABLE
-
-    def enable(self, minibuffer):
-        self.new_buffer = PromptNewBuffer(self.ctx)
-        if self.new_buffer:
-            self.hint_selector = SELECTOR_LINK
-        super(FollowPrompt, self).enable(minibuffer)
-        self.new_buffer.enable(minibuffer)
-        if self.new_buffer:
-            self.label = minibuffer.label.text()
+    def value(self):
+        return super().value() is not None
 
 
 class CopyLinkPrompt(HintPrompt):
@@ -193,39 +178,50 @@ class CopyLinkPrompt(HintPrompt):
         return res
 
 
-@define_command("follow", prompt=FollowPrompt)
-def follow(ctx):
-    """
-    Hint links in the buffer and follow them on selection.
-    """
-    prompt = ctx.prompt
-    buff = prompt.page
-    buff.stop_select_browser_objects()
-    if not prompt.new_buffer:
-        buff.focus_active_browser_object()
-    elif "url" in prompt.browser_object_activated:
-        prompt.new_buffer.get_buffer().load(
-            prompt.browser_object_activated["url"]
-        )
+class FollowPrompt(HintPrompt):
+    label = "follow:"
+    hint_selector = SELECTOR_CLICKABLE
 
 
-@define_command("copy-link", prompt=CopyLinkPrompt)
+class FollowOpener(Opener):
+    def prompt_open(self, method, ctx):
+        prompt = super().prompt_open(method, ctx)
+        if method != self.CURRENT_BUFFER:
+            prompt.hint_selector = SELECTOR_LINK
+        return prompt
+
+    def open(self, method, ctx, prompt, url):
+        if method == self.CURRENT_BUFFER:
+            ctx.buffer.focus_active_browser_object()
+        elif "url" in prompt.browser_object_activated:
+            super().open(method, ctx, prompt,
+                         prompt.browser_object_activated["url"])
+        ctx.buffer.stop_select_browser_objects()
+
+
+register_prompt_opener_commands(
+    "follow",
+    FollowOpener(FollowPrompt),
+    "Hint links in the buffer and follow them on selection"
+)
+
+
+@define_command("copy-link")
 def copy_link(ctx):
     """
     Hint links in the buffer to copy them.
     """
-    prompt = ctx.prompt
-    buff = prompt.page
+    prompt = CopyLinkPrompt(ctx)
+    if not ctx.minibuffer.do_prompt(prompt):
+        return
     url = None
-    buff.stop_select_browser_objects()
+    ctx.buffer.stop_select_browser_objects()
 
     if prompt.numbers == "0":
         # special case, copy current url
-        url = str(buff.url().toEncoded(), "utf-8")
+        url = str(ctx.buffer.url().toEncoded(), "utf-8")
     else:
-        bo = prompt.browser_object_activated
-        if "url" in bo:
-            url = bo["url"]
+        url = prompt.browser_object_activated.get("url")
 
     if url:
         app().clipboard().setText(url)

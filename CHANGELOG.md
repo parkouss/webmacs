@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   webmacs instance.
 - Added a **current-instance** command that show the name of the current
   instance name.
+- Added **C-u C-u** prefix argument for command opening urls. Using it will open
+  the chosen url in a new window.
 
 ## [0.7] - 2018-09-20
 

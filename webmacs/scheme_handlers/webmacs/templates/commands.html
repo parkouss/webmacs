@@ -8,7 +8,7 @@
   {% if command.visible %}
   <tr>
     <td><a href="webmacs://command/{{name}}">{{name}}</a></td>
-    <td>{{command.binding.__doc__}}</td>
+    <td>{{command.getdoc().splitlines()[0]}}</td>
   </tr>
   {% endif %}
 {% endfor %}
