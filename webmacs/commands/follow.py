@@ -116,10 +116,6 @@ class HintPrompt(Prompt):
         )
         minibuffer.input().installEventFilter(self)
 
-    def close(self):
-        self.page.stop_select_browser_objects()
-        super(HintPrompt, self).close()
-
     def on_browser_object_activated(self, bo):
         self.browser_object_activated = bo
         self.minibuffer.input().set_right_italic_text(bo.get("url", ""))
@@ -200,8 +196,6 @@ class FollowOpener(Opener):
         elif "url" in prompt.browser_object_activated:
             super().open(method, ctx, prompt,
                          prompt.browser_object_activated["url"])
-
-    def closed(self, method, ctx, prompt):
         ctx.buffer.stop_select_browser_objects()
 
 
