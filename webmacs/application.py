@@ -95,6 +95,7 @@ def _app_requires():
     require(".commands.webbuffer")
     require(".commands.caret_browsing")
     require(".commands.content_edit")
+    require(".commands.instances")
 
     require(".default_webjumps")
 

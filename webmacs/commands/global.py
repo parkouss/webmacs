@@ -29,7 +29,6 @@ from .. import BUFFERS, windows, variables
 from ..mode import MODES
 from ..window import Window
 from ..session import session_clean, session_load
-from ..ipc import IpcServer
 
 
 class CommandsListPrompt(Prompt):
@@ -567,49 +566,3 @@ def restore_session(ctx):
         w = Window()
         w.current_webview().setBuffer("about:blank")
         w.show()
-
-
-class InstancesListPrompt(Prompt):
-    label = "webmacs instances: "
-    complete_options = {
-        "match": Prompt.FuzzyMatch,
-        "complete-empty": True,
-    }
-    history = PromptHistory()
-    exclude_self_instance = True
-
-    def __init__(self, ctx):
-        super().__init__(ctx)
-        instances = IpcServer.list_all_instances(check=False)
-        if self.exclude_self_instance:
-            current = app().instance_name
-            instances = [i for i in instances if i != current]
-        self.instances = instances
-
-    def completer_model(self):
-        model = QStringListModel(self)
-        model.setStringList(self.instances)
-        return model
-
-
-@define_command("raise-instance")
-def raise_instance(ctx):
-    """
-    Raise the current window of the selected instance.
-    """
-    prompt = InstancesListPrompt(ctx)
-    if not prompt.instances:
-        ctx.minibuffer.show_info("There is only one instance running: %s"
-                                 % app().instance_name)
-    else:
-        value = ctx.minibuffer.do_prompt(prompt)
-        if value:
-            IpcServer.instance_send(value, {})
-
-
-@define_command("current-instance")
-def current_instance(ctx):
-    """
-    Show the current instance name.
-    """
-    ctx.minibuffer.show_info("Current instance name: %s" % app().instance_name)

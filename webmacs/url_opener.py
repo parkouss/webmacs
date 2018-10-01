@@ -13,15 +13,32 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+
 from .webbuffer import create_buffer
 from .window import Window
+from .ipc import IpcServer
+
+from PyQt5.QtCore import QProcess, QUrl
 
 
-def url_open(ctx, url, instance=None, new_window=False, new_buffer=False):
+def url_open(ctx, url, instance=None, new_window=False, new_buffer=False,
+             allow_create_instance=False):
     """
     Open an url.
     """
-    assert instance is None  # TODO FIXME implement later
+    if instance is not None:
+        if isinstance(url, QUrl):
+            url = str(url.toEncoded(), "utf-8")
+        instances = IpcServer.list_all_instances()
+        if instance in instances:
+            IpcServer.instance_send(instance, {"url": url})
+        if allow_create_instance:
+            QProcess.startDetached(
+                sys.executable,
+                ["-m", "webmacs.main", "--instance", instance, url]
+            )
+        return
 
     buffer = None
 
