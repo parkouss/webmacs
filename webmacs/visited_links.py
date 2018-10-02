@@ -15,6 +15,16 @@
 
 import sqlite3
 from datetime import datetime
+from . import variables
+
+
+visited_links_display_limit = variables.define_variable(
+    "visited-links-display-limit",
+    "Limit the number of history elements displayed in the"
+    " visited-links-history command.",
+    2000,
+    type=variables.Int(min=1)
+)
 
 
 class VisitedLinks(object):
@@ -35,6 +45,7 @@ class VisitedLinks(object):
     def visited_urls(self):
         return [(row[0], row[1]) for row in self._conn.execute(
             "select url, title from visitedlinks order by lastseen DESC"
+            " LIMIT %d" % visited_links_display_limit.value
         )]
 
     def remove(self, url):

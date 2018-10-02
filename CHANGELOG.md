@@ -24,6 +24,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   instance name.
 - Added **C-u C-u** prefix argument for command opening urls. Using it will open
   the chosen url in a new window.
+- Added the variable **visited-links-display-limit**, to limit the number of
+  elements displayed in the **visited-links-history** command. Defaults to 2000.
 
 ## [0.7] - 2018-09-20
 
