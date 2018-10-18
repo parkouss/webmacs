@@ -29,6 +29,7 @@ Webjumps
 
 .. autoclass:: webmacs.commands.webjump.SyncWebJumpCompleter
 
+.. autofunction:: webmacs.commands.webjump.define_webjump_alias
 
 Variables
 *********
