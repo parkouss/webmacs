@@ -73,6 +73,18 @@ def define_webjump(name, url, doc="", complete_fn=None, protocol=False):
     )
 
 
+def define_webjump_alias(alias_name, webjump_name):
+    """
+    Define an alias for an existing webjump.
+
+    The alias can then be used as a shortcut.
+    :param alias_name: the name of the alias to be created.
+    :param webjump_name: the name of the existing webjump.
+
+    """
+    WEBJUMPS[alias_name.strip()] = WEBJUMPS[webjump_name]
+
+
 def define_protocol(name, doc="", complete_fn=None):
     define_webjump(name, name + "://%s", doc, complete_fn, True)
 

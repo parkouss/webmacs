@@ -205,3 +205,12 @@ example above.
 Pressing the ``s`` key will call the command
 ``search-default``, wich will, by default, use the Google webjump. To change
 this default, change the value of the variable *webjump-default*.
+
+It is also possible to define an alias to an existing webjump,
+without duplicating its implementation.
+
+.. code-block:: python
+
+   from webmacs.commands.webjump import define_webjump_alias
+
+   define_webjump_alias("g", "google")
