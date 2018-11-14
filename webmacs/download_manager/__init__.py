@@ -196,8 +196,8 @@ class DownloadManager(QObject):
         elif action == "download":
             path = dl.path()
             user_dir = get_user_download_dir()
+            _, name = extract_suggested_filename(path)
             if user_dir is not None:
-                _, name = extract_suggested_filename(path)
                 try:
                     path = find_unique_suggested_path(user_dir, name)
                 except OSError as exc:
@@ -210,6 +210,9 @@ class DownloadManager(QObject):
             if path is None:
                 return
 
+            if os.path.isdir(path):
+                path = find_unique_suggested_path(path, name)
+            
             if os.path.isfile(path):
                 if not minibuff.do_prompt(OverwriteFilePrompt(path)):
                     return
