@@ -82,7 +82,10 @@ def define_webjump_alias(alias_name, webjump_name):
     :param webjump_name: the name of the existing webjump.
 
     """
-    WEBJUMPS[alias_name.strip()] = WEBJUMPS[webjump_name]
+    w = WEBJUMPS[webjump_name]
+
+    define_webjump(alias_name.strip(), url=w.url,
+                   doc=w.doc, complete_fn=w.complete_fn, protocol=w.protocol)
 
 
 def define_protocol(name, doc="", complete_fn=None):
