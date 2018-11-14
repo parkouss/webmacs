@@ -212,7 +212,7 @@ class DownloadManager(QObject):
 
             if os.path.isdir(path):
                 path = find_unique_suggested_path(path, name)
-            
+
             if os.path.isfile(path):
                 if not minibuff.do_prompt(OverwriteFilePrompt(path)):
                     return
