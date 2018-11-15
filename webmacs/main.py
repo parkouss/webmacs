@@ -26,6 +26,7 @@ from PyQt5.QtNetwork import QAbstractSocket
 
 from .ipc import IpcServer
 from . import variables
+from . import proxy
 
 
 log_to_disk = variables.define_variable(
@@ -277,6 +278,9 @@ def main():
     ], instance_name=opts.instance)
     server = IpcServer(opts.instance)
     atexit.register(server.cleanup)
+
+    proxy.init()
+    atexit.register(proxy.shutdown)
 
     # execute the user init function if there is one
     if user_init is None or not hasattr(user_init, "init"):
