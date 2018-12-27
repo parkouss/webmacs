@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- Fixed displaying long lines in the minibuffer popup (such as long urls in
+  history)
+- Fixed regression, unable to revive a buffer.
 - webmacs command line now handle correctly opening relative local file paths.
 - Fixed scrolling top or bottom when switching view, and losing focus sometimes.
 - Use one session file per webmacs instance.
