@@ -19,8 +19,7 @@ from ..minibuffer import Prompt, KEYMAP as MKEYMAP
 from ..keymaps import Keymap, KeyPress
 from ..commands import define_command, register_prompt_opener_commands, \
     Opener
-from ..application import app
-from .. import variables
+from .. import variables, clipboard
 
 
 HINT_METHODS = ("filter", "alphabet")
@@ -224,8 +223,7 @@ def copy_link(ctx):
         url = prompt.browser_object_activated.get("url")
 
     if url:
-        app().clipboard().setText(url)
-        prompt.minibuffer.show_info("Copied: {}".format(url))
+        clipboard.set_text(url)
 
 
 @KEYMAP.define_key("C-g")

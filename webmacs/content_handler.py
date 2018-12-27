@@ -23,6 +23,7 @@ from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .autofill import FormData
 from .application import app
 from .external_editor import open_external_editor
+from . import clipboard
 
 
 class WebContentHandler(QObject):
@@ -63,7 +64,7 @@ class WebContentHandler(QObject):
 
     @Slot(str)
     def copyToClipboard(self, text):
-        app().clipboard().setText(text)
+        clipboard.set_text(text)
 
     @Slot(str, str, str, str)
     def autoFillFormSubmitted(self, url, username, password, data):
