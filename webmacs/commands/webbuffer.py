@@ -25,9 +25,8 @@ from ..webbuffer import WebBuffer, close_buffer, create_buffer
 from ..killed_buffers import KilledBuffer
 from ..keyboardhandler import send_key_event
 from .. import BUFFERS, version, current_buffer, recent_buffers
-from .. import variables
+from .. import variables, clipboard
 from ..keymaps import Keymap, KeyPress
-from ..application import app
 
 
 switch_buffer_current_color = variables.define_variable(
@@ -541,8 +540,7 @@ def copy_current_link(ctx):
         buffer.content_handler.foundCurrentLinkUrl \
                               .disconnect(copy_to_clipboard)
         if url:
-            app().clipboard().setText(url)
-            minibuff.show_info("Copied: {}".format(url))
+            clipboard.set_text(url)
         else:
             minibuff.show_info("No current link url to copy.")
 
@@ -557,8 +555,7 @@ def copy_buffer_url(ctx):
     Copy the URL of the current buffer to the clipboard.
     """
     url = str(ctx.buffer.url().toEncoded(), "utf-8")
-    app().clipboard().setText(url)
-    ctx.minibuffer.show_info("Copied: {}".format(url))
+    clipboard.set_text(url)
 
 
 @define_command("copy-current-buffer-title")
@@ -566,6 +563,4 @@ def copy_buffer_title(ctx):
     """
     Copy the title of the current buffer to the clipboard.
     """
-    title = ctx.buffer.title()
-    app().clipboard().setText(title)
-    ctx.minibuffer.show_info("Copied: {}".format(title))
+    clipboard.set_text(ctx.buffer.title())
