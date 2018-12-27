@@ -23,6 +23,7 @@ import os
 import warnings
 
 from PyQt5.QtNetwork import QAbstractSocket
+from PyQt5.QtCore import QSocketNotifier
 
 from .ipc import IpcServer
 from . import variables
@@ -254,6 +255,15 @@ def main():
             print(msg)
         return
 
+    r, w = os.pipe()
+
+    sys.stdout.flush()
+    sys.stderr.flush()
+    # os.dup2(w, 1)
+    os.dup2(w, 2)
+
+    os.close(w)
+
     # Delay loading after command line parsing and ipc checking.
     # Loading qwebengine stuff takes a couple of seconds...
     from .application import Application, _app_requires
@@ -277,6 +287,9 @@ def main():
     ], instance_name=opts.instance)
     server = IpcServer(opts.instance)
     atexit.register(server.cleanup)
+
+    n = QSocketNotifier(r, QSocketNotifier.Read)
+    n.activated.connect(lambda r: print(os.read(r, 1024)))
 
     # execute the user init function if there is one
     if user_init is None or not hasattr(user_init, "init"):
