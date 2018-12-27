@@ -503,6 +503,7 @@ class KilledBufferListPrompt(Prompt):
         "match": Prompt.FuzzyMatch,
         "complete-empty": True,
     }
+    value_return_index_data = True
 
     def completer_model(self):
         return KilledBufferTableModel()
