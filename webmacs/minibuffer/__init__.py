@@ -30,6 +30,11 @@ from ..keyboardhandler import LOCAL_KEYMAP_SETTER
 class Popup(QTableView):
     def __init__(self, window, buffer_input):
         QTableView.__init__(self, window)
+        # do not diplay more than one line in a cell, and elide text on middle
+        # (best for urls)
+        self.setWordWrap(False)
+        self.setTextElideMode(Qt.ElideMiddle)
+
         self.setVisible(False)
         self.setFrameStyle(QFrame.Box)
         self._window = window
