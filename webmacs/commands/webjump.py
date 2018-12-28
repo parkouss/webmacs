@@ -22,8 +22,8 @@ from PyQt5.QtCore import QUrl, pyqtSlot as Slot, \
 from PyQt5.QtNetwork import QNetworkRequest
 
 from ..minibuffer.prompt import Prompt, PromptTableModel, PromptHistory
-from ..minibuffer.keymap import KEYMAP as MINIBUF_KEYMAP
 from .. keymaps import Keymap
+from .. keymaps.minibuffer import KEYMAP as MINIBUF_KEYMAP
 from ..commands import register_prompt_opener_commands
 from .. import current_buffer
 from ..application import app

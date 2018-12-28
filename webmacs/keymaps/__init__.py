@@ -497,6 +497,10 @@ FULLSCREEN_KEYMAP = Keymap("video-fullscreen", doc="""\
 Local Keymap activated when a video is played full screen.
 """)
 
+MINIBUFFER_KEYMAP = Keymap("minibuffer", doc="""\
+Local keymap activated when input is in the minibuffer line edit.
+""")
+
 
 def global_keymap():
     """
