@@ -89,6 +89,7 @@ def _app_requires():
     require(".keymaps.fullscreen")
     require(".keymaps.minibuffer")
     require(".keymaps.hints")
+    require(".keymaps.isearch")
 
     require(".commands.follow")
     require(".commands.buffer_history")

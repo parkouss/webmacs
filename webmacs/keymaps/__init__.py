@@ -505,6 +505,10 @@ HINT_KEYMAP = Keymap("hint", parent=MINIBUFFER_KEYMAP, doc="""\
 Local keymap used when hinting.
 """)
 
+ISEARCH_KEYMAP = Keymap("i-search", parent=MINIBUFFER_KEYMAP, doc="""\
+Local keymap used in incremental search.
+""")
+
 
 def global_keymap():
     """
