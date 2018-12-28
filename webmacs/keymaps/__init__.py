@@ -501,6 +501,10 @@ MINIBUFFER_KEYMAP = Keymap("minibuffer", doc="""\
 Local keymap activated when input is in the minibuffer line edit.
 """)
 
+HINT_KEYMAP = Keymap("hint", parent=MINIBUFFER_KEYMAP, doc="""\
+Local keymap used when hinting.
+""")
+
 
 def global_keymap():
     """
