@@ -211,3 +211,13 @@ def beginning_of_line(ctx):
 def end_of_line(ctx):
     edit = ctx.minibuffer.input()
     edit.end(edit.mark())
+
+
+@KEYMAP.define_key("C-/")
+def undo(ctx):
+    ctx.minibuffer.input().undo()
+
+
+@KEYMAP.define_key("C-?")
+def redo(ctx):
+    ctx.minibuffer.input().redo()
