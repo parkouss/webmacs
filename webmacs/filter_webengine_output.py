@@ -89,12 +89,20 @@ def make_filter():
     regexes = FilterRegexes()
 
     regexes.filter(r"^libpng warning: iCCP: known incorrect sRGB profile$")
-    # starting from qt 5.12
-    regexes.filter(
-        r"QNetworkReplyHttpImplPrivate::_q_startOperation was called more"
-        r" than once.*"
-    )
     regexes.filter(r".*gles2_cmd_decoder_autogen.h.*")
+
+    if version.qt_version >= (5, 12):
+        regexes.filter(
+            r"QNetworkReplyHttpImplPrivate::_q_startOperation was called more"
+            r" than once.*"
+        )
+    else:
+        # see https://bugreports.qt.io/browse/QTBUG-68547
+        regexes.filter(r".*stack_trace_posix\.cc.* Failed to open file: .*")
+        regexes.filter(r"^  Error: No such file or directory$")
+
+        regexes.filter(r".*nss_ocsp.cc.*No URLRequestContext for NSS HTTP"
+                       r" handler..*")
 
     cls = OutputFilter if version.is_posix else NoFilter
     return cls(regexes)
