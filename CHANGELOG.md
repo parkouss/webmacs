@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- Filtering of logs printed on stderr by the qt webengine backend.
+- Improved customization of key bindings for incremental search, hinting and
+  minibuffer
 - Added key bindings **C-/** and **C-?** (resp. undo and redo) as minibuffer
   input key bindings
 - Added a **clipboard-copy** variable to be able to copy to primary clipboard
