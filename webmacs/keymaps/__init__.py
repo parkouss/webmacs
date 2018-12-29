@@ -19,6 +19,8 @@ from collections import namedtuple
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeyEvent
 
+from .. import COMMANDS
+
 
 KEY2CHAR = {}
 CHAR2KEY = {}
@@ -397,6 +399,9 @@ class InternalKeymap(object):
                 return func
             return wrapper
         else:
+            if isinstance(binding, str):
+                if binding not in COMMANDS:
+                    raise KeyError("No such command: %s" % binding)
             self._define_key(key, binding)
 
     def undefine_key(self, key):
