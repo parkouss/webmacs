@@ -501,6 +501,24 @@ MINIBUFFER_KEYMAP = Keymap("minibuffer", doc="""\
 Local keymap activated when input is in the minibuffer line edit.
 """)
 
+VISITEDLINKS_KEYMAP = Keymap("visited-links-list",
+                             parent=MINIBUFFER_KEYMAP,
+                             doc="""\
+Local keymap activated while looking into visited links.
+""")
+
+BOOKMARKS_KEYMAP = Keymap("bookmarks-list", parent=MINIBUFFER_KEYMAP, doc="""\
+Local keymap activated while looking into bookmarks.
+""")
+
+BUFFERLIST_KEYMAP = Keymap("buffer-list", parent=MINIBUFFER_KEYMAP, doc="""\
+Local keymap activated while looking into buffers.
+""")
+
+WEBJUMP_KEYMAP = Keymap("webjump", parent=MINIBUFFER_KEYMAP, doc="""\
+Local keymap activated while using webjumps.
+""")
+
 HINT_KEYMAP = Keymap("hint", parent=MINIBUFFER_KEYMAP, doc="""\
 Local keymap used when hinting.
 """)

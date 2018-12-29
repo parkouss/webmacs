@@ -21,9 +21,9 @@ from PyQt5.QtCore import QUrl, pyqtSlot as Slot, \
     pyqtSignal as Signal, QStringListModel, QObject, QEvent, Qt
 from PyQt5.QtNetwork import QNetworkRequest
 
+from ..commands import define_command
 from ..minibuffer.prompt import Prompt, PromptTableModel, PromptHistory
-from .. keymaps import Keymap
-from .. keymaps.minibuffer import KEYMAP as MINIBUF_KEYMAP
+from .. keymaps import WEBJUMP_KEYMAP
 from ..commands import register_prompt_opener_commands
 from .. import current_buffer
 from ..application import app
@@ -208,11 +208,11 @@ class WebJumpRequestCompleter(WebJumpCompleter):
         self.reply = None
 
 
-WEBJUMP_PROMPT_KEYMAP = Keymap("webjump-minibuffer", parent=MINIBUF_KEYMAP)
-
-
-@WEBJUMP_PROMPT_KEYMAP.define_key("Tab")
+@define_command("webjump-complete")
 def wb_complete(ctx):
+    """
+    Complete webjump name in the minibuffer.
+    """
     input = ctx.minibuffer.input()
     if not input.popup().isVisible():
         input.show_completions()
@@ -227,7 +227,7 @@ class WebJumpPrompt(Prompt):
         "match": Prompt.SimpleMatch
     }
     history = PromptHistory()
-    keymap = WEBJUMP_PROMPT_KEYMAP
+    keymap = WEBJUMP_KEYMAP
     default_input = "alternate"
 
     def completer_model(self):

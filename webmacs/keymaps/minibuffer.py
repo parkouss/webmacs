@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import MINIBUFFER_KEYMAP as KEYMAP
+from . import MINIBUFFER_KEYMAP as KEYMAP, VISITEDLINKS_KEYMAP, \
+    BOOKMARKS_KEYMAP, BUFFERLIST_KEYMAP, WEBJUMP_KEYMAP
 
 
 KEYMAP.define_key("Tab", "minibuffer-select-complete")
@@ -49,3 +50,12 @@ KEYMAP.define_key("C-a", "minibuffer-beginning-of-line")
 KEYMAP.define_key("C-e", "minibuffer-end-of-line")
 KEYMAP.define_key("C-/", "minibuffer-undo")
 KEYMAP.define_key("C-?", "minibuffer-undo")
+
+
+VISITEDLINKS_KEYMAP.define_key("C-k", "visited-links-delete-highlighted")
+
+BOOKMARKS_KEYMAP.define_key("C-k", "bookmarks-delete-highlighted")
+
+BUFFERLIST_KEYMAP.define_key("C-k", "buffer-list-delete-highlighted")
+
+WEBJUMP_KEYMAP.define_key("Tab", "webjump-complete")
