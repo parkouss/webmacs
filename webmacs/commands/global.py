@@ -18,11 +18,11 @@ import os
 from PyQt5.QtCore import QStringListModel, QModelIndex
 
 from . import define_command, COMMANDS, register_prompt_opener_commands
-from ..minibuffer import Prompt, KEYMAP
+from ..minibuffer import Prompt
 from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
 from ..webbuffer import create_buffer
-from ..keymaps import Keymap, KeyPress
+from ..keymaps import KeyPress, VISITEDLINKS_KEYMAP, BOOKMARKS_KEYMAP
 from ..keyboardhandler import send_key_event, local_keymap, KEY_EATER, \
     CallHandler
 from .. import BUFFERS, windows, variables
@@ -250,9 +250,6 @@ class VisitedLinksModel(PromptTableModel):
         self.endRemoveRows()
 
 
-VISITEDLINKS_KEYMAP = Keymap("visited-links-list", parent=KEYMAP)
-
-
 class VisitedLinksPrompt(Prompt):
     label = "Find url from visited links:"
     complete_options = {
@@ -266,8 +263,11 @@ class VisitedLinksPrompt(Prompt):
         return VisitedLinksModel(self)
 
 
-@VISITEDLINKS_KEYMAP.define_key("C-k")
+@define_command("visited-links-delete-highlighted")
 def visited_links_remove_entry(ctx):
+    """
+    Deletes from the database the currently highlighted visited link.
+    """
     pinput = ctx.minibuffer.input()
 
     selection = pinput.popup().selectionModel().currentIndex()
@@ -294,9 +294,13 @@ class BookmarksModel(VisitedLinksModel):
         self.visitedlinks = bookmarks
 
 
-BOOKMARKS_KEYMAP = Keymap("bookmarks-list", parent=KEYMAP)
-# so removing a bookmark is like removing a visited link
-BOOKMARKS_KEYMAP.define_key("C-k", visited_links_remove_entry)
+@define_command("bookmarks-delete-highlighted")
+def bookmarks_remove_entry(ctx):
+    """
+    Deletes from the database the currently highlighted bookmark.
+    """
+    # removing a bookmark is like removing a visited link
+    visited_links_remove_entry(ctx)
 
 
 class BookmarksPrompt(VisitedLinksPrompt):

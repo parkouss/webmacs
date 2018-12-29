@@ -20,13 +20,13 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from ..commands import define_command
-from ..minibuffer import Prompt, KEYMAP
+from ..minibuffer import Prompt
 from ..webbuffer import WebBuffer, close_buffer, create_buffer
 from ..killed_buffers import KilledBuffer
 from ..keyboardhandler import send_key_event
 from .. import BUFFERS, version, current_buffer, recent_buffers
 from .. import variables, clipboard
-from ..keymaps import Keymap, KeyPress
+from ..keymaps import KeyPress, BUFFERLIST_KEYMAP
 
 
 switch_buffer_current_color = variables.define_variable(
@@ -86,11 +86,11 @@ class BufferTableModel(QAbstractTableModel):
         self.endRemoveRows()
 
 
-BUFFERLIST_KEYMAP = Keymap("buffer-list", parent=KEYMAP)
-
-
-@BUFFERLIST_KEYMAP.define_key("C-k")
+@define_command("buffer-list-delete-highlighted")
 def close_buffer_in_prompt_selection(ctx):
+    """
+    Close currently highlighted buffer.
+    """
     pinput = ctx.minibuffer.input()
 
     selection = pinput.popup().selectionModel().currentIndex()

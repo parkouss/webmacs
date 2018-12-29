@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- Added key bindings **C-/** and **C-?** (resp. undo and redo) as minibuffer
+  input key bindings
 - Added a **clipboard-copy** variable to be able to copy to primary clipboard
   (still the default), mouse selection clipboard or both.
 - Added a **--list-instances** command line flag, allowing to list current

@@ -22,7 +22,6 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 from PyQt5.QtWebChannel import QWebChannel
 from collections import namedtuple
 
-from .keymaps import BUFFER_KEYMAP as KEYMAP
 from . import hooks, variables, windows
 from . import BUFFERS, current_minibuffer, minibuffer_show_info, \
     current_buffer, call_later, current_window, recent_buffers
@@ -434,44 +433,3 @@ class WebBuffer(QWebEnginePage):
 
 # alias to create a web buffer
 create_buffer = WebBuffer
-
-
-KEYMAP.define_key("g", "go-to")
-KEYMAP.define_key("s", "search-default")
-KEYMAP.define_key("G", "go-to-alternate-url")
-KEYMAP.define_key("b", "buffer-history")
-KEYMAP.define_key("F", "go-forward")
-KEYMAP.define_key("B", "go-backward")
-KEYMAP.define_key("C-s", "i-search-forward")
-KEYMAP.define_key("C-r", "i-search-backward")
-KEYMAP.define_key("C-v", "scroll-page-down")
-KEYMAP.define_key("M-v", "scroll-page-up")
-KEYMAP.define_key("M->", "scroll-bottom")
-KEYMAP.define_key("M-<", "scroll-top")
-KEYMAP.define_key("f", "follow")
-KEYMAP.define_key("c l", "copy-link")
-KEYMAP.define_key("c c", "copy-current-link")
-KEYMAP.define_key("c t", "copy-current-buffer-title")
-KEYMAP.define_key("c u", "copy-current-buffer-url")
-KEYMAP.define_key("M-w", "webcontent-copy")
-KEYMAP.define_key("r", "reload-buffer")
-KEYMAP.define_key("R", "reload-buffer-no-cache")
-KEYMAP.define_key("h", "visited-links-history")
-KEYMAP.define_key("q", "close-buffer")
-KEYMAP.define_key("C-x h", "select-buffer-content")
-KEYMAP.define_key("C", "caret-browsing-init")
-KEYMAP.define_key("m", "bookmark-open")
-KEYMAP.define_key("M", "bookmark-add")
-KEYMAP.define_key("C-+", "text-zoom-in")
-KEYMAP.define_key("C--", "text-zoom-out")
-KEYMAP.define_key("C-=", "text-zoom-reset")
-KEYMAP.define_key("+", "zoom-in")
-KEYMAP.define_key("-", "zoom-out")
-KEYMAP.define_key("=", "zoom-normal")
-KEYMAP.define_key("C-n", "send-key-down")
-KEYMAP.define_key("n", "send-key-down")
-KEYMAP.define_key("C-p", "send-key-up")
-KEYMAP.define_key("p", "send-key-up")
-KEYMAP.define_key("C-f", "send-key-right")
-KEYMAP.define_key("C-b", "send-key-left")
-KEYMAP.define_key("C-g", "buffer-escape")

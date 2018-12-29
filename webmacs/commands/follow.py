@@ -15,8 +15,8 @@
 
 from PyQt5.QtCore import QEvent, Qt
 
-from ..minibuffer import Prompt, KEYMAP as MKEYMAP
-from ..keymaps import Keymap, KeyPress
+from ..minibuffer import Prompt
+from ..keymaps import KeyPress, HINT_KEYMAP
 from ..commands import define_command, register_prompt_opener_commands, \
     Opener
 from .. import variables, clipboard
@@ -73,8 +73,6 @@ def hint_method_options(method):
     return options
 
 
-KEYMAP = Keymap("hint", MKEYMAP)
-
 # took from conkeror
 SELECTOR_CLICKABLE = (
     "//*[@onclick or @onmouseover or @onmousedown or @onmouseup or "
@@ -94,7 +92,7 @@ SELECTOR_LINK = "//a[@href] | //iframe"
 
 
 class HintPrompt(Prompt):
-    keymap = KEYMAP
+    keymap = HINT_KEYMAP
     hint_selector = ""
 
     def enable(self, minibuffer):
@@ -226,20 +224,26 @@ def copy_link(ctx):
         clipboard.set_text(url)
 
 
-@KEYMAP.define_key("C-g")
-@KEYMAP.define_key("Esc")
+@define_command("hint-abort")
 def cancel(ctx):
+    """
+    Abort current hint session.
+    """
     ctx.buffer.stop_select_browser_objects()
     ctx.minibuffer.close_prompt()
 
 
-@KEYMAP.define_key("C-n")
-@KEYMAP.define_key("Down")
+@define_command("hint-next")
 def next_completion(ctx):
+    """
+    Select the next hint.
+    """
     ctx.buffer.select_nex_browser_object()
 
 
-@KEYMAP.define_key("C-p")
-@KEYMAP.define_key("Up")
+@define_command("hint-prev")
 def previous_completion(ctx):
+    """
+    Select the previous hint.
+    """
     ctx.buffer.select_nex_browser_object(False)

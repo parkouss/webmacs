@@ -19,6 +19,8 @@ from collections import namedtuple
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeyEvent
 
+from .. import COMMANDS
+
 
 KEY2CHAR = {}
 CHAR2KEY = {}
@@ -331,32 +333,34 @@ class InternalKeymap(object):
         self.bindings = {}
         self.parent = parent
 
-    def _traverse_commands(self, prefix, acc_fn):
+    def _traverse_commands(self, prefix, acc_fn, parent=None):
         for keypress, cmd in self.bindings.items():
             new_prefix = prefix + [keypress]
             if isinstance(cmd, InternalKeymap):
-                cmd._traverse_commands(new_prefix, acc_fn)
+                cmd._traverse_commands(new_prefix, acc_fn, parent)
             else:
-                acc_fn(new_prefix, cmd)
+                acc_fn(new_prefix, cmd, parent)
         if self.parent:
             for keypress, cmd in self.parent.bindings.items():
                 if keypress not in self.bindings:
                     new_prefix = prefix + [keypress]
                     if isinstance(cmd, InternalKeymap):
-                        cmd._traverse_commands(new_prefix, acc_fn)
+                        cmd._traverse_commands(new_prefix, acc_fn, self.parent)
                     else:
-                        acc_fn(new_prefix, cmd)
+                        acc_fn(new_prefix, cmd, self.parent)
 
     def traverse_commands(self, acc_fn):
         self._traverse_commands([], acc_fn)
 
-    def all_bindings(self, raw_fn=False):
+    def all_bindings(self, raw_fn=False, with_parent=True):
         """
         Returns the list of bindings as (keychord, command-name) tuples.
         """
         acc = []
 
-        def add(prefix, cmd):
+        def add(prefix, cmd, parent):
+            if not with_parent and parent is not None:
+                return
             if isinstance(cmd, str):
                 acc.append((" ".join(str(k) for k in prefix), cmd))
             elif raw_fn:
@@ -397,6 +401,9 @@ class InternalKeymap(object):
                 return func
             return wrapper
         else:
+            if isinstance(binding, str):
+                if binding not in COMMANDS:
+                    raise KeyError("No such command: %s" % binding)
             self._define_key(key, binding)
 
     def undefine_key(self, key):
@@ -495,6 +502,36 @@ Local keymap activated when you are navigating the webbuffer with a caret.\
 
 FULLSCREEN_KEYMAP = Keymap("video-fullscreen", doc="""\
 Local Keymap activated when a video is played full screen.
+""")
+
+MINIBUFFER_KEYMAP = Keymap("minibuffer", doc="""\
+Local keymap activated when input is in the minibuffer line edit.
+""")
+
+VISITEDLINKS_KEYMAP = Keymap("visited-links-list",
+                             parent=MINIBUFFER_KEYMAP,
+                             doc="""\
+Local keymap activated while looking into visited links.
+""")
+
+BOOKMARKS_KEYMAP = Keymap("bookmarks-list", parent=MINIBUFFER_KEYMAP, doc="""\
+Local keymap activated while looking into bookmarks.
+""")
+
+BUFFERLIST_KEYMAP = Keymap("buffer-list", parent=MINIBUFFER_KEYMAP, doc="""\
+Local keymap activated while looking into buffers.
+""")
+
+WEBJUMP_KEYMAP = Keymap("webjump", parent=MINIBUFFER_KEYMAP, doc="""\
+Local keymap activated while using webjumps.
+""")
+
+HINT_KEYMAP = Keymap("hint", parent=MINIBUFFER_KEYMAP, doc="""\
+Local keymap used when hinting.
+""")
+
+ISEARCH_KEYMAP = Keymap("i-search", parent=MINIBUFFER_KEYMAP, doc="""\
+Local keymap used in incremental search.
 """)
 
 

@@ -20,7 +20,7 @@ from PyQt5.QtCore import pyqtSignal as Signal, \
     QEvent, QSortFilterProxyModel, QRegExp, Qt, QModelIndex, \
     pyqtProperty
 
-from .keymap import KEYMAP
+from ..keymaps import MINIBUFFER_KEYMAP as KEYMAP
 from .prompt import Prompt
 from .. import variables
 from .. import windows

@@ -13,10 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..keymaps import Keymap
-
-KEYMAP = Keymap("minibuffer")
-
+from . import define_command
 
 WORD_SEPS = "#/.-_:"
 
@@ -41,8 +38,11 @@ def move_next_word(edit, forward, mark):
             break
 
 
-@KEYMAP.define_key("Tab")
+@define_command("minibuffer-select-complete")
 def complete(ctx):
+    """
+    Complete completion.
+    """
     input = ctx.minibuffer.input()
 
     if not input.popup().isVisible():
@@ -51,35 +51,51 @@ def complete(ctx):
         input.select_next_completion()
 
 
-@KEYMAP.define_key("C-n")
-@KEYMAP.define_key("Down")
+@define_command("minibuffer-select-next")
 def next_completion(ctx):
+    """
+    Select next completion entry.
+    """
     ctx.minibuffer.input().select_next_completion()
 
 
-@KEYMAP.define_key("C-p")
-@KEYMAP.define_key("Up")
+@define_command("minibuffer-select-prev")
 def previous_completion(ctx):
+    """
+    Select previous completion entry.
+    """
     ctx.minibuffer.input().select_next_completion(False)
 
 
-@KEYMAP.define_key("M-<")
-def first_completion(ctx):
+@define_command("minibuffer-select-first")
+def first_complqetion(ctx):
+    """
+    Select first completion entry.
+    """
     ctx.minibuffer.input().select_first_completion()
 
 
-@KEYMAP.define_key("M->")
+@define_command("minibuffer-select-last")
 def last_completion(ctx):
+    """
+    Select last completion entry.
+    """
     ctx.minibuffer.input().select_last_completion()
 
 
-@KEYMAP.define_key("C-v")
+@define_command("minibuffer-select-next-page")
 def next_page_completion(ctx):
+    """
+    Move one page down in completion entry list.
+    """
     ctx.minibuffer.input().select_next_page_completion()
 
 
-@KEYMAP.define_key("M-v")
+@define_command("minibuffer-select-prev-page")
 def previous_page_completion(ctx):
+    """
+    Move one page up in completion entry list.
+    """
     ctx.minibuffer.input().select_next_page_completion(False)
 
 
@@ -94,27 +110,38 @@ def _prompt_history(ctx, func):
             minibuff.input().setText(text)
 
 
-@KEYMAP.define_key("M-n")
+@define_command("minibuffer-history-next")
 def prompt_history_next(ctx):
+    """
+    Insert next history value.
+    """
     _prompt_history(ctx, lambda h: h.get_next())
 
 
-@KEYMAP.define_key("M-p")
+@define_command("minibuffer-history-prev")
 def prompt_history_previous(ctx):
+    """
+    Insert previous history value.
+    """
     _prompt_history(ctx, lambda h: h.get_previous())
 
 
-@KEYMAP.define_key("Return")
+@define_command("minibuffer-validate")
 def edition_finished(ctx):
+    """
+    Validate input in minibuffer.
+    """
     minibuffer_input = ctx.minibuffer.input()
     minibuffer_input.complete()
     minibuffer_input.popup().hide()
     minibuffer_input.returnPressed.emit()
 
 
-@KEYMAP.define_key("C-g")
-@KEYMAP.define_key("Esc")
+@define_command("minibuffer-abort")
 def cancel(ctx):
+    """
+    Abort edition of the minibuffer.
+    """
     minibuffer = ctx.minibuffer
     input = minibuffer.input()
     if input.popup().isVisible():
@@ -122,8 +149,11 @@ def cancel(ctx):
     minibuffer.close_prompt()
 
 
-@KEYMAP.define_key("M-Backspace")
+@define_command("minibuffer-delete-backward-word")
 def clean_aindent_bsunindent(ctx):
+    """
+    Delete the word backward.
+    """
     edit = ctx.minibuffer.input()
     if edit.hasSelectedText():
         edit.deselect()
@@ -133,65 +163,91 @@ def clean_aindent_bsunindent(ctx):
         edit.del_()
 
 
-@KEYMAP.define_key("C-Space")
+@define_command("minibuffer-mark")
 def set_mark(ctx):
+    """
+    Set or unset the edit mark.
+    """
     minibuffer_input = ctx.minibuffer.input()
     if not minibuffer_input.set_mark():
         minibuffer_input.deselect()
 
 
-@KEYMAP.define_key("C-f")
-@KEYMAP.define_key("Right")
+@define_command("minibuffer-forward-char")
 def forward_char(ctx):
+    """
+    Move one character forward.
+    """
     edit = ctx.minibuffer.input()
     edit.cursorForward(edit.mark(), 1)
 
 
-@KEYMAP.define_key("C-b")
-@KEYMAP.define_key("Left")
+@define_command("minibuffer-backward-char")
 def backward_char(ctx):
+    """
+    Move one character backward.
+    """
     edit = ctx.minibuffer.input()
     edit.cursorBackward(edit.mark(), 1)
 
 
-@KEYMAP.define_key("M-f")
-@KEYMAP.define_key("M-Right")
+@define_command("minibuffer-forward-word")
 def forward_word(ctx):
+    """
+    Move one word forward.
+    """
     edit = ctx.minibuffer.input()
     move_next_word(edit, True, edit.mark())
 
 
-@KEYMAP.define_key("M-b")
-@KEYMAP.define_key("M-Left")
+@define_command("minibuffer-backward-word")
 def backward_word(ctx):
+    """
+    Move one word backward.
+    """
     edit = ctx.minibuffer.input()
     move_next_word(edit, False, edit.mark())
 
 
-@KEYMAP.define_key("M-w")
+@define_command("minibuffer-copy")
 def copy(ctx):
+    """
+    Copy selected text in the minibuffer.
+    """
     edit = ctx.minibuffer.input()
     edit.copy()
     edit.deselect()
 
 
-@KEYMAP.define_key("C-w")
+@define_command("minibuffer-cut")
 def cut(ctx):
+    """
+    Cut selected text in the minibuffer.
+    """
     ctx.minibuffer.input().cut()
 
 
-@KEYMAP.define_key("C-y")
+@define_command("minibuffer-paste")
 def paste(ctx):
+    """
+    Paste text in the minibuffer.
+    """
     ctx.minibuffer.input().paste()
 
 
-@KEYMAP.define_key("C-d")
+@define_command("minibuffer-delete-forward-char")
 def delete_char(ctx):
+    """
+    Delete forward character.
+    """
     ctx.minibuffer.input().del_()
 
 
-@KEYMAP.define_key("M-d")
+@define_command("minibuffer-delete-forward-word")
 def delete_word(ctx):
+    """
+    Delete forward word.
+    """
     edit = ctx.minibuffer.input()
     if edit.hasSelectedText():
         edit.deselect()
@@ -201,13 +257,35 @@ def delete_word(ctx):
         edit.del_()
 
 
-@KEYMAP.define_key("C-a")
+@define_command("minibuffer-beginning-of-line")
 def beginning_of_line(ctx):
+    """
+    Move cursor to the beginning of the line.
+    """
     edit = ctx.minibuffer.input()
     edit.home(edit.mark())
 
 
-@KEYMAP.define_key("C-e")
+@define_command("minibuffer-end-of-line")
 def end_of_line(ctx):
+    """
+    Move cursor to the end of the line.
+    """
     edit = ctx.minibuffer.input()
     edit.end(edit.mark())
+
+
+@define_command("minibuffer-undo")
+def undo(ctx):
+    """
+    Undo in the minibuffer.
+    """
+    ctx.minibuffer.input().undo()
+
+
+@define_command("minibuffer-redo")
+def redo(ctx):
+    """
+    Redo in the minibuffer.
+    """
+    ctx.minibuffer.input().redo()

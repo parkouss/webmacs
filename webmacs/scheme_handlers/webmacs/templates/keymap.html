@@ -2,14 +2,20 @@
 
 {% block title %}Keymap {{name}}{% endblock %}
 {% block content %}
-<h1>Keymap {{name}}:</h1>
-<table>
+<h1>Keymap: {{name}}</h1>
 <pre>{{keymap.doc}}<pre>
-{% for prefix, command in bindings|sort %}
+
+{% for k, g in bindings %}
+{% if k %}
+<h3>From parent keymap <a href="webmacs://keymap/{{k}}">{{k}}</a>:</h3>
+{% endif %}
+<table>
+{% for prefix, command, _ in g %}
 <tr>
   <td>{{prefix}}</td>
   <td><a href="webmacs://command/{{command}}">{{command}}</a></td>
 </tr>
 {% endfor %}
 </table>
+{% endfor %}
 {% endblock %}

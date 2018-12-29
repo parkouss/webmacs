@@ -83,11 +83,6 @@ def app():
 
 
 def _app_requires():
-    require(".keymaps.global")
-    require(".keymaps.caret_browsing")
-    require(".keymaps.content_edit")
-    require(".keymaps.fullscreen")
-
     require(".commands.follow")
     require(".commands.buffer_history")
     require(".commands.global")
@@ -95,8 +90,18 @@ def _app_requires():
     require(".commands.webbuffer")
     require(".commands.caret_browsing")
     require(".commands.content_edit")
+    require(".commands.minibuffer")
 
     require(".default_webjumps")
+
+    require(".keymaps.global")
+    require(".keymaps.caret_browsing")
+    require(".keymaps.content_edit")
+    require(".keymaps.fullscreen")
+    require(".keymaps.minibuffer")
+    require(".keymaps.hints")
+    require(".keymaps.isearch")
+    require(".keymaps.webbuffer")
 
 
 class Application(QApplication):

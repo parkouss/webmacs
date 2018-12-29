@@ -13,20 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..minibuffer import Prompt, KEYMAP as MKEYMAP
-from ..keymaps import Keymap
+from ..minibuffer import Prompt
+from ..keymaps import ISEARCH_KEYMAP, CARET_BROWSING_KEYMAP
 from ..keyboardhandler import local_keymap
 from ..webbuffer import WebBuffer, QWebEnginePage
 from ..commands import define_command
 from ..commands import caret_browsing as caret_browsing_commands
-from ..keymaps.caret_browsing import KEYMAP as CARET_BROWSING_KEYMAP
-
-KEYMAP = Keymap("i-search", MKEYMAP)
 
 
-@KEYMAP.define_key("C-n")
-@KEYMAP.define_key("C-s")
+@define_command("i-search-next")
 def search_next(ctx):
+    """
+    Highlight next match in incremental search mode.
+    """
     if ISearchPrompt.LAST_SEARCH and not ctx.minibuffer.input().text():
         ctx.minibuffer.input().setText(ISearchPrompt.LAST_SEARCH)
         return
@@ -35,9 +34,11 @@ def search_next(ctx):
     prompt.find_text()
 
 
-@KEYMAP.define_key("C-p")
-@KEYMAP.define_key("C-r")
+@define_command("i-search-prev")
 def search_previous(ctx):
+    """
+    Highlight previous match in incremental search mode.
+    """
     if ISearchPrompt.LAST_SEARCH and not ctx.minibuffer.input().text():
         ctx.minibuffer.input().setText(ISearchPrompt.LAST_SEARCH)
         return
@@ -46,16 +47,21 @@ def search_previous(ctx):
     prompt.find_text()
 
 
-@KEYMAP.define_key("Return")
+@define_command("i-search-validate")
 def validate(ctx):
+    """
+    Validate current match in incremental search mode.
+    """
     ISearchPrompt.LAST_SEARCH = ctx.minibuffer.input().text()
     ctx.buffer.findText("")  # to clear the highlight
     ctx.minibuffer.close_prompt()
 
 
-@KEYMAP.define_key("C-g")
-@KEYMAP.define_key("Esc")
+@define_command("i-search-abort")
 def cancel(ctx):
+    """
+    Abort incremental search.
+    """
     prompt = ctx.minibuffer.prompt()
     scroll_pos = prompt.page_scroll_pos
     ctx.buffer.findText("")  # to clear the highlight
@@ -65,7 +71,7 @@ def cancel(ctx):
 
 class ISearchPrompt(Prompt):
     label = "ISearch:"
-    keymap = KEYMAP
+    keymap = ISEARCH_KEYMAP
 
     isearch_direction = 0  # forward
 
