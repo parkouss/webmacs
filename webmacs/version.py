@@ -87,10 +87,11 @@ def QT_VERSION_CHECK(major, minor=0, patch=0):
     return (major << 16) | (minor << 8) | patch
 
 
-class QtVersionChecker(object):
-    def __init__(self):
-        # consider the lower version between pyqt and qt.
-        self.version = min(QT_VERSION, PYQT_VERSION)
+class _QtVersionChecker(object):
+    __slots__ = ("version",)
+
+    def __init__(self, version):
+        self.version = version
 
     def __eq__(self, other):
         return self.version == QT_VERSION_CHECK(*other)
@@ -108,7 +109,9 @@ class QtVersionChecker(object):
         return self.version >= QT_VERSION_CHECK(*other)
 
 
-qt_version = QtVersionChecker()
+min_qt_version = _QtVersionChecker(min(QT_VERSION, PYQT_VERSION))
+qt_version = _QtVersionChecker(QT_VERSION)
+pyqt_version = _QtVersionChecker(PYQT_VERSION)
 
 
 def chromium_version():

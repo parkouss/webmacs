@@ -232,7 +232,7 @@ def open_dev_tools(ctx):
     """
     Opens a dev tool page for a buffer.
     """
-    if version.qt_version < (5, 11):
+    if version.min_qt_version < (5, 11):
         ctx.minibuffer.show_info("Only available with qt version >= 5.11")
         return
     buffer = ctx.minibuffer.do_prompt(OpenDevToolsPrompt(ctx))

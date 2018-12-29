@@ -25,7 +25,7 @@ import warnings
 from PyQt5.QtNetwork import QAbstractSocket
 
 from .ipc import IpcServer
-from . import variables
+from . import variables, filter_webengine_output
 
 
 log_to_disk = variables.define_variable(
@@ -240,6 +240,8 @@ def main():
     if not os.path.isdir(conf_path):
         os.makedirs(conf_path)
 
+    out_filter = filter_webengine_output.make_filter()
+
     setup_logging(getattr(logging, opts.log_level.upper()),
                   getattr(logging, opts.webcontent_log_level.upper()))
 
@@ -277,6 +279,8 @@ def main():
     ], instance_name=opts.instance)
     server = IpcServer(opts.instance)
     atexit.register(server.cleanup)
+
+    out_filter.enable()
 
     # execute the user init function if there is one
     if user_init is None or not hasattr(user_init, "init"):
