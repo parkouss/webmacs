@@ -333,32 +333,34 @@ class InternalKeymap(object):
         self.bindings = {}
         self.parent = parent
 
-    def _traverse_commands(self, prefix, acc_fn):
+    def _traverse_commands(self, prefix, acc_fn, parent=None):
         for keypress, cmd in self.bindings.items():
             new_prefix = prefix + [keypress]
             if isinstance(cmd, InternalKeymap):
-                cmd._traverse_commands(new_prefix, acc_fn)
+                cmd._traverse_commands(new_prefix, acc_fn, parent)
             else:
-                acc_fn(new_prefix, cmd)
+                acc_fn(new_prefix, cmd, parent)
         if self.parent:
             for keypress, cmd in self.parent.bindings.items():
                 if keypress not in self.bindings:
                     new_prefix = prefix + [keypress]
                     if isinstance(cmd, InternalKeymap):
-                        cmd._traverse_commands(new_prefix, acc_fn)
+                        cmd._traverse_commands(new_prefix, acc_fn, self.parent)
                     else:
-                        acc_fn(new_prefix, cmd)
+                        acc_fn(new_prefix, cmd, self.parent)
 
     def traverse_commands(self, acc_fn):
         self._traverse_commands([], acc_fn)
 
-    def all_bindings(self, raw_fn=False):
+    def all_bindings(self, raw_fn=False, with_parent=True):
         """
         Returns the list of bindings as (keychord, command-name) tuples.
         """
         acc = []
 
-        def add(prefix, cmd):
+        def add(prefix, cmd, parent):
+            if not with_parent and parent is not None:
+                return
             if isinstance(cmd, str):
                 acc.append((" ".join(str(k) for k in prefix), cmd))
             elif raw_fn:

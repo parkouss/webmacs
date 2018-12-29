@@ -3,10 +3,14 @@
 {% block title %}Bindings{% endblock %}
 {% block content %}
 <h1>Webmacs bindings</h1>
-{% for name, km in bindings|dictsort %}
+{% for name, keymap in keymaps|dictsort %}
+{% set km = keymap.all_bindings(with_parent=False) %}
 {% if km %}
 <h2>In <a href="webmacs://keymap/{{name}}">{{name}}</a> keymap:</h2>
-<p>{{keymaps[name].brief_doc}}</p>
+<p>{{keymap.brief_doc}}</p>
+{% if keymap.parent %}
+<p>Parent keymap: <a href="webmacs://keymap/{{keymap.parent.name}}">{{keymap.parent.name}}</a></p>
+{% endif %}
 <table>
 {% for prefix, command in km|sort %}
   <tr>

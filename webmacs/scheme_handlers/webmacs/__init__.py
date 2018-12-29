@@ -18,6 +18,7 @@ import sys
 import re
 import importlib
 import inspect
+from itertools import groupby
 from PyQt5.QtCore import QBuffer, QFile, QUrlQuery
 from PyQt5.QtWebEngineCore import QWebEngineUrlSchemeHandler
 from jinja2 import Environment, PackageLoader
@@ -111,7 +112,7 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
         used_in_keymaps = []
 
         for name, km in KEYMAPS.items():
-            def add(prefix, cmd):
+            def add(prefix, cmd, parent):
                 if cmd == command:
                     used_in_keymaps.append((
                         " ".join(str(k) for k in prefix),
@@ -142,21 +143,29 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
     @register_page(match_url=r"^keymap/(\S+)$", visible=False)
     def keymap(self, job, _, keymap):
         km = KEYMAPS[keymap]
+        acc = []
+
+        def add(prefix, cmd, parent):
+            if isinstance(cmd, str):
+                acc.append((" ".join(str(k) for k in prefix), cmd, parent))
+
+        km.traverse_commands(add)
+
+        def by_parent(v):
+            return v[2].name if v[2] else ""
+
+        acc = sorted(acc, key=lambda v: v[0])
+        acc = sorted(acc, key=by_parent)
 
         self.reply_template(job, "keymap", {
             "name": keymap,
             "keymap": km,
-            "bindings": km.all_bindings(),
+            "bindings": groupby(acc, by_parent),
         })
 
     @register_page()
     def bindings(self, job, _, name):
-        bindings = {}
-        for kname, km in KEYMAPS.items():
-            bindings[kname] = km.all_bindings()
-
-        self.reply_template(job, name, {"bindings": bindings,
-                                        "keymaps": KEYMAPS})
+        self.reply_template(job, name, {"keymaps": KEYMAPS})
 
     @register_page(match_url=r"^pydoc/.+$", visible=False)
     def pydoc(self, job, url):
@@ -214,7 +223,7 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
 
             cmd = command_name if named_command else fn
 
-            def add(prefix, cmd_):
+            def add(prefix, cmd_, parent_):
                 if cmd == cmd_:
                     acc.append(" ".join(str(k) for k in prefix))
             km.traverse_commands(add)
