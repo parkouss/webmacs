@@ -42,7 +42,7 @@ class Profile(object):
         self._scheme_handlers = {}  # keep a python reference
 
     def update_spell_checking(self):
-        if version.qt_version < (5, 8):
+        if version.min_qt_version < (5, 8):
             return
         dicts = variables.get("spell-checking-dictionaries")
         self.q_profile.setSpellCheckEnabled(bool(dicts))

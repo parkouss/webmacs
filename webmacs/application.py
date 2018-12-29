@@ -151,7 +151,7 @@ class Application(QApplication):
         settings.setAttribute(
             QWebEngineSettings.JavascriptCanOpenWindows, True,
         )
-        if version.qt_version >= (5, 8):
+        if version.min_qt_version >= (5, 8):
             settings.setAttribute(
                 QWebEngineSettings.FocusOnNavigationEnabled, False,
             )
