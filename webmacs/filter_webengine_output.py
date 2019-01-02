@@ -86,6 +86,11 @@ class FilterRegexes(object):
 
 
 def make_filter():
+    # when there is a qtwebengine crash, the OutputFilter will prevent the
+    # stack trace from being printed. Need to find a way to have those stack
+    # traces somewhere before filtering.
+    return NoFilter()
+
     regexes = FilterRegexes()
 
     regexes.filter(r"^libpng warning: iCCP: known incorrect sRGB profile$")
