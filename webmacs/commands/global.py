@@ -330,6 +330,17 @@ class BookmarkAddPrompt(Prompt):
         input.setSelection(0, len(url))
 
 
+class BookmarkNamePrompt(Prompt):
+    label = "bookmark's name: "
+
+    def enable(self, minibuffer):
+        Prompt.enable(self, minibuffer)
+        name = self.ctx.buffer.title()
+        input = minibuffer.input()
+        input.setText(name)
+        input.setSelection(0, len(name))
+
+
 @define_command("bookmark-add")
 def bookmark_add(ctx):
     """
@@ -340,8 +351,7 @@ def bookmark_add(ctx):
     if not url:
         return
 
-    otherprompt = Prompt(ctx)
-    otherprompt.label = "bookmark's name: "
+    otherprompt = BookmarkNamePrompt(ctx)
     name = ctx.minibuffer.do_prompt(otherprompt)
 
     if name:
