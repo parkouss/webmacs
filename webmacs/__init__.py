@@ -117,7 +117,7 @@ def current_minibuffer():
     """
     w = current_window()
     if w:
-            return w.minibuffer()
+        return w.minibuffer()
 
 
 def minibuffer_show_info(text):
@@ -126,7 +126,7 @@ def minibuffer_show_info(text):
     """
     minibuffer = current_minibuffer()
     if minibuffer:
-            minibuffer.show_info(text)
+        minibuffer.show_info(text)
 
 
 def call_later(fn, msec=0):
