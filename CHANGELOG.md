@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- Added **print-buffer** command, bound to **C-x p** to print the current
+  buffer.
 - Improved customization of key bindings for incremental search, hinting and
   minibuffer
 - Added key bindings **C-/** and **C-?** (resp. undo and redo) as minibuffer
