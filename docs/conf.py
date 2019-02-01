@@ -49,7 +49,7 @@ if True or "READTHEDOCS" in os.environ:
     MOCK_MODULES = ["PyQt5", "PyQt5.QtCore", "PyQt5.QtGui",
                     "PyQt5.QtWidgets", "PyQt5.QtWebEngineWidgets",
                     "PyQt5.QtWebEngineCore", "PyQt5.QtWebChannel",
-                    "PyQt5.QtNetwork",
+                    "PyQt5.QtNetwork", "PyQt5.QtPrintSupport",
                     "_adblock", "dateparser"]
     sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
     # the version number is not important, though it must be an int.
