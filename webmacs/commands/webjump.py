@@ -398,7 +398,7 @@ class WebJumpPrompt(Prompt):
                 # send the url as is
                 return webjump.url
             elif len(args) < 2:
-                    # send the url without a search string
+                # send the url without a search string
                 return webjump.url.replace("%s", "")
 
             else:

@@ -260,3 +260,9 @@ Zooming
 
   There are variants for the zoom, using the Control modifier (:key:`C-+`,
   :key:`C--`, and :key:`C-=`) that are used for text zoom only.
+
+
+Printing
+********
+
+- :key:`C-x p` to print the current buffer.

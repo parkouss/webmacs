@@ -17,6 +17,7 @@ import itertools
 
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PyQt5.QtGui import QColor
+from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from ..commands import define_command
@@ -25,7 +26,7 @@ from ..webbuffer import WebBuffer, close_buffer, create_buffer
 from ..killed_buffers import KilledBuffer
 from ..keyboardhandler import send_key_event
 from .. import BUFFERS, version, current_buffer, recent_buffers
-from .. import variables, clipboard
+from .. import variables, clipboard, GLOBAL_OBJECTS
 from ..keymaps import KeyPress, BUFFERLIST_KEYMAP
 
 
@@ -564,3 +565,29 @@ def copy_buffer_title(ctx):
     Copy the title of the current buffer to the clipboard.
     """
     clipboard.set_text(ctx.buffer.title())
+
+
+@define_command("print-buffer")
+def print_buffer(ctx):
+    """
+    Opens a dialog to select the printer and prints the current buffer.
+    """
+    if version.min_qt_version < (5, 8):
+        ctx.minibuffer.show_info(
+            "print-buffer not supported, qt version >= 5.8 required"
+        )
+        return
+
+    def notif(ok):
+        GLOBAL_OBJECTS.unref(printer)
+        ctx.minibuffer.show_info("print successful" if ok
+                                 else "failed to print")
+
+    printer = QPrinter()
+    dlg = QPrintDialog(printer)
+    if dlg.exec_() == dlg.Accepted:
+        # printer must be kept around to avoid a crash.
+        # it must be released in the notif callback
+        GLOBAL_OBJECTS.ref(printer)
+        ctx.minibuffer.show_info("printing...")
+        ctx.buffer.print(printer, notif)

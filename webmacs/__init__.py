@@ -117,7 +117,7 @@ def current_minibuffer():
     """
     w = current_window()
     if w:
-            return w.minibuffer()
+        return w.minibuffer()
 
 
 def minibuffer_show_info(text):
@@ -126,7 +126,7 @@ def minibuffer_show_info(text):
     """
     minibuffer = current_minibuffer()
     if minibuffer:
-            minibuffer.show_info(text)
+        minibuffer.show_info(text)
 
 
 def call_later(fn, msec=0):
@@ -137,3 +137,24 @@ def call_later(fn, msec=0):
     events in the qt event loop.
     """
     QTimer.singleShot(msec, fn)
+
+
+class ObjRef(object):
+    """
+    Maintain object references.
+    """
+    __slots__ = ("__refs",)
+
+    def __init__(self):
+        self.__refs = {}
+
+    def ref(self, obj, data=True):
+        self.__refs[obj] = data
+
+    def unref(self, obj):
+        return self.__refs.pop(obj)
+
+
+# Sometimes we need to keep objects around with pyqt to avoid segfault;
+# This global object holder is designed to allow that.
+GLOBAL_OBJECTS = ObjRef()
