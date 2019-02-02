@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+- autocompletion for duckduckgo now uses duckduckgo servers
 - Fixed displaying long lines in the minibuffer popup (such as long urls in
   history)
 - Fixed regression, unable to revive a buffer.
