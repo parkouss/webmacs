@@ -572,6 +572,8 @@ def print_buffer(ctx):
     """
     Opens a dialog to select the printer and prints the current buffer.
     """
+    from ..application import WithoutAppEventFilter
+
     if version.min_qt_version < (5, 8):
         ctx.minibuffer.show_info(
             "print-buffer not supported, qt version >= 5.8 required"
@@ -585,7 +587,9 @@ def print_buffer(ctx):
 
     printer = QPrinter()
     dlg = QPrintDialog(printer)
-    if dlg.exec_() == dlg.Accepted:
+    with WithoutAppEventFilter():
+        ok = dlg.exec_() == dlg.Accepted
+    if ok:
         # printer must be kept around to avoid a crash.
         # it must be released in the notif callback
         GLOBAL_OBJECTS.ref(printer)

@@ -78,6 +78,14 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
             request.block(True)
 
 
+class WithoutAppEventFilter(object):
+    def __enter__(self):
+        app().removeEventFilter(LOCAL_KEYMAP_SETTER)
+
+    def __exit__(self, type, value, traceback):
+        app().installEventFilter(LOCAL_KEYMAP_SETTER)
+
+
 def app():
     return Application.INSTANCE
 
