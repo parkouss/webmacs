@@ -26,13 +26,14 @@ from PyQt5.QtNetwork import QAbstractSocket
 
 from .ipc import IpcServer
 from . import variables, filter_webengine_output
+from .xdg_utils import XDG_CACHE_HOME, XDG_CONFIG_HOME, XDG_DATA_HOME
 
 
 log_to_disk = variables.define_variable(
     "log-to-disk-max-files",
     "Maximum number of log files to keep. Log files are stored in"
-    " ~/.webmacs/logs. Setting this to 0 will deactivate file logging"
-    " completely.",
+    " $XDG_DATA_HOME/webmacs/logs. Setting this to 0 will deactivate file "
+    " logging completely.",
     0,
     type=variables.Int(min=0),
 )
@@ -129,6 +130,11 @@ def parse_args(argv=None):
                         help="Create or reuse a named webmacs instance."
                         " If the given instance name is the empty string, an"
                         " automatically generated name will be used.")
+
+    parser.add_argument("-c", "--config",
+                        default=os.path.join(XDG_CONFIG_HOME, "webmacs"),
+                        help="The path from which to load the configuration "
+                        "module.")
 
     parser.add_argument("--list-instances", action="store_true",
                         help="List running instances and exit.")
@@ -236,9 +242,33 @@ def main():
                 if n.isdigit()]
         opts.instance = str(max(uniq) + 1) if uniq else "1"
 
-    conf_path = os.path.join(os.path.expanduser("~"), ".webmacs")
+    conf_path = opts.config
     if not os.path.isdir(conf_path):
-        os.makedirs(conf_path)
+        deprecated = os.path.expanduser("~/.webmacs")
+        if os.path.isdir(deprecated):
+            # Since logging has not been setup yet, use manual print
+            print("Warning: '{}' as an init directory has been deprecated. "
+                  "Please use '{}' or configure it using '-c' instead."
+                  .format(deprecated, conf_path), file=sys.stderr)
+            conf_path = deprecated
+        else:
+            os.makedirs(conf_path)
+
+    data_path = os.path.join(XDG_DATA_HOME, "webmacs")
+    if not os.path.isdir(data_path):
+        deprecated = os.path.expanduser("~/.webmacs")
+        if os.path.isdir(deprecated):
+            # Since logging has not been setup yet, use manual print
+            print("Warning: '{}' as a data directory has been deprecated. "
+                  "Please move your profile and adblock directories to '{}'."
+                  .format(deprecated, data_path), file=sys.stderr)
+            data_path = deprecated
+        else:
+            os.makedirs(data_path)
+
+    cache_path = os.path.join(XDG_CACHE_HOME, "webmacs")
+    if not os.path.isdir(data_path):
+        os.makedirs(cache_path)
 
     out_filter = filter_webengine_output.make_filter()
 
@@ -271,7 +301,7 @@ def main():
             "Error reading the user configuration."
         )
 
-    app = Application(conf_path, [
+    app = Application(data_path, cache_path, [
         # The first argument passed to the QApplication args defines
         # the x11 property WM_CLASS.
         "webmacs" if opts.instance == "default"
@@ -290,13 +320,13 @@ def main():
             user_init.init(opts)
         except Exception:
             _handle_user_init_error(
-                conf_path,
+                data_path,
                 "Error executing user init function in %s."
                 % user_init.__file__
             )
 
     if log_to_disk.value > 0:
-        setup_logging_on_disk(os.path.join(conf_path, "logs"),
+        setup_logging_on_disk(os.path.join(data_path, "logs"),
                               backup_count=log_to_disk.value)
     app.post_init()
     signal_wakeup(app)

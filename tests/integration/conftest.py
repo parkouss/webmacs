@@ -10,6 +10,7 @@ from webmacs.application import Application, _app_requires
 from webmacs import (windows, buffers, WINDOWS_HANDLER, current_buffer,
                      current_window, current_minibuffer)
 from webmacs import variables as wvariables
+from webmacs.xdg_utils import XDG_DATA_HOME, XDG_CACHE_HOME
 from webmacs.webbuffer import create_buffer
 from webmacs.window import Window
 from webmacs.webbuffer import close_buffer
@@ -78,8 +79,9 @@ def qapp(wm, qapp_args):
     _app_requires()
     global _app
     # TODO FIXME use another path for tests
-    conf_path = os.path.join(os.path.expanduser("~"), ".webmacs")
-    _app = Application(conf_path, ["webmacs"])
+    conf_path = os.path.join(XDG_DATA_HOME, "webmacs")
+    cache_path = os.path.join(XDG_CACHE_HOME, "webmacs")
+    _app = Application(conf_path, cache_path, ["webmacs"])
     return _app
 
 

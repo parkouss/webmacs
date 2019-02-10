@@ -2,7 +2,7 @@ User configuration
 ==================
 
 **webmacs** can be configured by writing Python code. The files should live in
-a ``~/.webmacs/init`` directory, starting with an ``__init__.py`` file.
+a ``$XDG_CONFIG_HOME/webmacs/init`` directory, starting with an ``__init__.py`` file.
 
 If this file exists, it will be loaded early in the application.
 

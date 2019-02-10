@@ -21,6 +21,7 @@ from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, Qt, \
     QDir
 from PyQt5.QtNetwork import QLocalServer, QLocalSocket
 from . import version
+from .xdg_utils import XDG_RUNTIME_DIR
 
 
 HEADER_FMT = "!I"
@@ -76,8 +77,8 @@ class IpcServer(QObject):
     @classmethod
     def get_sock_name(cls, instance):
         if instance == "default":
-            return "webmacs.ipc"
-        return "webmacs.{}.ipc".format(instance)
+            return os.path.join(XDG_RUNTIME_DIR, "webmacs.ipc")
+        return os.path.join(XDG_RUNTIME_DIR, "webmacs.{}.ipc".format(instance))
 
     @classmethod
     def list_all_instances(cls, check=True):
