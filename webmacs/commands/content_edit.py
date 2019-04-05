@@ -179,6 +179,17 @@ def cut(ctx):
            delete_selection(ctx))
 
 
+@define_command("content-edit-kill")
+def kill(ctx):
+    """
+    Kill from the cursor to end of line to the clipboard.
+    """
+    run_js(ctx,
+           "textedit.select_text('forward', 'lineboundary'); \
+           textedit.copy_text();",
+           delete_selection(ctx))
+
+
 @define_command("content-edit-upcase-forward-word")
 def upcase_word(ctx):
     """

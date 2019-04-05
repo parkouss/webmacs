@@ -79,12 +79,7 @@ textedit._change_next_word_case = function(fn) {
     var txt = elt.value;
     var nextpos = elt.selectionEnd;
     elt.value = txt.slice(0, pos) + fn(txt.slice(pos, nextpos))
-	      + txt.slice(nextpos);
-    elt.setSelectionRange(nextpos, nextpos);
-}
-
-textedit.upcase_word = function() {
-    let elt = document.activeElement;
+activeElement;
     if (elt.tagName == "IFRAME") {
         post_message(elt.contentWindow, "textedit.upcase_word", null);
     } else {
