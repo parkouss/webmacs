@@ -136,6 +136,10 @@ def parse_args(argv=None):
     parser.add_argument("url", nargs="?",
                         help="url to open")
 
+    parser.add_argument("--new-window", action="store_true",
+                        help="Creates a new window in the instance given."
+                        " If no instance is given, the default will be used.")
+
     opts = parser.parse_args(argv)
 
     # handle local file path

@@ -21,7 +21,8 @@ from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, Qt, \
     QDir
 from PyQt5.QtNetwork import QLocalServer, QLocalSocket
 from . import version
-
+from .window import Window
+from . import variables
 
 HEADER_FMT = "!I"
 HEADER_SIZE = struct.calcsize(HEADER_FMT)
@@ -176,8 +177,25 @@ class IpcServer(QObject):
 def ipc_dispatch(data):
     from . import current_window
     from .webbuffer import create_buffer
-    win = current_window()
+
     url = data.get("url")
+    new_window = data.get("new_window")
+
+    if new_window:
+        win = Window()
+        view = win.current_webview()
+        if url:
+            view.setBuffer(create_buffer(url))
+        else:
+            home_page = variables.get("home-page")
+            win.current_webview().setBuffer(
+                create_buffer(home_page))
+        win.show()
+        win.activateWindow()
+        return
+
+    win = current_window()
+
     if url:
         view = win.current_webview()
         view.setBuffer(create_buffer(url))
