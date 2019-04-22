@@ -22,7 +22,7 @@ from ..minibuffer import Prompt
 from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
 from ..webbuffer import create_buffer
-from ..keymaps import KeyPress, VISITEDLINKS_KEYMAP, BOOKMARKS_KEYMAP
+from ..keymaps import KeyPress, VISITEDLINKS_KEYMAP, BOOKMARKS_KEYMAP, KEYMAPS
 from ..keyboardhandler import send_key_event, local_keymap, KEY_EATER, \
     CallHandler
 from .. import BUFFERS, windows, variables
@@ -577,6 +577,28 @@ def describe_binding_briefly(ctx):
                 **called_with
             )
         )
+
+
+class WhereIsCommandsListPrompt(CommandsListPrompt):
+    label = "Where is command: "
+    history = PromptHistory()
+
+
+@define_command("where-is")
+def where_is(ctx):
+    """
+    Print short notice of where a command is bound
+    """
+    command = ctx.minibuffer.do_prompt(WhereIsCommandsListPrompt(ctx))
+    if not command:
+        return
+    bindings_str = ", ".join("{} (keymap: {})".format(k, kmapname)
+                             for kmapname, kmap in KEYMAPS.items()
+                             for k, v in kmap.all_bindings() if v == command)
+    if bindings_str:
+        ctx.minibuffer.show_info("{} is on: {}".format(command, bindings_str))
+    else:
+        ctx.minibuffer.show_info("{} is not on any key".format(command))
 
 
 @define_command("restore-session")

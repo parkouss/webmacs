@@ -45,6 +45,7 @@ the following commands:
   get a detailed description.
 - :cmd:`describe-key` (bound to :key:`C-h k`) or :cmd:`describe-key-briefly` (bound to :key:`C-h c`)
   to discover what command a key binding would trigger.
+- :cmd:`where-is` (bound to: :key:`C-h w`) to quickly find what key(s) a command is bound to.
 - :cmd:`describe-bindings` to see the list of all keymaps, with the bindings
   and commands they contain.
 
