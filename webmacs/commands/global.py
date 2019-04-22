@@ -565,6 +565,20 @@ def describe_binding(ctx):
         ctx.view.setBuffer(create_buffer(url))
 
 
+@define_command("describe-key-briefly")
+def describe_binding_briefly(ctx):
+    """
+    Display in the minibuffer the command name called by the given binding.
+    """
+    called_with = ctx.minibuffer.do_prompt(BindingPrompt(ctx))
+    if called_with:
+        ctx.minibuffer.show_info(
+            "{key} runs the command {command} (keymap: {keymap})".format(
+                **called_with
+            )
+        )
+
+
 @define_command("restore-session")
 def restore_session(ctx):
     """
