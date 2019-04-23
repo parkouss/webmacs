@@ -26,7 +26,7 @@ from ..webbuffer import create_buffer, get_or_create_buffer
 from ..keymaps import KeyPress, VISITEDLINKS_KEYMAP, BOOKMARKS_KEYMAP
 from ..keyboardhandler import send_key_event, local_keymap, KEY_EATER, \
     CallHandler
-from .. import BUFFERS, windows, variables
+from .. import windows, variables
 from ..mode import MODES
 from ..window import Window
 from ..session import session_clean, session_load

@@ -22,7 +22,6 @@ from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, Qt, \
 from PyQt5.QtNetwork import QLocalServer, QLocalSocket
 from . import version
 from .window import Window
-from . import variables
 
 HEADER_FMT = "!I"
 HEADER_SIZE = struct.calcsize(HEADER_FMT)
