@@ -176,29 +176,20 @@ class IpcServer(QObject):
 
 def ipc_dispatch(data):
     from . import current_window
-    from .webbuffer import create_buffer
+    from .webbuffer import create_buffer, get_or_create_buffer
 
     url = data.get("url")
     new_window = data.get("new_window")
 
-    if new_window:
-        win = Window()
-        view = win.current_webview()
-        if url:
-            view.setBuffer(create_buffer(url))
-        else:
-            home_page = variables.get("home-page")
-            win.current_webview().setBuffer(
-                create_buffer(home_page))
-        win.show()
-        win.activateWindow()
-        return
-
-    win = current_window()
+    win = Window() if new_window else current_window()
 
     if url:
         view = win.current_webview()
         view.setBuffer(create_buffer(url))
+
+    if new_window:
+        view = win.current_webview()
+        view.setBuffer(get_or_create_buffer(current_window()))
 
     # this is quite hard to raise a window. The following works fine
     # for me with gnome 3.

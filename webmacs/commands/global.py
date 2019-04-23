@@ -1,3 +1,4 @@
+
 # This file is part of webmacs.
 #
 # webmacs is free software: you can redistribute it and/or modify
@@ -21,7 +22,7 @@ from . import define_command, COMMANDS, register_prompt_opener_commands
 from ..minibuffer import Prompt
 from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
-from ..webbuffer import create_buffer
+from ..webbuffer import create_buffer, get_or_create_buffer
 from ..keymaps import KeyPress, VISITEDLINKS_KEYMAP, BOOKMARKS_KEYMAP
 from ..keyboardhandler import send_key_event, local_keymap, KEY_EATER, \
     CallHandler
@@ -96,29 +97,6 @@ def toggle_maximised(ctx):
         win.showMaximized()
 
 
-def _get_or_create_buffer(win):
-    visible_buffers = []
-    for awin in windows():
-        for view in awin.webviews():
-            visible_buffers.append(view.buffer())
-    current_buffer = win.current_webview().buffer()
-    buffers = [b for b in BUFFERS
-               if b not in visible_buffers
-               or b == current_buffer]
-
-    # if there is at least one buffer not visible, use the one just
-    # after the current one in the list
-    if len(buffers) > 1:
-        ibuffers = itertools.cycle(buffers)
-        while True:
-            buff = next(ibuffers)
-            if buff == current_buffer:
-                return next(ibuffers)
-
-    # else create a new buffer, reusing the current buffer's url
-    return create_buffer(url=current_buffer.url())
-
-
 @define_command("split-view-right")
 def split_window_right(ctx):
     """
@@ -126,7 +104,7 @@ def split_window_right(ctx):
     """
     win = ctx.window
     view = win.create_webview_on_right()
-    view.setBuffer(_get_or_create_buffer(win))
+    view.setBuffer(get_or_create_buffer(win))
     view.set_current()
 
 
@@ -137,7 +115,7 @@ def split_window_bottom(ctx):
     """
     win = ctx.window
     view = win.create_webview_on_bottom()
-    view.setBuffer(_get_or_create_buffer(win))
+    view.setBuffer(get_or_create_buffer(win))
     view.set_current()
 
 
@@ -151,7 +129,7 @@ def create_window(ctx):
     win.current_webview().setBuffer(
         create_buffer(home_page)
         if home_page and variables.get("home-page-in-new-window")
-        else _get_or_create_buffer(ctx.window)
+        else get_or_create_buffer(ctx.window)
     )
     win.show()
     win.activateWindow()

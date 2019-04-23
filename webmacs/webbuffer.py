@@ -17,6 +17,8 @@ import logging
 import time
 import json
 
+import itertools
+
 from PyQt5.QtCore import QUrl, pyqtSlot as Slot
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
 from PyQt5.QtWebChannel import QWebChannel
@@ -95,6 +97,29 @@ def close_buffer(wb):
     wb.deleteLater()
     hooks.webbuffer_closed(wb)
     return True
+
+
+def get_or_create_buffer(win):
+    visible_buffers = []
+    for awin in windows():
+        for view in awin.webviews():
+            visible_buffers.append(view.buffer())
+    current_buffer = win.current_webview().buffer()
+    buffers = [b for b in BUFFERS
+               if b not in visible_buffers
+               or b == current_buffer]
+
+    # if there is at least one buffer not visible, use the one just
+    # after the current one in the list
+    if len(buffers) > 1:
+        ibuffers = itertools.cycle(buffers)
+        while True:
+            buff = next(ibuffers)
+            if buff == current_buffer:
+                return next(ibuffers)
+
+    # else create a new buffer, reusing the current buffer's url
+    return create_buffer(url=current_buffer.url())
 
 
 class WebBuffer(QWebEnginePage):
