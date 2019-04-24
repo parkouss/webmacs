@@ -9,6 +9,7 @@ See the documentation manual: https://webmacs.readthedocs.io/en/latest/
 
 webmacs is based on qt webengine and written mainly in Python (version 3).
 
+#+html: <p align="center"><img src="webmacs-screenshot.png" /></p>
 
 * Features
 
