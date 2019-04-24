@@ -182,16 +182,16 @@ def ipc_dispatch(data):
 
     win = Window() if new_window else current_window()
 
-    if url:
-        view = win.current_webview()
-        view.setBuffer(create_buffer(url))
-
     if new_window:
         view = win.current_webview()
         if url:
             view.setBuffer(create_buffer(url))
         else:
             view.setBuffer(get_or_create_buffer(current_window()))
+
+    elif url:
+        view = win.current_webview()
+        view.setBuffer(create_buffer(url))
 
     # this is quite hard to raise a window. The following works fine
     # for me with gnome 3.
