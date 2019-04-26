@@ -38,14 +38,15 @@ webmacs is self-documenting. You can easily access the documentation by running
 the following commands:
 
 - :cmd:`describe-commands` to see all available commands.
-- :cmd:`describe-command` (bound to :key:`C-h c`) to choose one command, and get
+- :cmd:`describe-command` (bound to :key:`C-h f`) to choose one command, and get
   a detailed description.
 - :cmd:`describe-variables` to see all the available :term:`variables`.
 - :cmd:`describe-variable` (bound to :key:`C-h v`) to choose one variable and
   get a detailed description.
-- :cmd:`describe-key` (bound to :key:`C-h k`) to discover what a key binding
-  would trigger.
-  - :cmd:`describe-bindings` to see the list of all keymaps, with the bindings
+- :cmd:`describe-key` (bound to :key:`C-h k`) or :cmd:`describe-key-briefly` (bound to :key:`C-h c`)
+  to discover what command a key binding would trigger.
+- :cmd:`where-is` (bound to: :key:`C-h w`) to quickly find what key(s) a command is bound to.
+- :cmd:`describe-bindings` to see the list of all keymaps, with the bindings
   and commands they contain.
 
 

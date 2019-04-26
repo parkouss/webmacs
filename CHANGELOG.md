@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- Added **where-is** command, bound to **C-h w**, to look up what keys a command
+  is bound to, if any.
+- Added **describe-key-briefly** command, bound to **C-h c**, as a less verbose
+  alternative to **describe-key**.
 - Added **print-buffer** command, bound to **C-x p** to print the current
   buffer.
 - Improved customization of key bindings for incremental search, hinting and
@@ -38,6 +42,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   the chosen url in a new window.
 - Added the variable **visited-links-display-limit**, to limit the number of
   elements displayed in the **visited-links-history** command. Defaults to 2000.
+
+## Changed
+
+- **C-h c** is now bound to **describe-key-briefly** instead of
+  **describe-command** which has in turn been moved to **C-h f**, in accordance
+  with Emacs default keybindings.
 
 ## [0.7] - 2018-09-20
 
