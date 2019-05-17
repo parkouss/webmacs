@@ -28,7 +28,7 @@ install:
 
 script:
   - flake8
-  - pytest tests
+  - pytest
   - cd docs && READTHEDOCS=1 make html && cd ..
 
 before_deploy:
