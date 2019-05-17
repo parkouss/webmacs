@@ -34,6 +34,7 @@ from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .spell_checking import SpellCheckingUpdateRunner, \
     spell_checking_dictionaries
 from .runnable import run
+from .scheme_handlers import register_schemes
 
 
 if version.is_linux:
@@ -134,6 +135,8 @@ class Application(QApplication):
 
         if version.is_mac:
             self.setAttribute(Qt.AA_MacDontSwapCtrlAndMeta)
+
+        register_schemes()
 
         self._conf_path = conf_path
         if not os.path.isdir(self.profiles_path()):

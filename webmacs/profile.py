@@ -18,7 +18,7 @@ import os
 from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript
 from PyQt5.QtCore import QFile, QTextStream
 
-from .scheme_handlers.webmacs import WebmacsSchemeHandler
+from .scheme_handlers import all_schemes
 from .visited_links import VisitedLinks
 from .autofill import Autofill
 from .autofill.db import PasswordDb
@@ -55,7 +55,7 @@ class Profile(object):
 
         self.q_profile.setRequestInterceptor(app.url_interceptor())
 
-        for handler in (WebmacsSchemeHandler,):
+        for handler in all_schemes():
             h = handler(app)
             self._scheme_handlers[handler.scheme] = h
             self.q_profile.installUrlSchemeHandler(handler.scheme, h)
