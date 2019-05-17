@@ -116,7 +116,7 @@ def _app_requires():
 class Application(QApplication):
     INSTANCE = None
 
-    def __init__(self, conf_path, args, instance_name="default"):
+    def __init__(self, conf_path, cache_path, args, instance_name="default"):
         QApplication.__init__(self, args)
         self.__class__.INSTANCE = self
         self.instance_name = instance_name
@@ -141,6 +141,7 @@ class Application(QApplication):
         self._conf_path = conf_path
         if not os.path.isdir(self.profiles_path()):
             os.makedirs(self.profiles_path())
+        self._cache_path = cache_path
 
         self._interceptor = UrlInterceptor(self)
 
@@ -172,6 +173,9 @@ class Application(QApplication):
         self.setQuitOnLastWindowClosed(False)
 
         self.network_manager = QNetworkAccessManager(self)
+
+    def cache_path(self):
+        return self._cache_path
 
     def conf_path(self):
         return self._conf_path

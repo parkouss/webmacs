@@ -49,9 +49,12 @@ class Profile(object):
         self.q_profile.setSpellCheckLanguages(dicts)
 
     def enable(self, app):
-        path = os.path.join(app.profiles_path(), self.name)
-        if not os.path.isdir(path):
-            os.makedirs(path)
+        cache_path = os.path.join(app.cache_path(), self.name)
+        prof_path = os.path.join(app.profiles_path(), self.name)
+
+        for path in [cache_path, prof_path]:
+            if not os.path.isdir(path):
+                os.makedirs(path)
 
         self.q_profile.setRequestInterceptor(app.url_interceptor())
 
@@ -60,7 +63,7 @@ class Profile(object):
             self._scheme_handlers[handler.scheme] = h
             self.q_profile.installUrlSchemeHandler(handler.scheme, h)
 
-        self.q_profile.setPersistentStoragePath(path)
+        self.q_profile.setPersistentStoragePath(prof_path)
         self.q_profile.setPersistentCookiesPolicy(
             QWebEngineProfile.ForcePersistentCookies)
 
@@ -68,20 +71,20 @@ class Profile(object):
             session_fname = "session.json"
         else:
             session_fname = "session-{}.json".format(app.instance_name)
-        self.session_file = os.path.join(path, session_fname)
+        self.session_file = os.path.join(prof_path, session_fname)
 
         self.visitedlinks \
-            = VisitedLinks(os.path.join(path, "visitedlinks.db"))
+            = VisitedLinks(os.path.join(prof_path, "visitedlinks.db"))
         self.autofill \
-            = Autofill(PasswordDb(os.path.join(path, "autofill.db")))
+            = Autofill(PasswordDb(os.path.join(prof_path, "autofill.db")))
         self.ignored_certs \
-            = IgnoredCertificates(os.path.join(path, "ignoredcerts.db"))
+            = IgnoredCertificates(os.path.join(prof_path, "ignoredcerts.db"))
         self.bookmarks \
-            = Bookmarks(os.path.join(path, "bookmarks.db"))
+            = Bookmarks(os.path.join(prof_path, "bookmarks.db"))
         self.features \
-            = Features(os.path.join(path, "features.db"))
+            = Features(os.path.join(prof_path, "features.db"))
 
-        self.q_profile.setCachePath(os.path.join(path, "cache"))
+        self.q_profile.setCachePath(cache_path)
         self.q_profile.downloadRequested.connect(
             app.download_manager().download_requested
         )
