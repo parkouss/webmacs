@@ -6,15 +6,17 @@ python: 3.7
 matrix:
   include:
     - os: linux
-      env: PYQT_VERSION=5.7.1
+      env: PIP_INSTALL="PyQt5==5.7.1"
     - os: linux
-      env: PYQT_VERSION=5.8.2
+      env: PIP_INSTALL="PyQt5==5.8.2"
     - os: linux
-      env: PYQT_VERSION=5.9.2
+      env: PIP_INSTALL="PyQt5==5.9.2"
     - os: linux
-      env: PYQT_VERSION=5.10.1
+      env: PIP_INSTALL="PyQt5==5.10.1"
     - os: linux
-      env: PYQT_VERSION=5.11.2 GENERATE_GIT_ARCHIVE=true
+      env: PIP_INSTALL="PyQt5==5.11.2"
+    - os: linux
+      env: GENERATE_GIT_ARCHIVE=true PIP_INSTALL="PyQt5==5.12.1 PyQtWebEngine==5.12.1"
   fast_finish: true
 
 cache:
@@ -22,7 +24,7 @@ cache:
     - $HOME/.cache/pip
 
 install:
-  - pip install PyQt5==$PYQT_VERSION sphinx
+  - pip install sphinx $PIP_INSTALL
   - pip install -r test-requirements.txt
   - sudo apt-get --yes install xvfb herbstluftwm
 
