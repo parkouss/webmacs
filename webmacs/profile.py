@@ -128,5 +128,5 @@ class Profile(object):
         inject_js(os.path.join(THIS_DIR, "scripts", "autofill.js"))
 
 
-def default_profile():
-    return Profile("default")
+def named_profile(name):
+    return Profile(name)

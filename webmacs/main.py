@@ -130,6 +130,10 @@ def parse_args(argv=None):
                         " If the given instance name is the empty string, an"
                         " automatically generated name will be used.")
 
+    parser.add_argument("-p", "--profile", default="default",
+                        help="Use the named profile directory."
+                        " The profile directory will contain a separate history.")
+
     parser.add_argument("--list-instances", action="store_true",
                         help="List running instances and exit.")
 
@@ -276,7 +280,7 @@ def main():
         # the x11 property WM_CLASS.
         "webmacs" if opts.instance == "default"
         else "webmacs-%s" % opts.instance
-    ], instance_name=opts.instance)
+    ], instance_name=opts.instance, profile_name=opts.profile)
     server = IpcServer(opts.instance)
     atexit.register(server.cleanup)
 
