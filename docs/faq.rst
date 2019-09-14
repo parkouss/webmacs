@@ -9,6 +9,13 @@ shell will open the URL in a new buffer of the running instance. To run a fresh
 new instance, use `webmacs --instance <instance-unique-name> <url>`.
 
 
+How do I run webmacs with a specific profile from the command-line?
+**********************************************************************************
+To have webmacs use a specific profile, use
+`webmacs --profile <profile-name> <url>`. Each profile directory will contain
+distinct navigation data (history, cookies, ...).
+
+
 Website is blocked, turn off the extensions
 *******************************************
 

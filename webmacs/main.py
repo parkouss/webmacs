@@ -132,7 +132,8 @@ def parse_args(argv=None):
 
     parser.add_argument("-p", "--profile", default="default",
                         help="Use the named profile directory."
-                        " The profile directory will contain a separate history.")
+                        " Each profile will contain distinct navigation data"
+                        " (history, cookies, ...).")
 
     parser.add_argument("--list-instances", action="store_true",
                         help="List running instances and exit.")
