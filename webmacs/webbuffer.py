@@ -188,7 +188,7 @@ class WebBuffer(QWebEnginePage):
         if not isinstance(url, QUrl):
             url = QUrl.fromUserInput(url)
         self.__delay_loading_url = None
-        save_session()
+        # save_session()
         return QWebEnginePage.load(self, url)
 
     def delayed_loading_url(self):
