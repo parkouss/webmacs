@@ -32,7 +32,6 @@ from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .mode import get_mode, Mode, get_auto_modename_for_url
-from .session import session_save
 
 
 close_buffer_close_window = variables.define_variable(
@@ -55,6 +54,7 @@ def save_session():
     """
     Save windows and buffers.
     """
+    from .session import session_save
     session_save(app().profile.session_file)
 
 
