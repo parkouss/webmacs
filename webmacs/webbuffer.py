@@ -32,6 +32,7 @@ from .autofill import FormData
 from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .mode import get_mode, Mode, get_auto_modename_for_url
+from .session import session_save
 
 
 close_buffer_close_window = variables.define_variable(
@@ -48,6 +49,13 @@ close_buffer_close_window = variables.define_variable(
 
 # a tuple of QUrl, str to delay loading of a page.
 DelayedLoadingUrl = namedtuple("DelayedLoadingUrl", ("url", "title"))
+
+
+def save_session():
+    """
+    Save windows and buffers.
+    """
+    session_save(app().profile.session_file)
 
 
 def close_buffer(wb):
@@ -180,6 +188,7 @@ class WebBuffer(QWebEnginePage):
         if not isinstance(url, QUrl):
             url = QUrl.fromUserInput(url)
         self.__delay_loading_url = None
+        save_session()
         return QWebEnginePage.load(self, url)
 
     def delayed_loading_url(self):
@@ -335,6 +344,8 @@ class WebBuffer(QWebEnginePage):
         self.set_mode(get_auto_modename_for_url(self.url().toString()))
 
         hooks.webbuffer_load_finished(self)
+
+        save_session()
 
         # We lose the keyboard focus without that with Qt 5.11. Though it
         # happens quite randomly, but a combination of follow, go back, google
