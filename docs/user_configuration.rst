@@ -89,7 +89,7 @@ It is possible to change a variable in the configuration using
 
    from webmacs import variables
 
-   variables.set("webjump-default", "google ")
+   variables.set("webjump-default", "google")
 
 
 .. _user_conf_all_variables:
