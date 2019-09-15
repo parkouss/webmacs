@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [0.8] - 2019-09-15
+
 ### Fixed
 
 - autocompletion for duckduckgo now uses duckduckgo servers
@@ -42,6 +44,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   the chosen url in a new window.
 - Added the variable **visited-links-display-limit**, to limit the number of
   elements displayed in the **visited-links-history** command. Defaults to 2000.
+- Added **--profile** command line option to allow using more than one profile.
 
 ## Changed
 
