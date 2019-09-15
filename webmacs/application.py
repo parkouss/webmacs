@@ -28,7 +28,7 @@ from . import require
 from . import version
 from .adblock import Adblocker, AdblockUpdateRunner, adblock_urls_rules
 from .download_manager import DownloadManager
-from .profile import default_profile
+from .profile import named_profile
 from .minibuffer.right_label import init_minibuffer_right_labels
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .spell_checking import SpellCheckingUpdateRunner, \
@@ -116,7 +116,8 @@ def _app_requires():
 class Application(QApplication):
     INSTANCE = None
 
-    def __init__(self, conf_path, args, instance_name="default"):
+    def __init__(self, conf_path, args, instance_name="default",
+                 profile_name="default"):
         QApplication.__init__(self, args)
         self.__class__.INSTANCE = self
         self.instance_name = instance_name
@@ -146,7 +147,7 @@ class Application(QApplication):
 
         self._download_manager = DownloadManager(self)
 
-        self.profile = default_profile()
+        self.profile = named_profile(profile_name)
         self.profile.enable(self)
 
         settings = QWebEngineSettings.globalSettings()
