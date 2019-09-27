@@ -22,10 +22,93 @@ Short list of features:
 - [[https://webmacs.readthedocs.io/en/latest/user_configuration.html][highly customizable using Python]]
 
 
-* Installation
+* Installation (... and development)
 
-Use pip/virtualenv - be prepared to have a working c and c++ compiler with
-python development library. Note I only have tested on linux.
+There are two recommended ways of installing webmacs:
+
+1. Nix
+2. pip/virtualenv
+
+** Nix
+
+Currently, the easiest way to install webmacs is via the [[https://nixos.org/nix/][Nix package
+manager]]:
+
+#+BEGIN_SRC bash
+nix-env -i webmacs
+#+END_SRC
+
+*** Need more help with nix?
+
+Nix is available for Linux, macOS and other Unix-like systems. Rest
+assured that removing Nix (along with any packages installed using
+Nix) is as easy as =rm /nix -rf=.
+
+If you do not have Nix, install it. For details see
+https://nixos.org/nix/manual/#chap-installation, but this step
+approximates to
+
+#+BEGIN_SRC bash
+bash <(curl https://nixos.org/nix/install)
+#+END_SRC
+
+and will require you to provide a sudo password.
+
+Look out for, and follow the instructions which will appear once
+nix is installed, and which will look something like this:
+
+#+BEGIN_SRC text
+Installation finished!  To ensure that the necessary environment
+variables are set, either log in again, or type
+
+  . /home/yourusername/.nix-profile/etc/profile.d/nix.sh
+
+in your shell.
+#+END_SRC
+
+If you don't spot this, the installation will appear to have failed.
+
+Now you can use =nix-env= to install webmacs:
+
+[ For now, until the webmacs nix package finds its way into the nix
+channels, you need to use the command =nix-env -f
+https://github.com/NixOS/nixpkgs/archive/master.tar.gz -iA webmacs=
+
+instead of the more convenient:   ]
+
+#+BEGIN_SRC bash
+nix-env -i webmacs
+#+END_SRC
+
+For further details, see
+https://nixos.org/nix/manual/#chap-quick-start.
+
+*** working on webmacs with nix
+
+The command
+
+#+BEGIN_SRC bash
+nix-shell -p webmacs
+#+END_SRC
+
+[or, until the webmacs package makes it into a nix channel
+
+#+BEGIN_SRC bash
+nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/master.tar.gz -p webmacs
+#+END_SRC
+]
+
+will drop you into a shell which makes available all the compilers and
+libraries required to build and run webmacs, thus =nix-shell= plays
+the role of =virtualenv= in the pip/virtualenv approach described
+below. Unfortunately, some of the libraries required to run the
+tests, are not yet available in this shell.
+
+** pip/virtualenv
+
+If you do not want to or cannot use nix, then use pip/virtualenv - be
+prepared to have a working c and c++ compiler with python development
+library. Note I only have tested on linux.
 
 You will also need the PyQt5 library, as I believe it can't be installed through
 pip. It's easy to install using any package manager though.
