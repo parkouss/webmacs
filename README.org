@@ -70,12 +70,6 @@ If you don't spot this, the installation will appear to have failed.
 
 Now you can use =nix-env= to install webmacs:
 
-[ For now, until the webmacs nix package finds its way into the nix
-channels, you need to use the command =nix-env -f
-https://github.com/NixOS/nixpkgs/archive/master.tar.gz -iA webmacs=
-
-instead of the more convenient:   ]
-
 #+BEGIN_SRC bash
 nix-env -i webmacs
 #+END_SRC
@@ -90,13 +84,6 @@ The command
 #+BEGIN_SRC bash
 nix-shell -p webmacs
 #+END_SRC
-
-[or, until the webmacs package makes it into a nix channel
-
-#+BEGIN_SRC bash
-nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/master.tar.gz -p webmacs
-#+END_SRC
-]
 
 will drop you into a shell which makes available all the compilers and
 libraries required to build and run webmacs, thus =nix-shell= plays
