@@ -53,7 +53,7 @@ class Profile(object):
         if not os.path.isdir(path):
             os.makedirs(path)
 
-        self.q_profile.setRequestInterceptor(app.url_interceptor())
+        self.q_profile.setUrlRequestInterceptor(app.url_interceptor())
 
         for handler in all_schemes():
             h = handler(app)
