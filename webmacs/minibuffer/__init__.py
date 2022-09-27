@@ -65,7 +65,7 @@ class Popup(QTableView):
         # Split the columns width, nicer when we have at least two of them.
         cols = self.model().columnCount()
         if cols > 0:
-            col_width = w / cols
+            col_width = round(w / cols)
             for i in range(cols):
                 self.setColumnWidth(i, col_width)
 
