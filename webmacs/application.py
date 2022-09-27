@@ -35,6 +35,7 @@ from .spell_checking import SpellCheckingUpdateRunner, \
     spell_checking_dictionaries
 from .runnable import run
 from .scheme_handlers import register_schemes
+from .variables import define_variable, Bool
 
 
 if version.is_linux:
@@ -46,6 +47,14 @@ if version.is_linux:
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
+
+
+enable_javascript = define_variable(
+    "enable-javascript",
+    "Enable the running of javascript programs. Default to True.",
+    True,
+    type=Bool(),
+)
 
 
 class UrlInterceptor(QWebEngineUrlRequestInterceptor):
@@ -167,6 +176,9 @@ class Application(QApplication):
             settings.setAttribute(
                 QWebEngineSettings.FocusOnNavigationEnabled, False,
             )
+        settings.setAttribute(
+            QWebEngineSettings.JavascriptEnabled, enable_javascript.value,
+        )
 
         self.installEventFilter(LOCAL_KEYMAP_SETTER)
 
