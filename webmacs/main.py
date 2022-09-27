@@ -178,17 +178,26 @@ def init(opts):
         w.current_webview().setBuffer(buff)
         w.showMaximized()
 
+    if opts.url:
+        create_window(opts.url)
+        return
+
     home_page = variables.get("home-page")
     session_file = a.profile.session_file
     if home_page:
         create_window(home_page)
-    elif opts.url:
-        create_window(opts.url)
-    elif os.path.exists(session_file):
-        try:
-            session_load(session_file)
-        except Exception:
-            create_window("http://duckduckgo.com/")
+        return
+    try:
+        if os.path.exists(session_file):
+            try:
+                session_load(session_file)
+                return
+            except Exception:
+                logging.exception("Unable to load session from '%s'", session_file)
+    except:
+        pass
+
+    create_window("about:blank")
 
 
 def _handle_user_init_error(conf_path, msg):
