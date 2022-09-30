@@ -20,6 +20,7 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
+from ..application import app
 from ..commands import define_command
 from ..minibuffer import Prompt
 from ..webbuffer import WebBuffer, close_buffer, create_buffer
@@ -595,3 +596,15 @@ def print_buffer(ctx):
         GLOBAL_OBJECTS.ref(printer)
         ctx.minibuffer.show_info("printing...")
         ctx.buffer.print(printer, notif)
+
+
+@define_command("password-manager-fill-buffer")
+def password_manager_fill_buffer(ctx):
+    """
+    Fill the current buffer inputs using password manager data.
+    """
+    password_mgr = app().profile.password_manager
+    url = ctx.buffer.url().toString()
+    cred = password_mgr.credential_for_url(url)
+    if cred:
+        password_mgr.complete_buffer(ctx.buffer, cred)

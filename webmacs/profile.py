@@ -26,6 +26,7 @@ from .ignore_certificates import IgnoredCertificates
 from .bookmarks import Bookmarks
 from .features import Features
 from . import variables, version
+from .password_manager import make_password_manager
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -85,6 +86,7 @@ class Profile(object):
         self.q_profile.downloadRequested.connect(
             app.download_manager().download_requested
         )
+        self.password_manager = make_password_manager()
 
         self.update_spell_checking()
 
@@ -126,6 +128,7 @@ class Profile(object):
         self.q_profile.scripts().insert(script)
 
         inject_js(os.path.join(THIS_DIR, "scripts", "autofill.js"))
+        inject_js(os.path.join(THIS_DIR, "scripts", "password_manager.js"))
 
 
 def named_profile(name):
