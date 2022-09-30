@@ -15,13 +15,10 @@
 
 import json
 
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
-    QUrl
+from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
-from .autofill import FormData
-from .application import app
 from .external_editor import open_external_editor
 from . import clipboard
 
@@ -65,12 +62,6 @@ class WebContentHandler(QObject):
     @Slot(str)
     def copyToClipboard(self, text):
         clipboard.set_text(text)
-
-    @Slot(str, str, str, str)
-    def autoFillFormSubmitted(self, url, username, password, data):
-        formdata = FormData(url=QUrl(url), username=username,
-                            password=password, data=data)
-        app().autofill().maybe_save_form_password(self.buffer, formdata)
 
     @Slot(str, str)
     def openExternalEditor(self, request_id, content):

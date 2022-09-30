@@ -20,8 +20,6 @@ from PyQt5.QtCore import QFile, QTextStream
 
 from .scheme_handlers import all_schemes
 from .visited_links import VisitedLinks
-from .autofill import Autofill
-from .autofill.db import PasswordDb
 from .ignore_certificates import IgnoredCertificates
 from .bookmarks import Bookmarks
 from .features import Features
@@ -73,8 +71,6 @@ class Profile(object):
 
         self.visitedlinks \
             = VisitedLinks(os.path.join(path, "visitedlinks.db"))
-        self.autofill \
-            = Autofill(PasswordDb(os.path.join(path, "autofill.db")))
         self.ignored_certs \
             = IgnoredCertificates(os.path.join(path, "ignoredcerts.db"))
         self.bookmarks \
@@ -127,7 +123,6 @@ class Profile(object):
         script.setRunsOnSubFrames(True)
         self.q_profile.scripts().insert(script)
 
-        inject_js(os.path.join(THIS_DIR, "scripts", "autofill.js"))
         inject_js(os.path.join(THIS_DIR, "scripts", "password_manager.js"))
 
 

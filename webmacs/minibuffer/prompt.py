@@ -392,3 +392,24 @@ class YesNoPrompt(Prompt):
         self.minibuffer.input().removeEventFilter(self)
         set_global_keymap_enabled(True)
         Prompt.close(self)
+
+
+class AskPasswordPrompt(Prompt):
+    def __init__(self, buffer):
+        Prompt.__init__(self, None)
+        self.buffer = buffer
+        self.username, self.password = "", ""
+        self.label = "username: "
+        set_global_keymap_enabled(False)
+
+    def _on_edition_finished(self):
+        input = self.minibuffer.input()
+        if not self.username:
+            self.username = input.text()
+            input.clear()
+            input.setEchoMode(input.Password)
+            self.minibuffer.label.setText("password: ")
+        else:
+            self.password = input.text()
+            Prompt._on_edition_finished(self)
+            set_global_keymap_enabled(True)

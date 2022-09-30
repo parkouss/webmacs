@@ -27,9 +27,8 @@ from . import BUFFERS, current_minibuffer, minibuffer_show_info, \
     current_buffer, call_later, current_window, recent_buffers
 from .content_handler import WebContentHandler
 from .application import app
-from .minibuffer.prompt import YesNoPrompt
-from .autofill import FormData
-from .autofill.prompt import AskPasswordPrompt, SavePasswordPrompt
+from .minibuffer.prompt import YesNoPrompt, AskPasswordPrompt
+from .password_manager import PasswordManagerNotReady
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .mode import get_mode, Mode, get_auto_modename_for_url
 
@@ -138,7 +137,6 @@ class WebBuffer(QWebEnginePage):
         self.authenticationRequired.connect(self.handle_authentication)
         self.linkHovered.connect(self.on_url_hovered)
         self.titleChanged.connect(self.update_title)
-        self.__authentication_data = None
         self.__delay_loading_url = None
         self.__keymap_mode = Mode.KEYMAP_NORMAL
         self.__mode = get_mode("standard-mode")
@@ -322,16 +320,6 @@ class WebBuffer(QWebEnginePage):
         if url.isValid() and not url.scheme() == "webmacs":
             app().visitedlinks().visit(url.toString(), self.title())
 
-        autofill = app().autofill()
-        if self.__authentication_data:
-            # save authentication data
-            sprompt = SavePasswordPrompt(autofill, self,
-                                         self.__authentication_data)
-            self.__authentication_data = None
-            current_minibuffer().do_prompt(sprompt, flash=True)
-        else:
-            autofill.complete_buffer(self, url)
-
         self.set_mode(get_auto_modename_for_url(self.url().toString()))
 
         hooks.webbuffer_load_finished(self)
@@ -346,22 +334,23 @@ class WebBuffer(QWebEnginePage):
             view.internal_view().setFocus()
 
     def handle_authentication(self, url, authenticator):
-        autofill = app().autofill()
-        passwords = autofill.auth_passwords_for_url(url)
-        if passwords:
-            data = passwords[0]
-            authenticator.setUser(data.username)
-            authenticator.setPassword(data.password)
+        password_manager = app().profile.password_manager
+        try:
+            credential = password_manager.credential_for_url(url.toString())
+        except PasswordManagerNotReady:
+            credential = None
+
+        if credential:
+            authenticator.setUser(credential.username)
+            authenticator.setPassword(credential.password)
             return
 
         # ask authentication credentials
-        prompt = AskPasswordPrompt(autofill, self)
+        prompt = AskPasswordPrompt(self)
         current_minibuffer().do_prompt(prompt, flash=True)
 
-        data = self.__authentication_data = FormData(url, prompt.username,
-                                                     prompt.password, None)
-        authenticator.setUser(data.username)
-        authenticator.setPassword(data.password)
+        authenticator.setUser(prompt.username)
+        authenticator.setPassword(prompt.password)
 
     def certificateError(self, error):
         url = "{}:{}".format(error.url().host(), error.url().port(80))

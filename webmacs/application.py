@@ -204,9 +204,6 @@ class Application(QApplication):
     def features(self):
         return self.profile.features
 
-    def autofill(self):
-        return self.profile.autofill
-
     def url_interceptor(self):
         return self._interceptor
 

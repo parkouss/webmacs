@@ -55,6 +55,8 @@ password_manager.set_input_value = function(input, value) {
     }
 }
 
+password_manager.allowedInputTypeForName = ['text', 'email', 'tel'];
+
 password_manager.complete_form_data = function(data) {
     var allowedUserAttrib = ["name", "id", "autocomplete", "placeholder"];
     var allowedInputTypeForName = ['text', 'email', 'tel'];
@@ -72,7 +74,7 @@ password_manager.complete_form_data = function(data) {
 
         if (data.password !== null && type === 'password') {
             password_manager.set_input_value(input, data.password);
-        } else if (data.username !== null && allowedInputTypeForName.includes(type)) {
+        } else if (data.username !== null && password_manager.allowedInputTypeForName.includes(type)) {
             password_manager.set_input_value(input, data.username);
         }
         for (const j in allowedUserAttrib) {
