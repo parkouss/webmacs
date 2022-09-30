@@ -187,15 +187,12 @@ def init(opts):
     if home_page:
         create_window(home_page)
         return
-    try:
-        if os.path.exists(session_file):
-            try:
-                session_load(session_file)
-                return
-            except Exception:
-                logging.exception("Unable to load session from '%s'", session_file)
-    except:
-        pass
+    if os.path.exists(session_file):
+        try:
+            session_load(session_file)
+            return
+        except Exception:
+            logging.exception("Unable to load session from '%s'", session_file)
 
     create_window("about:blank")
 
