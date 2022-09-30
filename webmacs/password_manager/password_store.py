@@ -14,7 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from . import BasePaswordManager, Credentials
+from . import BasePaswordManager, Credentials, PasswordManagerNotReady
 from .. import variables
 
 import os
@@ -139,5 +139,7 @@ class Pass(BasePaswordManager):
             th.start()
 
     def credential_for_url(self, url):
-        if not self.__reloading.is_set():
-            return self.__creds.for_url(url)
+        if self.__reloading.is_set():
+            raise PasswordManagerNotReady(
+                "passwordstore not ready - still reading configuration.")
+        return self.__creds.for_url(url)

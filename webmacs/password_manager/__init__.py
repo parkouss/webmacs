@@ -52,12 +52,17 @@ Credentials = namedtuple(
 )
 
 
+class PasswordManagerNotReady(Exception):
+    pass
+
+
 class BasePaswordManager(QObject):
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
 
     def credential_for_url(self, url):
-        "Get credentials for the given url"
+        "Get credentials for the given url."
+        raise PasswordManagerNotReady("No password manager set.")
 
     def complete_buffer(self, buffer, credential):
         """Fill buffer with the given credentials"""

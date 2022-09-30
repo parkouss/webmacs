@@ -29,6 +29,7 @@ from ..keyboardhandler import send_key_event
 from .. import BUFFERS, version, current_buffer, recent_buffers
 from .. import variables, clipboard, GLOBAL_OBJECTS
 from ..keymaps import KeyPress, BUFFERLIST_KEYMAP
+from ..password_manager import PasswordManagerNotReady
 
 
 switch_buffer_current_color = variables.define_variable(
@@ -605,6 +606,10 @@ def password_manager_fill_buffer(ctx):
     """
     password_mgr = app().profile.password_manager
     url = ctx.buffer.url().toString()
-    cred = password_mgr.credential_for_url(url)
+    try:
+        cred = password_mgr.credential_for_url(url)
+    except PasswordManagerNotReady as exc:
+        ctx.minibuffer.show_info(str(exc))
+        return
     if cred:
         password_mgr.complete_buffer(ctx.buffer, cred)
