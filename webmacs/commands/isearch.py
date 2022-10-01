@@ -43,7 +43,7 @@ def search_previous(ctx):
         ctx.minibuffer.input().setText(ISearchPrompt.LAST_SEARCH)
         return
     prompt = ctx.minibuffer.prompt()
-    prompt.set_isearch_direction(WebBuffer.FindBackward)
+    prompt.set_isearch_direction(WebBuffer.FindFlag.FindBackward)
     prompt.find_text()
 
 
@@ -128,7 +128,7 @@ def i_search_forward(ctx):
 
 
 class ISearchPromptBackward(ISearchPrompt):
-    isearch_direction = QWebEnginePage.FindBackward
+    isearch_direction = QWebEnginePage.FindFlag.FindBackward
 
 
 @define_command("i-search-backward")

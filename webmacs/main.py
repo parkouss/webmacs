@@ -22,7 +22,7 @@ import atexit
 import os
 import warnings
 
-from PyQt5.QtNetwork import QAbstractSocket
+from PyQt6.QtNetwork import QAbstractSocket
 
 from .ipc import IpcServer
 from . import variables, filter_webengine_output
@@ -41,11 +41,11 @@ log_to_disk = variables.define_variable(
 def signal_wakeup(app):
     """
     Allow to be notified in Python for signals when in long-running calls from
-    the C or c++ side, like QApplication.exec_().
+    the C or c++ side, like QApplication.exec().
 
     See https://stackoverflow.com/a/37229299.
     """
-    sock = QAbstractSocket(QAbstractSocket.UdpSocket, app)
+    sock = QAbstractSocket(QAbstractSocket.SocketType.UdpSocket, app)
     # Create a socket pair
     sock.wsock, sock.rsock = socket.socketpair(type=socket.SOCK_DGRAM)
     # Let Qt listen on the one end
@@ -312,7 +312,7 @@ def main():
     app.post_init()
     signal_wakeup(app)
     signal.signal(signal.SIGINT, lambda s, h: app.quit())
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == '__main__':

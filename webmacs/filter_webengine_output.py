@@ -19,7 +19,7 @@ import sys
 import logging
 import traceback
 
-from PyQt5.QtNetwork import QLocalSocket
+from PyQt6.QtNetwork import QLocalSocket
 
 from . import version
 

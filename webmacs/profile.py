@@ -15,8 +15,8 @@
 
 import os
 
-from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineScript
-from PyQt5.QtCore import QFile, QTextStream
+from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEngineScript
+from PyQt6.QtCore import QFile, QTextStream
 
 from .scheme_handlers import all_schemes
 from .visited_links import VisitedLinks
@@ -61,7 +61,7 @@ class Profile(object):
 
         self.q_profile.setPersistentStoragePath(path)
         self.q_profile.setPersistentCookiesPolicy(
-            QWebEngineProfile.ForcePersistentCookies)
+            QWebEngineProfile.PersistentCookiesPolicy.ForcePersistentCookies)
 
         if app.instance_name == "default":
             session_fname = "session.json"
@@ -86,11 +86,11 @@ class Profile(object):
 
         self.update_spell_checking()
 
-        def inject_js(filepath, ipoint=QWebEngineScript.DocumentCreation,
-                      iid=QWebEngineScript.ApplicationWorld, sub_frames=False,
+        def inject_js(filepath, ipoint=QWebEngineScript.InjectionPoint.DocumentCreation,
+                      iid=QWebEngineScript.ScriptWorldId.ApplicationWorld, sub_frames=False,
                       script_transform=None):
             f = QFile(filepath)
-            assert f.open(QFile.ReadOnly | QFile.Text)
+            assert f.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
             src = QTextStream(f).readAll()
             if script_transform:
                 src = script_transform(src)
@@ -117,9 +117,9 @@ class Profile(object):
             contentjs.append(f.read())
 
         script = QWebEngineScript()
-        script.setInjectionPoint(QWebEngineScript.DocumentCreation)
+        script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentCreation)
         script.setSourceCode("\n".join(contentjs))
-        script.setWorldId(QWebEngineScript.ApplicationWorld)
+        script.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld)
         script.setRunsOnSubFrames(True)
         self.q_profile.scripts().insert(script)
 

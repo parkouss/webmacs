@@ -18,8 +18,8 @@ from .. import require, variables
 
 import json
 
-from PyQt5.QtCore import QObject
-from PyQt5.QtWebEngineWidgets import QWebEngineScript
+from PyQt6.QtCore import QObject
+from PyQt6.QtWebEngineCore import QWebEngineScript
 from collections import namedtuple
 
 
@@ -69,4 +69,4 @@ class BasePaswordManager(QObject):
         dct = json.dumps(credential._asdict())
         buffer.runJavaScript(
             f"password_manager.complete_form_data({dct})",
-            QWebEngineScript.ApplicationWorld)
+            QWebEngineScript.ScriptWorldId.ApplicationWorld)

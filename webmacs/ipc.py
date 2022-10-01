@@ -17,9 +17,9 @@ import os
 import json
 import struct
 import logging
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, Qt, \
+from PyQt6.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, Qt, \
     QDir
-from PyQt5.QtNetwork import QLocalServer, QLocalSocket
+from PyQt6.QtNetwork import QLocalServer, QLocalSocket
 from . import version
 
 
@@ -135,7 +135,7 @@ class IpcServer(QObject):
         sock_name = self.get_sock_name(instance)
         QLocalServer.removeServer(sock_name)
         self._server = QLocalServer()
-        self._server.setSocketOptions(QLocalServer.UserAccessOption)
+        self._server.setSocketOptions(QLocalServer.SocketOption.UserAccessOption)
         self._server.newConnection.connect(self._on_new_connection)
         if not self._server.listen(sock_name):
             logging.error("Can not start ipc: %s"

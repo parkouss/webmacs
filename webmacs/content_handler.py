@@ -15,8 +15,8 @@
 
 import json
 
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
-from PyQt5.QtWebEngineWidgets import QWebEngineScript
+from PyQt6.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal
+from PyQt6.QtWebEngineCore import QWebEngineScript
 
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .external_editor import open_external_editor
@@ -75,5 +75,5 @@ class WebContentHandler(QObject):
                 repr(request_id),
                 new_content
             ),
-            QWebEngineScript.ApplicationWorld
+            QWebEngineScript.ScriptWorldId.ApplicationWorld
         )

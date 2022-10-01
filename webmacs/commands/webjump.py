@@ -17,9 +17,9 @@ import re
 import logging
 from collections import namedtuple
 
-from PyQt5.QtCore import QUrl, pyqtSlot as Slot, \
+from PyQt6.QtCore import QUrl, pyqtSlot as Slot, \
     pyqtSignal as Signal, QStringListModel, QObject, QEvent, Qt
-from PyQt5.QtNetwork import QNetworkRequest
+from PyQt6.QtNetwork import QNetworkRequest
 
 from ..commands import define_command
 from ..minibuffer.prompt import Prompt, PromptTableModel, PromptHistory
@@ -193,7 +193,7 @@ class WebJumpRequestCompleter(WebJumpCompleter):
             self.reply.abort()
 
     def _on_reply_finished(self):
-        if self.reply.error() == self.reply.NoError:
+        if self.reply.error() == self.reply.NetworkError.NoError:
             try:
                 completions = self.extract_completions_fn(self.reply.readAll())
             except Exception:
@@ -267,8 +267,8 @@ class WebJumpPrompt(Prompt):
     def eventFilter(self, obj, event):
         # call _text_edited on backspace release, as this is not reported by
         # the textEdited slot.
-        if event.type() == QEvent.KeyRelease:
-            if event.key() == Qt.Key_Backspace:
+        if event.type() == QEvent.Type.KeyRelease:
+            if event.key() == Qt.Key.Key_Backspace:
                 self._text_edited(self.minibuffer.input().text())
         return Prompt.eventFilter(self, obj, event)
 

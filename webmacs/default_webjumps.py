@@ -15,7 +15,7 @@
 
 import json
 
-from PyQt5.QtCore import QUrl
+from PyQt6.QtCore import QUrl
 
 from .commands.webjump import define_webjump, define_protocol, \
     webjump_default, WebJumpRequestCompleter, SyncWebJumpCompleter

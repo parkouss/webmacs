@@ -13,11 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, \
+from PyQt6.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QLabel, \
     QTableView, QHeaderView, QApplication, QSizePolicy, QFrame
-from PyQt5.QtGui import QPainter
-from PyQt5.QtCore import pyqtSignal as Signal, \
-    QEvent, QSortFilterProxyModel, QRegExp, Qt, QModelIndex, \
+from PyQt6.QtGui import QPainter
+from PyQt6.QtCore import pyqtSignal as Signal, \
+    QEvent, QSortFilterProxyModel, QRegularExpression, Qt, QModelIndex, \
     pyqtProperty
 
 from ..keymaps import MINIBUFFER_KEYMAP as KEYMAP
@@ -33,22 +33,22 @@ class Popup(QTableView):
         # do not diplay more than one line in a cell, and elide text on middle
         # (best for urls)
         self.setWordWrap(False)
-        self.setTextElideMode(Qt.ElideMiddle)
+        self.setTextElideMode(Qt.TextElideMode.ElideMiddle)
 
         self.setVisible(False)
-        self.setFrameStyle(QFrame.Box)
+        self.setFrameStyle(QFrame.Shape.Box)
         self._window = window
         self._buffer_input = buffer_input
         window.installEventFilter(self)
-        self.setFocusPolicy(Qt.NoFocus)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.horizontalHeader().hide()
         self.verticalHeader().hide()
-        self.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
+        self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         self.verticalHeader().setDefaultSectionSize(24)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setEditTriggers(QTableView.NoEditTriggers)
-        self.setSelectionBehavior(QTableView.SelectRows)
-        self.setSelectionMode(QTableView.SingleSelection)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
+        self.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
         self.setShowGrid(False)
         self._max_visible_items = 10
 
@@ -77,7 +77,7 @@ class Popup(QTableView):
 
     def eventFilter(self, obj, event):
         # resize the popup when the window is resized
-        if obj == self._window and event.type() == QEvent.Resize:
+        if obj == self._window and event.type() == QEvent.Type.Resize:
             self._resize(event.size())
         return False
 
@@ -123,11 +123,11 @@ class MinibufferInput(QLineEdit):
 
     def eventFilter(self, obj, event):
         etype = event.type()
-        if etype == QEvent.FocusOut and obj == self and self._eat_focusout \
+        if etype == QEvent.Type.FocusOut and obj == self and self._eat_focusout \
            and self._popup.isVisible():
             # keep the focus on the line edit
             return True
-        elif etype == QEvent.MouseButtonPress:
+        elif etype == QEvent.Type.MouseButtonPress:
             # if we've clicked in the widget (or its descendant), let it handle
             # the click
             pos = obj.mapToGlobal(event.pos())
@@ -141,7 +141,7 @@ class MinibufferInput(QLineEdit):
             if not self._popup.underMouse():
                 self._popup.hide()
                 return True
-        elif etype in (QEvent.KeyPress, QEvent.KeyRelease):
+        elif etype in (QEvent.Type.KeyPress, QEvent.Type.KeyRelease):
             # send event to the line edit
             self._eat_focusout = True
             self.event(event)
@@ -152,9 +152,9 @@ class MinibufferInput(QLineEdit):
 
     def event(self, evt):
         t = evt.type()
-        if t == QEvent.Show:
+        if t == QEvent.Type.Show:
             LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, True)
-        elif t == QEvent.Hide:
+        elif t == QEvent.Type.Hide:
             LOCAL_KEYMAP_SETTER.minibuffer_input_focus_changed(self, False)
         return QLineEdit.event(self, evt)
 
@@ -177,13 +177,13 @@ class MinibufferInput(QLineEdit):
         force = force or self._complete_empty
         if self._match is not None:
             if self._match == self.SimpleMatch:
-                pattern = "^" + QRegExp.escape(txt)
+                pattern = "^" + QRegularExpression.escape(txt)
             elif self._match == self.FuzzyMatch:
-                pattern = ".*".join(QRegExp.escape(t) for t in txt.split())
-            self._proxy_model.setFilterRegExp(QRegExp(pattern,
-                                                      Qt.CaseInsensitive))
+                pattern = ".*".join(QRegularExpression.escape(t) for t in txt.split())
+            self._proxy_model.setFilterRegularExpression(
+                QRegularExpression(pattern, QRegularExpression.PatternOption.CaseInsensitiveOption))
         else:
-            self._proxy_model.setFilterRegExp(None)
+            self._proxy_model.setFilterRegularExpression(None)
 
         if self._proxy_model.rowCount() == 0:
             self._popup.hide()
@@ -264,7 +264,7 @@ class MinibufferInput(QLineEdit):
 
     def reinit(self):
         self.setText("")
-        self.setEchoMode(self.Normal)
+        self.setEchoMode(self.EchoMode.Normal)
         self.setValidator(None)
         self._right_italic_text = ""
 
@@ -280,8 +280,8 @@ class MinibufferInput(QLineEdit):
         font = painter.font()
         font.setItalic(True)
         painter.setFont(font)
-        painter.setRenderHint(QPainter.Antialiasing, True)
-        painter.drawText(self.rect().adjusted(0, 0, -10, 0), Qt.AlignRight,
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        painter.drawText(self.rect().adjusted(0, 0, -10, 0), Qt.AlignmentFlag.AlignRight,
                          self._right_italic_text)
 
     @pyqtProperty("QColor")
@@ -321,13 +321,13 @@ class Minibuffer(QWidget):
         self.__default_label_policy = self.label.sizePolicy()
         # when input line edit is hidden, this size policy allow to not resize
         # the parent widget if the text in the label is too long.
-        self.label.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+        self.label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.label)
 
         self._input = MinibufferInput(self, window)
         layout.addWidget(self._input)
 
-        self.rlabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.rlabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         layout.addWidget(self.rlabel)
 
         self.set_height(MINIBUFFER_HEIGHT.value)
@@ -341,10 +341,10 @@ class Minibuffer(QWidget):
 
     def eventFilter(self, obj, event):
         if obj == self._input:
-            if event.type() == QEvent.Hide:
-                self.label.setSizePolicy(QSizePolicy.Ignored,
-                                         QSizePolicy.Fixed)
-            elif event.type() == QEvent.Show:
+            if event.type() == QEvent.Type.Hide:
+                self.label.setSizePolicy(QSizePolicy.Policy.Ignored,
+                                         QSizePolicy.Policy.Fixed)
+            elif event.type() == QEvent.Type.Show:
                 self.label.setSizePolicy(self.__default_label_policy)
                 obj.setMaximumHeight(self.label.height())
         return False
@@ -365,7 +365,7 @@ class Minibuffer(QWidget):
         if prompt:
             prompt.closed.connect(self._prompt_closed)
             prompt.closed.connect(prompt.deleteLater)
-            return prompt.exec_(self, **kwargs)
+            return prompt.exec(self, **kwargs)
 
     def close_prompt(self):
         if self._prompt:

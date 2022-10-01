@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QToolBar
-from PyQt5.QtCore import Qt, QRect
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QToolBar
+from PyQt6.QtCore import Qt, QRect
 
 from .minibuffer import Minibuffer
 from .egrid import ViewGridLayout
@@ -71,11 +71,11 @@ class Window(QWidget):
             return
 
         self._toolbar.clear()
-        self._toolbar.addAction(buffer.action(buffer.Back))
-        self._toolbar.addAction(buffer.action(buffer.Forward))
+        self._toolbar.addAction(buffer.action(buffer.WebAction.Back))
+        self._toolbar.addAction(buffer.action(buffer.WebAction.Forward))
         self._toolbar.addSeparator()
-        self._toolbar.addAction(buffer.action(buffer.Stop))
-        self._toolbar.addAction(buffer.action(buffer.Reload))
+        self._toolbar.addAction(buffer.action(buffer.WebAction.Stop))
+        self._toolbar.addAction(buffer.action(buffer.WebAction.Reload))
 
     def toggle_toolbar(self):
         if self._toolbar is None:
@@ -162,11 +162,14 @@ class Window(QWidget):
     def dump_state(self):
         return {
             "geometry": self.geometry().getRect(),
-            "window-state": int(self.windowState()),
+            "window-state": self.windowState().value,
             "view-layout": self._webviews_layout.dump_state(),
         }
 
     def restore_state(self, data, version):
         self.setGeometry(QRect(*data["geometry"]))
-        self.setWindowState(Qt.WindowStates(data["window-state"]))
+        for e in Qt.WindowState:
+            if e.value == data["window-state"]:
+                self.setWindowState(e)
+                break
         self._webviews_layout.restore_state(data["view-layout"])

@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtGui import QClipboard
+from PyQt6.QtGui import QClipboard
 
 from . import variables, minibuffer_show_info
 

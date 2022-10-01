@@ -13,13 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWebEngineWidgets import QWebEngineScript
+from PyQt6.QtWebEngineCore import QWebEngineScript
 
 from . import define_command
 
 
 def call_js(ctx, script):
-    ctx.buffer.runJavaScript(script, QWebEngineScript.ApplicationWorld)
+    ctx.buffer.runJavaScript(script, QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
 
 @define_command("caret-browsing-init")

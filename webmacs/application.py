@@ -17,12 +17,11 @@ import os
 import sys
 import logging
 
-from PyQt5.QtCore import pyqtSlot as Slot, Qt
+from PyQt6.QtCore import pyqtSlot as Slot, Qt
 
-from PyQt5.QtWebEngineWidgets import QWebEngineSettings
-from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtNetwork import QNetworkAccessManager
+from PyQt6.QtWebEngineCore import QWebEngineSettings, QWebEngineUrlRequestInterceptor
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtNetwork import QNetworkAccessManager
 
 from . import require
 from . import version
@@ -131,17 +130,17 @@ class Application(QApplication):
         self.__class__.INSTANCE = self
         self.instance_name = instance_name
 
-        if (version.opengl_vendor() == 'nouveau' and
-            not (os.environ.get('LIBGL_ALWAYS_SOFTWARE') == '1'
-                 or 'QT_XCB_FORCE_SOFTWARE_OPENGL' in os.environ)):
-            sys.exit(
-                "You are using the nouveau graphics driver but it"
-                " has issues with multithreaded opengl. You must"
-                " use another driver or set the variable environment"
-                " QT_XCB_FORCE_SOFTWARE_OPENGL to force software"
-                " opengl. Note that it might be slow, depending"
-                " on your hardware."
-            )
+        # if (version.opengl_vendor() == 'nouveau' and
+        #     not (os.environ.get('LIBGL_ALWAYS_SOFTWARE') == '1'
+        #          or 'QT_XCB_FORCE_SOFTWARE_OPENGL' in os.environ)):
+        #     sys.exit(
+        #         "You are using the nouveau graphics driver but it"
+        #         " has issues with multithreaded opengl. You must"
+        #         " use another driver or set the variable environment"
+        #         " QT_XCB_FORCE_SOFTWARE_OPENGL to force software"
+        #         " opengl. Note that it might be slow, depending"
+        #         " on your hardware."
+        #     )
 
         if version.is_mac:
             self.setAttribute(Qt.AA_MacDontSwapCtrlAndMeta)
@@ -159,25 +158,24 @@ class Application(QApplication):
         self.profile = named_profile(profile_name)
         self.profile.enable(self)
 
-        settings = QWebEngineSettings.globalSettings()
+        settings = self.profile.q_profile.settings()
         settings.setAttribute(
-            QWebEngineSettings.LinksIncludedInFocusChain, False,
+            QWebEngineSettings.WebAttribute.LinksIncludedInFocusChain, False,
         )
         settings.setAttribute(
-            QWebEngineSettings.PluginsEnabled, True,
+            QWebEngineSettings.WebAttribute.PluginsEnabled, True,
         )
         settings.setAttribute(
-            QWebEngineSettings.FullScreenSupportEnabled, True,
+            QWebEngineSettings.WebAttribute.FullScreenSupportEnabled, True,
         )
         settings.setAttribute(
-            QWebEngineSettings.JavascriptCanOpenWindows, True,
+            QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, True,
         )
-        if version.min_qt_version >= (5, 8):
-            settings.setAttribute(
-                QWebEngineSettings.FocusOnNavigationEnabled, False,
-            )
         settings.setAttribute(
-            QWebEngineSettings.JavascriptEnabled, enable_javascript.value,
+            QWebEngineSettings.WebAttribute.FocusOnNavigationEnabled, False,
+        )
+        settings.setAttribute(
+            QWebEngineSettings.WebAttribute.JavascriptEnabled, enable_javascript.value,
         )
 
         self.installEventFilter(LOCAL_KEYMAP_SETTER)

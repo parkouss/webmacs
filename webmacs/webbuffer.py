@@ -17,9 +17,9 @@ import logging
 import time
 import json
 
-from PyQt5.QtCore import QUrl, pyqtSlot as Slot
-from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineScript
-from PyQt5.QtWebChannel import QWebChannel
+from PyQt6.QtCore import QUrl, pyqtSlot as Slot
+from PyQt6.QtWebEngineCore import QWebEnginePage, QWebEngineScript
+from PyQt6.QtWebChannel import QWebChannel
 from collections import namedtuple
 
 from . import hooks, variables, windows
@@ -81,7 +81,7 @@ def close_buffer(wb):
     if internal_view:
         # remove the associated internal page view (might be causing a crash
         # from when calling ~QWebEnginePage())
-        wb.setView(None)
+        # wb.setView(None)
         internal_view.detach()
         internal_view.deleteLater()
 
@@ -103,9 +103,9 @@ class WebBuffer(QWebEnginePage):
 
     LOGGER = logging.getLogger("webcontent")
     JSLEVEL2LOGGING = {
-        QWebEnginePage.InfoMessageLevel: logging.INFO,
-        QWebEnginePage.WarningMessageLevel: logging.WARNING,
-        QWebEnginePage.ErrorMessageLevel: logging.ERROR,
+        QWebEnginePage.JavaScriptConsoleMessageLevel.InfoMessageLevel: logging.INFO,
+        QWebEnginePage.JavaScriptConsoleMessageLevel.WarningMessageLevel: logging.WARNING,
+        QWebEnginePage.JavaScriptConsoleMessageLevel.ErrorMessageLevel: logging.ERROR,
     }
 
     def __init__(self, url=None):
@@ -131,7 +131,7 @@ class WebBuffer(QWebEnginePage):
         channel.registerObject("contentHandler", self._content_handler)
 
         self.setWebChannel(channel,
-                           QWebEngineScript.ApplicationWorld)
+                           QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
         self.loadFinished.connect(self.finished)
         self.authenticationRequired.connect(self.handle_authentication)
@@ -141,6 +141,7 @@ class WebBuffer(QWebEnginePage):
         self.__keymap_mode = Mode.KEYMAP_NORMAL
         self.__mode = get_mode("standard-mode")
         self.__text_edit_mark = False
+        self._internal_view = None
 
         if url:
             if isinstance(url, DelayedLoadingUrl):
@@ -149,7 +150,7 @@ class WebBuffer(QWebEnginePage):
                 self.load(url)
 
     def internal_view(self):
-        return QWebEnginePage.view(self)
+        return self._internal_view
 
     def view(self):
         iv = self.internal_view()
@@ -228,32 +229,32 @@ class WebBuffer(QWebEnginePage):
         self.runJavaScript(
             "hints.selectBrowserObjects(%r, %r, %r);"
             % (selector, method, json.dumps(method_options)),
-            QWebEngineScript.ApplicationWorld)
+            QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
     def stop_select_browser_objects(self):
         self.runJavaScript(
             "hints.clearBrowserObjects();",
-            QWebEngineScript.ApplicationWorld)
+            QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
     def select_nex_browser_object(self, forward=True):
         self.runJavaScript(
             "hints.activateNextHint(%s);" % ("false" if forward else "true",),
-            QWebEngineScript.ApplicationWorld)
+            QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
     def filter_browser_objects(self, text):
         self.runJavaScript(
             "hints.filterSelection(%r);" % text,
-            QWebEngineScript.ApplicationWorld)
+            QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
     def focus_active_browser_object(self):
         self.runJavaScript(
             "hints.followCurrentLink();",
-            QWebEngineScript.ApplicationWorld)
+            QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
     def select_visible_hint(self, hint_id):
         self.runJavaScript(
             "hints.selectVisibleHint(%r);" % hint_id,
-            QWebEngineScript.ApplicationWorld)
+            QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
     @Slot("QWebEngineFullScreenRequest")
     def _on_full_screen_requested(self, request):

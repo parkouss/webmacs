@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtCore import QEvent, Qt
+from PyQt6.QtCore import QEvent, Qt
 
 from ..minibuffer import Prompt
 from ..keymaps import KeyPress, HINT_KEYMAP
@@ -130,7 +130,7 @@ class HintPrompt(Prompt):
 
     def eventFilter(self, obj, event):
         numbers = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
-        if event.type() == QEvent.KeyPress:
+        if event.type() == QEvent.Type.KeyPress:
             if self.method == "filter":
                 text = event.text()
                 if text in numbers:
@@ -139,12 +139,12 @@ class HintPrompt(Prompt):
                     self._update_label()
                     return True
                 elif not event.key() in (
-                        Qt.Key_Control,
-                        Qt.Key_Shift,
-                        Qt.Key_Alt,
-                        Qt.Key_Meta,
-                        Qt.Key_unknown,
-                        Qt.Key_Return,
+                        Qt.Key.Key_Control,
+                        Qt.Key.Key_Shift,
+                        Qt.Key.Key_Alt,
+                        Qt.Key.Key_Meta,
+                        Qt.Key.Key_unknown,
+                        Qt.Key.Key_Return,
                 ):
                     self.numbers = ""
                     self._update_label()

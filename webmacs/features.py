@@ -14,7 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import sqlite3
-from PyQt5.QtWebEngineWidgets import QWebEnginePage
+from PyQt6.QtWebEngineCore import QWebEnginePage
 
 
 class Features(object):

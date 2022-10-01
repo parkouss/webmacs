@@ -25,7 +25,7 @@ def register_schemes():
     if version.pyqt_version < (5, 12):
         return
 
-    from PyQt5.QtWebEngineCore import QWebEngineUrlScheme
+    from PyQt6.QtWebEngineCore import QWebEngineUrlScheme
 
     for scheme in all_schemes():
         qscheme = QWebEngineUrlScheme(scheme.scheme)

@@ -19,11 +19,11 @@ import logging
 import re
 import subprocess
 
-from PyQt5.QtGui import (QOpenGLContext, QOpenGLVersionProfile,
-                         QOffscreenSurface)
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWebEngineWidgets import QWebEngineProfile
-from PyQt5.QtCore import (QT_VERSION_STR, PYQT_VERSION_STR,  # noqa: F401
+from PyQt6.QtOpenGL import QOpenGLVersionProfile
+from PyQt6.QtGui import (QOpenGLContext, QOffscreenSurface)
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWebEngineCore import QWebEngineProfile
+from PyQt6.QtCore import (QT_VERSION_STR, PYQT_VERSION_STR,  # noqa: F401
                           QT_VERSION, PYQT_VERSION)
 from . import __version__ as WEBMACS_VERSION_STR  # noqa: F401
 
@@ -71,10 +71,10 @@ def opengl_vendor():  # pragma: no cover
         vp = QOpenGLVersionProfile()
         vp.setVersion(2, 0)
 
-        vf = ctx.versionFunctions(vp)
-        if vf is None:
-            logging.debug("opengl_vendor: Getting version functions failed!")
-            return None
+        # vf = ctx.versionFunctions(vp)
+        # if vf is None:
+        #     logging.debug("opengl_vendor: Getting version functions failed!")
+        #     return None
 
         return vf.glGetString(vf.GL_VENDOR)
     finally:

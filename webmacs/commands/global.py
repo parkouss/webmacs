@@ -15,7 +15,7 @@
 
 import itertools
 import os
-from PyQt5.QtCore import QStringListModel, QModelIndex
+from PyQt6.QtCore import QStringListModel, QModelIndex
 
 from . import define_command, COMMANDS, register_prompt_opener_commands
 from ..minibuffer import Prompt

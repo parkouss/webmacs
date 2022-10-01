@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
-from PyQt5.QtGui import QImage
-from PyQt5.QtNetwork import QNetworkRequest
+from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PyQt6.QtGui import QImage
+from PyQt6.QtNetwork import QNetworkRequest
 
 from .. import current_buffer
 from ..minibuffer import Prompt
@@ -39,18 +39,18 @@ class BufferHistoryTableModel(QAbstractTableModel):
     def columnCount(self, index=QModelIndex()):
         return 2
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         hitem = index.internalPointer()
         if not hitem:
             return
 
         col = index.column()
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             if col == 0:
                 return hitem.url().toString()
             else:
                 return hitem.title()
-        elif role == Qt.DecorationRole and col == 0:
+        elif role == Qt.ItemDataRole.DecorationRole and col == 0:
             return self._icons.get(hitem.iconUrl())  # hitem.iconUrl()
 
     def index(self, row, col, parent=QModelIndex()):

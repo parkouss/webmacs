@@ -15,7 +15,7 @@
 
 import importlib
 
-from PyQt5.QtCore import QObject, QEvent, QTimer
+from PyQt6.QtCore import QObject, QEvent, QTimer
 
 from . import hooks
 
@@ -55,10 +55,10 @@ class WindowsHandler(QObject):
 
     def eventFilter(self, window, event):
         t = event.type()
-        if t == QEvent.WindowActivate:
+        if t == QEvent.Type.WindowActivate:
             self.current_window = window
             hooks.window_activated(window)
-        elif t == QEvent.Close:
+        elif t == QEvent.Type.Close:
             if window.quit_if_last_closed and len(self.windows) == 1:
                 if self._on_last_window_closing():
                     return True

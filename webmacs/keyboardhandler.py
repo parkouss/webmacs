@@ -15,8 +15,8 @@
 
 import logging
 
-from PyQt5.QtCore import QObject, QEvent
-from PyQt5.QtGui import QWindow
+from PyQt6.QtCore import QObject, QEvent
+from PyQt6.QtGui import QWindow
 
 from .keymaps import KeyPress, GLOBAL_KEYMAP, CHAR2KEY
 from . import hooks
@@ -49,31 +49,31 @@ class LocalKeymapSetter(QObject):
         # event filter on the global app is required to avoid click on webviews
         t = evt.type()
 
-        if t == QEvent.KeyPress and isinstance(obj, QWindow):
+        if t == QEvent.Type.KeyPress and isinstance(obj, QWindow):
             return KEY_EATER.event_filter(obj, evt)
-        elif t == QEvent.ShortcutOverride:
+        elif t == QEvent.Type.ShortcutOverride:
             # disable automatic shortcuts in browser, like C-a
             return True
         elif self.enabled_minibuffer and t in (
-                QEvent.MouseButtonPress,
-                QEvent.MouseButtonDblClick,
-                QEvent.MouseButtonRelease,
-                QEvent.MouseMove):
+                QEvent.Type.MouseButtonPress,
+                QEvent.Type.MouseButtonDblClick,
+                QEvent.Type.MouseButtonRelease,
+                QEvent.Type.MouseMove):
             minibuff = current_minibuffer()
             if minibuff:
                 # allow clicks in minibuffer inputs and popup only
                 # note: QWidget.underMouse does not works here.
                 input = minibuff.input()
-                if input.rect().contains(input.mapFromGlobal(evt.globalPos())):
+                if input.rect().contains(input.mapFromGlobal(evt.globalPosition().toPoint())):
                     return False
                 else:
                     popup = input.popup()
                     if popup.isVisible() and popup.rect().contains(
-                            popup.mapFromGlobal(evt.globalPos())):
+                            popup.mapFromGlobal(evt.globalPosition().toPoint())):
                         return False
                 # else flash the minibuffer on click.
-                if evt.type() in (QEvent.MouseButtonPress,
-                                  QEvent.MouseButtonDblClick) \
+                if evt.type() in (QEvent.Type.MouseButtonPress,
+                                  QEvent.Type.MouseButtonDblClick) \
                                   and minibuff.prompt():  # noqa: 125
                     minibuff.prompt().flash()
             return True
@@ -280,8 +280,8 @@ def send_key_event(keypress):
     from .application import app as _app
     app = _app()
     w = app.focusWindow()
-    app.postEvent(w, keypress.to_qevent(QEvent.KeyPress))
-    app.postEvent(w, keypress.to_qevent(QEvent.KeyRelease))
+    app.postEvent(w, keypress.to_qevent(QEvent.Type.KeyPress))
+    app.postEvent(w, keypress.to_qevent(QEvent.Type.KeyRelease))
 
 
 def local_keymap():

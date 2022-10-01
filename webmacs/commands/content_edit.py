@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWebEngineWidgets import QWebEngineScript
-from PyQt5.QtCore import Qt, QEvent
-from PyQt5.QtGui import QKeyEvent
+from PyQt6.QtWebEngineCore import QWebEngineScript
+from PyQt6.QtCore import Qt, QEvent
+from PyQt6.QtGui import QKeyEvent
 
 from ..application import app
 from ..webbuffer import WebBuffer
@@ -24,25 +24,25 @@ from . import define_command
 
 def send_raw_key(ctx, key, with_ctrl=False, auto_shift=True):
     a = app()
-    modifiers = Qt.NoModifier
+    modifiers = Qt.KeyboardModifier.NoModifier
     if auto_shift:
         if ctx.buffer.hasSelection() and not ctx.buffer.text_edit_mark:
             ctx.buffer.set_text_edit_mark(True)
         if ctx.buffer.text_edit_mark:
             modifiers |= Qt.ShiftModifier
     if with_ctrl:
-        modifiers |= Qt.ControlModifier
+        modifiers |= Qt.KeyboardModifier.ControlModifier
 
     w = app().focusWindow()
-    a.postEvent(w, QKeyEvent(QEvent.KeyPress, key, modifiers))
-    a.postEvent(w, QKeyEvent(QEvent.KeyRelease, key, modifiers))
+    a.postEvent(w, QKeyEvent(QEvent.Type.KeyPress, key, modifiers))
+    a.postEvent(w, QKeyEvent(QEvent.Type.KeyRelease, key, modifiers))
 
 
 def run_js(ctx, cmd, cb=None):
     if cb:
-        ctx.buffer.runJavaScript(cmd, QWebEngineScript.ApplicationWorld, cb)
+        ctx.buffer.runJavaScript(cmd, QWebEngineScript.ScriptWorldId.ApplicationWorld, cb)
     else:
-        ctx.buffer.runJavaScript(cmd, QWebEngineScript.ApplicationWorld)
+        ctx.buffer.runJavaScript(cmd, QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
 
 @define_command("content-edit-cancel")
@@ -75,7 +75,7 @@ def forward_char(ctx):
     """
     Move one character forward in browser text field.
     """
-    send_raw_key(ctx, Qt.Key_Right)
+    send_raw_key(ctx, Qt.Key.Key_Right)
 
 
 @define_command("content-edit-backward-char")
@@ -83,7 +83,7 @@ def backward_char(ctx):
     """
     Move one character backward in browser text field.
     """
-    send_raw_key(ctx, Qt.Key_Left)
+    send_raw_key(ctx, Qt.Key.Key_Left)
 
 
 @define_command("content-edit-forward-word")
@@ -91,7 +91,7 @@ def forward_word(ctx):
     """
     Move one word forward in browser text field.
     """
-    send_raw_key(ctx, Qt.Key_Right, with_ctrl=True)
+    send_raw_key(ctx, Qt.Key.Key_Right, with_ctrl=True)
 
 
 @define_command("content-edit-backward-word")
@@ -99,7 +99,7 @@ def backward_word(ctx):
     """
     Move one word backward in browser text field.
     """
-    send_raw_key(ctx, Qt.Key_Left, with_ctrl=True)
+    send_raw_key(ctx, Qt.Key.Key_Left, with_ctrl=True)
 
 
 @define_command("content-edit-beginning-of-line")
@@ -107,7 +107,7 @@ def move_beginning_of_line(ctx):
     """
     Move to the beginning of the line in browser text field.
     """
-    send_raw_key(ctx, Qt.Key_Home)
+    send_raw_key(ctx, Qt.Key.Key_Home)
 
 
 @define_command("content-edit-end-of-line")
@@ -115,12 +115,12 @@ def move_end_of_line(ctx):
     """
     Move to the end of the line in browser text field.
     """
-    send_raw_key(ctx, Qt.Key_End)
+    send_raw_key(ctx, Qt.Key.Key_End)
 
 
 def delete_selection(ctx):
     def wrapper(_):
-        send_raw_key(ctx, Qt.Key_Backspace, auto_shift=False)
+        send_raw_key(ctx, Qt.Key.Key_Backspace, auto_shift=False)
         ctx.buffer.set_text_edit_mark(False)
     return wrapper
 
@@ -227,7 +227,7 @@ def undo(ctx):
     """
     Undo the last editing action.
     """
-    ctx.buffer.triggerAction(WebBuffer.Undo)
+    ctx.buffer.triggerAction(WebBuffer.WebAction.Undo)
 
 
 @define_command("content-edit-redo")
@@ -235,4 +235,4 @@ def redo(ctx):
     """
     Redo the last editing action.
     """
-    ctx.buffer.triggerAction(WebBuffer.Redo)
+    ctx.buffer.triggerAction(WebBuffer.WebAction.Redo)

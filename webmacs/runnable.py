@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtCore import QRunnable, QObject, QThreadPool, QEvent
+from PyQt6.QtCore import QRunnable, QObject, QThreadPool, QEvent
 
 
 class RunnableFinishedEvent(QEvent):

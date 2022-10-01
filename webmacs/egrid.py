@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5.QtWidgets import QLayout
-from PyQt5.QtCore import QRect, QSize
+from PyQt6.QtWidgets import QLayout
+from PyQt6.QtCore import QRect, QSize
 
 from . import call_later, BUFFERS
 from .webview import WebView

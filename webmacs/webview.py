@@ -15,9 +15,9 @@
 
 import time
 
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget
-from PyQt5.QtCore import QEvent
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QWidget
+from PyQt6.QtCore import QEvent
 
 from .keyboardhandler import local_keymap, set_local_keymap, \
     LOCAL_KEYMAP_SETTER
@@ -82,9 +82,8 @@ class WebView(QFrame):
         internal_view = buffer.internal_view()
         if not internal_view:
             internal_view = InternalWebView()
-            internal_view.setPage(buffer)
 
-        internal_view.attach(self)
+        internal_view.attach(self, buffer)
         self._internal_view = internal_view
 
         buffer.update_title()
@@ -127,22 +126,28 @@ class InternalWebView(QWebEngineView):
         QWebEngineView.__init__(self)
         self._view = None
         self._fullscreen_state = None
+        self._buffer = None
 
     def view(self):
         return self._view
 
-    def attach(self, view):
+    def attach(self, view, buffer):
         self._view = view
+        self._buffer = buffer
+        buffer._internal_view = self
         view.layout().addWidget(self)
+        self.setPage(buffer)
 
-    def detach(self):
+    def detach(self, permanently=True):
+        if permanently and self._buffer:
+            self._buffer._internal_view = None
         if self._view:
             self._view.layout().removeWidget(self)
             self.setParent(None)
             self._view = None
 
     def event(self, evt):
-        if evt.type() == QEvent.ChildAdded:
+        if evt.type() == QEvent.Type.ChildAdded:
             obj = evt.child()
             if isinstance(obj, QWidget):
                 obj.installEventFilter(self)
@@ -154,13 +159,13 @@ class InternalWebView(QWebEngineView):
             return False
 
         t = evt.type()
-        if t == QEvent.MouseButtonPress:
+        if t == QEvent.Type.MouseButtonPress:
             if view != view.main_window.current_webview():
                 view.set_current()
-        elif t == QEvent.FocusIn:
+        elif t == QEvent.Type.FocusIn:
             if self.isEnabled():  # disabled when there is a full-screen window
                 LOCAL_KEYMAP_SETTER.view_focus_changed(view, True)
-        elif t == QEvent.FocusOut:
+        elif t == QEvent.Type.FocusOut:
             if self.isEnabled():  # disabled when there is a full-screen window
                 LOCAL_KEYMAP_SETTER.view_focus_changed(view, False)
         return False
@@ -186,9 +191,9 @@ class FullScreenState(object):
         self.keymap = local_keymap()
 
         set_local_keymap(self.view.buffer().mode.fullscreen_keymap())
-        self.internal_view.detach()
+        self.internal_view.detach(permanently=False)
         # show fullscreen on the right place.
-        screen = app().screens()[app().desktop().screenNumber(self.view)]
+        screen = self.view.screen()
         self.internal_view.showFullScreen()
         self.internal_view.setGeometry(screen.geometry())
         self.view.main_window.fullscreen_window = self
@@ -196,5 +201,5 @@ class FullScreenState(object):
     def restore(self):
         set_local_keymap(self.keymap)
         self.internal_view.showNormal()
-        self.internal_view.attach(self.view)
+        self.internal_view.attach(self.view, self.view.buffer())
         self.view.main_window.fullscreen_window = None

@@ -19,8 +19,8 @@ import re
 import importlib
 import inspect
 from itertools import groupby
-from PyQt5.QtCore import QBuffer, QFile, QUrlQuery
-from PyQt5.QtWebEngineCore import QWebEngineUrlSchemeHandler
+from PyQt6.QtCore import QBuffer, QFile, QUrlQuery
+from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler
 from jinja2 import Environment, PackageLoader
 from ... import version, COMMANDS
 from ...variables import VARIABLES

@@ -20,10 +20,10 @@ import shlex
 import logging
 import itertools
 
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
+from PyQt6.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
     QProcess
 
-from PyQt5.QtWebEngineWidgets import QWebEngineDownloadItem
+from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
 
 from .prompts import (DlChooseActionPrompt, DlOpenActionPrompt, DlPrompt,
                       OverwriteFilePrompt)
@@ -92,11 +92,11 @@ def find_unique_suggested_path(dirname, filename):
 
 
 STATE_STR = {
-    QWebEngineDownloadItem.DownloadRequested: "Requested",
-    QWebEngineDownloadItem.DownloadInProgress: "In progress",
-    QWebEngineDownloadItem.DownloadCompleted: "Completed",
-    QWebEngineDownloadItem.DownloadCancelled: "Cancelled",
-    QWebEngineDownloadItem.DownloadInterrupted: "Interrupted",
+    QWebEngineDownloadRequest.DownloadState.DownloadRequested: "Requested",
+    QWebEngineDownloadRequest.DownloadState.DownloadInProgress: "In progress",
+    QWebEngineDownloadRequest.DownloadState.DownloadCompleted: "Completed",
+    QWebEngineDownloadRequest.DownloadState.DownloadCancelled: "Cancelled",
+    QWebEngineDownloadRequest.DownloadState.DownloadInterrupted: "Interrupted",
 }
 
 
@@ -169,7 +169,7 @@ class DownloadManager(QObject):
         for buffer in self._buffers:
             buffer.runJavaScript("update_download(%s);" % dl)
 
-    @Slot("QWebEngineDownloadItem*")
+    @Slot("QWebEngineDownloadRequest*")
     def download_requested(self, dl):
         minibuff = current_minibuffer()
 
@@ -185,7 +185,7 @@ class DownloadManager(QObject):
             logging.info("Downloading %s...", dl.path())
 
             def finished():
-                if dl.state() == QWebEngineDownloadItem.DownloadCompleted:
+                if dl.state() == QWebEngineDownloadRequest.DownloadState.DownloadCompleted:
                     logging.info("Opening external file %s with %s",
                                  dl.path(), executable)
                     self._run_program(executable, dl.path())

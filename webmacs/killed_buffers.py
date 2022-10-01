@@ -14,7 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import collections
-from PyQt5.QtCore import QDataStream, QByteArray, QIODevice
+from PyQt6.QtCore import QDataStream, QByteArray, QIODevice
 from .webbuffer import create_buffer
 from . import variables, hooks
 
@@ -52,7 +52,7 @@ class KilledBuffer(object):
     @classmethod
     def from_buffer(cls, buff):
         data = QByteArray()
-        stream = QDataStream(data, QIODevice.WriteOnly)
+        stream = QDataStream(data, QIODevice.OpenModeFlag.WriteOnly)
         stream << buff.history()
 
         return cls(
@@ -65,7 +65,7 @@ class KilledBuffer(object):
 
     def revive(self):
         buff = create_buffer()
-        stream = QDataStream(self.history_data, QIODevice.ReadOnly)
+        stream = QDataStream(self.history_data, QIODevice.OpenModeFlag.ReadOnly)
         stream >> buff.history()
         self.all.remove(self)
 

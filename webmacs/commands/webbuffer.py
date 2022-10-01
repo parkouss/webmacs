@@ -15,10 +15,10 @@
 
 import itertools
 
-from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
-from PyQt5.QtGui import QColor
-from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
-from PyQt5.QtWebEngineWidgets import QWebEngineScript
+from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PyQt6.QtGui import QColor
+from PyQt6.QtPrintSupport import QPrinter, QPrintDialog
+from PyQt6.QtWebEngineCore import QWebEngineScript
 
 from ..application import app
 from ..commands import define_command
@@ -53,20 +53,20 @@ class BufferTableModel(QAbstractTableModel):
     def columnCount(self, index=QModelIndex()):
         return 2
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         buff = index.internalPointer()
         if not buff:
             return
 
         col = index.column()
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             if col == 0:
                 return buff.url().toString()
             else:
                 return "[{}] {}".format(BUFFERS.index(buff) + 1, buff.title())
-        elif role == Qt.DecorationRole and col == 0:
+        elif role == Qt.ItemDataRole.DecorationRole and col == 0:
             return buff.icon()
-        elif role == Qt.BackgroundColorRole:
+        elif role == Qt.ItemDataRole.BackgroundRole:
             if buff == current_buffer():
                 if switch_buffer_current_color.value:
                     return QColor(switch_buffer_current_color.value)
@@ -252,7 +252,7 @@ def go_forward(ctx):
     if not ctx.buffer.history().canGoForward():
         ctx.minibuffer.show_info("Can't go forward in history.")
     else:
-        ctx.buffer.triggerAction(WebBuffer.Forward)
+        ctx.buffer.triggerAction(WebBuffer.WebAction.Forward)
 
 
 @define_command("go-backward")
@@ -263,7 +263,7 @@ def go_backward(ctx):
     if not ctx.buffer.history().canGoBack():
         ctx.minibuffer.show_info("Can't go back in history.")
     else:
-        ctx.buffer.triggerAction(WebBuffer.Back)
+        ctx.buffer.triggerAction(WebBuffer.WebAction.Back)
 
 
 @define_command("scroll-down")
@@ -319,7 +319,7 @@ def webcontent_copy(ctx):
     """
     Copy the selection in the current buffer.
     """
-    ctx.buffer.triggerAction(WebBuffer.Copy)
+    ctx.buffer.triggerAction(WebBuffer.WebAction.Copy)
 
 
 @define_command("webcontent-cut")
@@ -327,7 +327,7 @@ def webcontent_cut(ctx):
     """
     Cut the selection in the current buffer.
     """
-    ctx.buffer.triggerAction(WebBuffer.Cut)
+    ctx.buffer.triggerAction(WebBuffer.WebAction.Cut)
 
 
 @define_command("webcontent-paste")
@@ -335,7 +335,7 @@ def webcontent_paste(ctx):
     """
     Paste the selection in the current buffer.
     """
-    ctx.buffer.triggerAction(WebBuffer.Paste)
+    ctx.buffer.triggerAction(WebBuffer.WebAction.Paste)
 
 
 @define_command("reload-buffer")
@@ -343,7 +343,7 @@ def reload_buffer(ctx):
     """
     Reload the current buffer.
     """
-    ctx.buffer.triggerAction(WebBuffer.Reload)
+    ctx.buffer.triggerAction(WebBuffer.WebAction.Reload)
 
 
 @define_command("reload-buffer-no-cache")
@@ -351,7 +351,7 @@ def reload_buffer_no_cache(ctx):
     """
     Reload the current buffer bypassing any cache.
     """
-    ctx.buffer.triggerAction(WebBuffer.ReloadAndBypassCache)
+    ctx.buffer.triggerAction(WebBuffer.WebAction.ReloadAndBypassCache)
 
 
 @define_command("close-buffer")
@@ -380,7 +380,7 @@ def buffer_select_content(ctx):
     """
     Select all content in the buffer.
     """
-    ctx.buffer.triggerAction(WebBuffer.SelectAll)
+    ctx.buffer.triggerAction(WebBuffer.WebAction.SelectAll)
 
 
 @define_command("zoom-in")
@@ -420,7 +420,7 @@ def text_zoom_in(ctx):
     Zom in (text only) in the buffer.
     """
     ctx.buffer.runJavaScript("textzoom.changeFont(0.1);",
-                             QWebEngineScript.ApplicationWorld,
+                             QWebEngineScript.ScriptWorldId.ApplicationWorld,
                              _show_info_text_zoom(ctx))
 
 
@@ -430,7 +430,7 @@ def text_zoom_out(ctx):
     Zom out (text only) in the buffer.
     """
     ctx.buffer.runJavaScript("textzoom.changeFont(-0.1);",
-                             QWebEngineScript.ApplicationWorld,
+                             QWebEngineScript.ScriptWorldId.ApplicationWorld,
                              _show_info_text_zoom(ctx))
 
 
@@ -440,7 +440,7 @@ def text_zoom_reset(ctx):
     Reset the zoom (text only) in the buffer.
     """
     ctx.buffer.runJavaScript("textzoom.resetChangeFont();",
-                             QWebEngineScript.ApplicationWorld,
+                             QWebEngineScript.ScriptWorldId.ApplicationWorld,
                              _show_info_text_zoom(ctx))
 
 
@@ -449,7 +449,7 @@ def buffer_unselect(ctx):
     """
     Unselect selection in the current web buffer.
     """
-    ctx.buffer.triggerAction(WebBuffer.Unselect)
+    ctx.buffer.triggerAction(WebBuffer.WebAction.Unselect)
 
 
 @define_command("buffer-escape")
@@ -478,18 +478,18 @@ class KilledBufferTableModel(QAbstractTableModel):
     def columnCount(self, index=QModelIndex()):
         return 2
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         killed_buff = index.internalPointer()
         if not killed_buff:
             return
 
         col = index.column()
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             if col == 0:
                 return killed_buff.url.toString()
             else:
                 return killed_buff.title
-        elif role == Qt.DecorationRole and col == 0:
+        elif role == Qt.ItemDataRole.DecorationRole and col == 0:
             return killed_buff.icon
 
     def index(self, row, col, parent=QModelIndex()):
@@ -549,7 +549,7 @@ def copy_current_link(ctx):
 
     buffer.content_handler.foundCurrentLinkUrl.connect(copy_to_clipboard)
     buffer.runJavaScript("currentLinkUrl();",
-                         QWebEngineScript.ApplicationWorld)
+                         QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
 
 @define_command("copy-current-buffer-url")
@@ -590,7 +590,7 @@ def print_buffer(ctx):
     printer = QPrinter()
     dlg = QPrintDialog(printer)
     with WithoutAppEventFilter():
-        ok = dlg.exec_() == dlg.Accepted
+        ok = dlg.exec() == dlg.Accepted
     if ok:
         # printer must be kept around to avoid a crash.
         # it must be released in the notif callback

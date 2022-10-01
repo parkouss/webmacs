@@ -16,7 +16,7 @@
 from . import FULLSCREEN_KEYMAP
 from .. import current_window
 
-from PyQt5.QtWebEngineWidgets import QWebEnginePage
+from PyQt6.QtWebEngineCore import QWebEnginePage
 
 
 @FULLSCREEN_KEYMAP.define_key("q")
@@ -25,4 +25,4 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage
 def exit_full_screen(ctx):
     fw = current_window().fullscreen_window
     if fw:
-        fw.internal_view.triggerPageAction(QWebEnginePage.ExitFullScreen)
+        fw.internal_view.triggerPageAction(QWebEnginePage.WebAction.ExitFullScreen)
