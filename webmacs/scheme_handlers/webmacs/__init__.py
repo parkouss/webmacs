@@ -95,7 +95,6 @@ class WebmacsSchemeHandler(QWebEngineUrlSchemeHandler):
                 ("Qt version", version.QT_VERSION_STR),
                 ("PyQt version", version.PYQT_VERSION_STR),
                 ("Chromium version", version.chromium_version()),
-                ("Opengl vendor", version.opengl_vendor()),
             )
         })
 
