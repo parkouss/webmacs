@@ -22,7 +22,6 @@ from PyQt6.QtCore import QEvent
 from .keyboardhandler import local_keymap, set_local_keymap, \
     LOCAL_KEYMAP_SETTER
 from . import windows, variables
-from .application import app
 
 
 def _update_stylesheets(var):

@@ -19,7 +19,8 @@ from . import define_command
 
 
 def call_js(ctx, script):
-    ctx.buffer.runJavaScript(script, QWebEngineScript.ScriptWorldId.ApplicationWorld)
+    ctx.buffer.runJavaScript(script,
+                             QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
 
 @define_command("caret-browsing-init")

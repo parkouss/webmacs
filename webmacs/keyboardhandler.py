@@ -64,12 +64,14 @@ class LocalKeymapSetter(QObject):
                 # allow clicks in minibuffer inputs and popup only
                 # note: QWidget.underMouse does not works here.
                 input = minibuff.input()
-                if input.rect().contains(input.mapFromGlobal(evt.globalPosition().toPoint())):
+                if input.rect().contains(
+                        input.mapFromGlobal(evt.globalPosition().toPoint())):
                     return False
                 else:
                     popup = input.popup()
                     if popup.isVisible() and popup.rect().contains(
-                            popup.mapFromGlobal(evt.globalPosition().toPoint())):
+                            popup.mapFromGlobal(
+                                evt.globalPosition().toPoint())):
                         return False
                 # else flash the minibuffer on click.
                 if evt.type() in (QEvent.Type.MouseButtonPress,

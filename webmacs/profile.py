@@ -86,11 +86,14 @@ class Profile(object):
 
         self.update_spell_checking()
 
-        def inject_js(filepath, ipoint=QWebEngineScript.InjectionPoint.DocumentCreation,
-                      iid=QWebEngineScript.ScriptWorldId.ApplicationWorld, sub_frames=False,
+        def inject_js(filepath,
+                      ipoint=QWebEngineScript.InjectionPoint.DocumentCreation,
+                      iid=QWebEngineScript.ScriptWorldId.ApplicationWorld,
+                      sub_frames=False,
                       script_transform=None):
             f = QFile(filepath)
-            assert f.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
+            assert f.open(
+                QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
             src = QTextStream(f).readAll()
             if script_transform:
                 src = script_transform(src)
@@ -117,7 +120,8 @@ class Profile(object):
             contentjs.append(f.read())
 
         script = QWebEngineScript()
-        script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentCreation)
+        script.setInjectionPoint(
+            QWebEngineScript.InjectionPoint.DocumentCreation)
         script.setSourceCode("\n".join(contentjs))
         script.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld)
         script.setRunsOnSubFrames(True)

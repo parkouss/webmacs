@@ -102,10 +102,11 @@ class WebBuffer(QWebEnginePage):
     """
 
     LOGGER = logging.getLogger("webcontent")
+    JSMessageLevel = QWebEnginePage.JavaScriptConsoleMessageLevel
     JSLEVEL2LOGGING = {
-        QWebEnginePage.JavaScriptConsoleMessageLevel.InfoMessageLevel: logging.INFO,
-        QWebEnginePage.JavaScriptConsoleMessageLevel.WarningMessageLevel: logging.WARNING,
-        QWebEnginePage.JavaScriptConsoleMessageLevel.ErrorMessageLevel: logging.ERROR,
+        JSMessageLevel.InfoMessageLevel: logging.INFO,
+        JSMessageLevel.WarningMessageLevel: logging.WARNING,
+        JSMessageLevel.ErrorMessageLevel: logging.ERROR,
     }
 
     def __init__(self, url=None):

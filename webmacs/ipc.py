@@ -135,7 +135,8 @@ class IpcServer(QObject):
         sock_name = self.get_sock_name(instance)
         QLocalServer.removeServer(sock_name)
         self._server = QLocalServer()
-        self._server.setSocketOptions(QLocalServer.SocketOption.UserAccessOption)
+        self._server.setSocketOptions(
+            QLocalServer.SocketOption.UserAccessOption)
         self._server.newConnection.connect(self._on_new_connection)
         if not self._server.listen(sock_name):
             logging.error("Can not start ipc: %s"

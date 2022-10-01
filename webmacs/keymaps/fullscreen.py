@@ -25,4 +25,5 @@ from PyQt6.QtWebEngineCore import QWebEnginePage
 def exit_full_screen(ctx):
     fw = current_window().fullscreen_window
     if fw:
-        fw.internal_view.triggerPageAction(QWebEnginePage.WebAction.ExitFullScreen)
+        fw.internal_view.triggerPageAction(
+            QWebEnginePage.WebAction.ExitFullScreen)

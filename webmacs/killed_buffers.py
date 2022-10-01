@@ -65,7 +65,8 @@ class KilledBuffer(object):
 
     def revive(self):
         buff = create_buffer()
-        stream = QDataStream(self.history_data, QIODevice.OpenModeFlag.ReadOnly)
+        stream = QDataStream(self.history_data,
+                             QIODevice.OpenModeFlag.ReadOnly)
         stream >> buff.history()
         self.all.remove(self)
 

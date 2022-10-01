@@ -14,12 +14,12 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sys
 import logging
 
 from PyQt6.QtCore import pyqtSlot as Slot, Qt
 
-from PyQt6.QtWebEngineCore import QWebEngineSettings, QWebEngineUrlRequestInterceptor
+from PyQt6.QtWebEngineCore import QWebEngineSettings, \
+    QWebEngineUrlRequestInterceptor
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtNetwork import QNetworkAccessManager
 
@@ -131,7 +131,8 @@ class Application(QApplication):
         self.instance_name = instance_name
 
         if version.is_mac:
-            self.setAttribute(Qt.AA_MacDontSwapCtrlAndMeta)
+            self.setAttribute(
+                Qt.ApplicationAttribute.AA_MacDontSwapCtrlAndMeta)
 
         register_schemes()
 
@@ -163,7 +164,8 @@ class Application(QApplication):
             QWebEngineSettings.WebAttribute.FocusOnNavigationEnabled, False,
         )
         settings.setAttribute(
-            QWebEngineSettings.WebAttribute.JavascriptEnabled, enable_javascript.value,
+            QWebEngineSettings.WebAttribute.JavascriptEnabled,
+            enable_javascript.value,
         )
 
         self.installEventFilter(LOCAL_KEYMAP_SETTER)

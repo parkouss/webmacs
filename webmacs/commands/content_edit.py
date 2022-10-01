@@ -40,9 +40,11 @@ def send_raw_key(ctx, key, with_ctrl=False, auto_shift=True):
 
 def run_js(ctx, cmd, cb=None):
     if cb:
-        ctx.buffer.runJavaScript(cmd, QWebEngineScript.ScriptWorldId.ApplicationWorld, cb)
+        ctx.buffer.runJavaScript(
+            cmd, QWebEngineScript.ScriptWorldId.ApplicationWorld, cb)
     else:
-        ctx.buffer.runJavaScript(cmd, QWebEngineScript.ScriptWorldId.ApplicationWorld)
+        ctx.buffer.runJavaScript(
+            cmd, QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
 
 @define_command("content-edit-cancel")

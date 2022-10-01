@@ -43,9 +43,11 @@ class Popup(QTableView):
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.horizontalHeader().hide()
         self.verticalHeader().hide()
-        self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        self.verticalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Fixed)
         self.verticalHeader().setDefaultSectionSize(24)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
@@ -123,8 +125,8 @@ class MinibufferInput(QLineEdit):
 
     def eventFilter(self, obj, event):
         etype = event.type()
-        if etype == QEvent.Type.FocusOut and obj == self and self._eat_focusout \
-           and self._popup.isVisible():
+        if etype == QEvent.Type.FocusOut and obj == self \
+           and self._eat_focusout and self._popup.isVisible():
             # keep the focus on the line edit
             return True
         elif etype == QEvent.Type.MouseButtonPress:
@@ -179,9 +181,12 @@ class MinibufferInput(QLineEdit):
             if self._match == self.SimpleMatch:
                 pattern = "^" + QRegularExpression.escape(txt)
             elif self._match == self.FuzzyMatch:
-                pattern = ".*".join(QRegularExpression.escape(t) for t in txt.split())
-            self._proxy_model.setFilterRegularExpression(
-                QRegularExpression(pattern, QRegularExpression.PatternOption.CaseInsensitiveOption))
+                pattern = ".*".join(QRegularExpression.escape(t)
+                                    for t in txt.split())
+            self._proxy_model.setFilterRegularExpression(QRegularExpression(
+                pattern,
+                QRegularExpression.PatternOption.CaseInsensitiveOption
+            ))
         else:
             self._proxy_model.setFilterRegularExpression(None)
 
@@ -281,7 +286,8 @@ class MinibufferInput(QLineEdit):
         font.setItalic(True)
         painter.setFont(font)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-        painter.drawText(self.rect().adjusted(0, 0, -10, 0), Qt.AlignmentFlag.AlignRight,
+        painter.drawText(self.rect().adjusted(0, 0, -10, 0),
+                         Qt.AlignmentFlag.AlignRight,
                          self._right_italic_text)
 
     @pyqtProperty("QColor")
@@ -321,13 +327,15 @@ class Minibuffer(QWidget):
         self.__default_label_policy = self.label.sizePolicy()
         # when input line edit is hidden, this size policy allow to not resize
         # the parent widget if the text in the label is too long.
-        self.label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        self.label.setSizePolicy(QSizePolicy.Policy.Ignored,
+                                 QSizePolicy.Policy.Fixed)
         layout.addWidget(self.label)
 
         self._input = MinibufferInput(self, window)
         layout.addWidget(self._input)
 
-        self.rlabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.rlabel.setAlignment(
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         layout.addWidget(self.rlabel)
 
         self.set_height(MINIBUFFER_HEIGHT.value)

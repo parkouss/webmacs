@@ -19,9 +19,6 @@ import logging
 import re
 import subprocess
 
-from PyQt6.QtOpenGL import QOpenGLVersionProfile
-from PyQt6.QtGui import (QOpenGLContext, QOffscreenSurface)
-from PyQt6.QtWidgets import QApplication
 from PyQt6.QtWebEngineCore import QWebEngineProfile
 from PyQt6.QtCore import (QT_VERSION_STR, PYQT_VERSION_STR,  # noqa: F401
                           QT_VERSION, PYQT_VERSION)

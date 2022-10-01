@@ -185,7 +185,8 @@ class DownloadManager(QObject):
             logging.info("Downloading %s...", dl.path())
 
             def finished():
-                if dl.state() == QWebEngineDownloadRequest.DownloadState.DownloadCompleted:
+                if dl.state() == \
+                   QWebEngineDownloadRequest.DownloadState.DownloadCompleted:
                     logging.info("Opening external file %s with %s",
                                  dl.path(), executable)
                     self._run_program(executable, dl.path())
