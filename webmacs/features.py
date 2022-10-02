@@ -32,15 +32,18 @@ class Features(object):
         self._conn.execute("""
         INSERT OR REPLACE INTO features (url, feature, permission)
         VALUES (?, ?, ?)
-        """, (url, feature, permission))
+        """, (url, feature.value, permission.value))
         self._conn.commit()
 
     def get_permission(self, url, feature):
-        permission = self._conn.execute(
+        permission_value = self._conn.execute(
             "SELECT permission FROM features WHERE url = ? AND feature = ?",
-            (url, feature)).fetchone()
+            (url, feature.value)).fetchone()
 
-        if permission:
-            return permission[0]
-        else:
-            return QWebEnginePage.PermissionUnknown
+        permission = QWebEnginePage.PermissionPolicy.PermissionUnknown
+        if permission_value:
+            for p in QWebEnginePage.PermissionPolicy:
+                if p.value == permission_value:
+                    permission = p
+                    break
+        return permission

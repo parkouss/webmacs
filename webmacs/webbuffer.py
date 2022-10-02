@@ -267,41 +267,26 @@ class WebBuffer(QWebEnginePage):
 
     @Slot(QUrl, QWebEnginePage.Feature)
     def _on_feature_requested(self, url, feature):
-        features = ("Geolocation", "MediaAudioCapture", "MediaVideoCapture",
-                    "MediaAudioVideoCapture", "MouseLock",
-                    "DesktopVideoCapture", "DesktopAudioVideoCapture")
+        permission_db = app().features()
 
-        feature_name = None
-        for name in features:
-            if getattr(QWebEnginePage, name, None) == feature:
-                feature_name = name
-                break
+        permission = permission_db.get_permission(url.host(), feature)
 
-        db = app().features()
+        if permission == QWebEnginePage.PermissionPolicy.PermissionUnknown:
+            prompt = YesNoPrompt("Allow enabling feature {} for {}?"
+                                 .format(feature.name, url.toString()),
+                                 always=True,
+                                 never=True)
+            answer = current_minibuffer().do_prompt(prompt, flash=True)
 
-        permission = db.get_permission(url.host(), feature)
+            if answer in (YesNoPrompt.YES, YesNoPrompt.ALWAYS):
+                permission = QWebEnginePage.PermissionPolicy.PermissionGrantedByUser
+            elif answer in (YesNoPrompt.NO, YesNoPrompt.NEVER):
+                permission = QWebEnginePage.PermissionPolicy.PermissionDeniedByUser
+            else:
+                permission = QWebEnginePage.PermissionPolicy.PermissionUnknown
 
-        if permission == QWebEnginePage.PermissionUnknown:
-            permission = QWebEnginePage.PermissionDeniedByUser
-            if feature_name:
-                prompt = YesNoPrompt("Allow enabling feature {} for {}?"
-                                     .format(feature_name,
-                                             url.toString()),
-                                     always=True,
-                                     never=True)
-                answer = current_minibuffer().do_prompt(prompt, flash=True)
-
-                if answer in (YesNoPrompt.YES, YesNoPrompt.ALWAYS):
-                    permission = QWebEnginePage.PermissionGrantedByUser
-                elif answer in (YesNoPrompt.NO, YesNoPrompt.NEVER):
-                    permission = QWebEnginePage.PermissionDeniedByUser
-                else:
-                    permission = QWebEnginePage.PermissionUnknown
-
-                if answer in (YesNoPrompt.ALWAYS, YesNoPrompt.NEVER):
-                    app().features().set_permission(url.host(),
-                                                    feature,
-                                                    permission)
+            if answer in (YesNoPrompt.ALWAYS, YesNoPrompt.NEVER):
+                permission_db.set_permission(url.host(), feature, permission)
 
         self.setFeaturePermission(url, feature, permission)
 
