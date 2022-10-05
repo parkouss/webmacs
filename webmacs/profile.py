@@ -34,7 +34,7 @@ class Profile(object):
     def __init__(self, name, q_profile=None):
         self.name = name
         if q_profile is None:
-            q_profile = QWebEngineProfile.defaultProfile()
+            q_profile = QWebEngineProfile(name)
 
         self.q_profile = q_profile
 
@@ -48,9 +48,14 @@ class Profile(object):
         self.q_profile.setSpellCheckLanguages(dicts)
 
     def enable(self, app):
-        path = os.path.join(app.profiles_path(), self.name)
-        if not os.path.isdir(path):
-            os.makedirs(path)
+        def make_dir(*parts):
+            path = os.path.join(*parts)
+            os.makedirs(path, exist_ok=True)
+            return path
+
+        path = make_dir(app.profiles_path(), self.name)
+        persistent_path = make_dir(path, "persistent")
+        cache_path = make_dir(path, "cache")
 
         self.q_profile.setUrlRequestInterceptor(app.url_interceptor())
 
@@ -59,9 +64,10 @@ class Profile(object):
             self._scheme_handlers[handler.scheme] = h
             self.q_profile.installUrlSchemeHandler(handler.scheme, h)
 
-        self.q_profile.setPersistentStoragePath(path)
+        self.q_profile.setPersistentStoragePath(persistent_path)
         self.q_profile.setPersistentCookiesPolicy(
             QWebEngineProfile.PersistentCookiesPolicy.ForcePersistentCookies)
+        self.q_profile.setHttpCacheType(QWebEngineProfile.HttpCacheType.DiskHttpCache)
 
         if app.instance_name == "default":
             session_fname = "session.json"
@@ -78,7 +84,7 @@ class Profile(object):
         self.features \
             = Features(os.path.join(path, "features.db"))
 
-        self.q_profile.setCachePath(os.path.join(path, "cache"))
+        self.q_profile.setCachePath(cache_path)
         self.q_profile.downloadRequested.connect(
             app.download_manager().download_requested
         )

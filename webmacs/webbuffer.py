@@ -116,7 +116,7 @@ class WebBuffer(QWebEnginePage):
         :param url: the url to use for the buffer. Must be an instance of QUrl,
             an str or None to not load any url.
         """
-        QWebEnginePage.__init__(self)
+        QWebEnginePage.__init__(self, app().profile.q_profile, None)
         self.last_use = time.time()
         cb = current_buffer()
         if cb:
