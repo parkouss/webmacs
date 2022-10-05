@@ -203,7 +203,7 @@ class Prompt(QObject):
             self.__flash = self._create_flash_animation()
             if self.__flash:
                 self.__flash.start()
-        elif self.__flash.state() == self.__flash.Stopped:
+        elif self.__flash.state() == self.__flash.State.Stopped:
             self.__flash.start()
 
     def _create_flash_animation(self):
