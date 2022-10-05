@@ -30,6 +30,7 @@ from ..mode import MODES
 from ..window import Window
 from ..session import session_clean, session_load
 from ..ipc import IpcServer
+from ..url_opener import url_open
 
 
 class CommandsListPrompt(Prompt):
@@ -408,22 +409,12 @@ def send_left(ctx):
     send_key_event(KeyPress.from_str("Left"))
 
 
-def _open_url(ctx, url):
-    if ctx.current_prefix_arg == (4,):
-        buffer = create_buffer()
-        ctx.current_view.setBuffer(buffer)
-    else:
-        buffer = ctx.buffer
-
-    buffer.load(url)
-
-
 @define_command("describe-bindings")
 def describe_bindings(ctx):
     """
     Display current bindings in the current buffer or in a new buffer.
     """
-    _open_url(ctx, "webmacs://bindings")
+    url_open(ctx, "webmacs://bindings", new_buffer=ctx.current_prefix_arg == (4,))
 
 
 @define_command("describe-commands")
@@ -431,7 +422,7 @@ def describe_commands(ctx):
     """
     Display commands in the current buffer or in a new buffer.
     """
-    _open_url(ctx, "webmacs://commands")
+    url_open(ctx, "webmacs://commands", new_buffer=ctx.current_prefix_arg == (4,))
 
 
 @define_command("describe-variables")
@@ -439,7 +430,7 @@ def describe_variables(ctx):
     """
     Display variables in the current buffer or in a new buffer.
     """
-    _open_url(ctx, "webmacs://variables")
+    url_open(ctx, "webmacs://variables", new_buffer=ctx.current_prefix_arg == (4,))
 
 
 @define_command("downloads")
@@ -447,7 +438,7 @@ def downloads(ctx):
     """
     Display information about the current downloads.
     """
-    _open_url(ctx, "webmacs://downloads")
+    url_open(ctx, "webmacs://downloads", new_buffer=ctx.current_prefix_arg == (4,))
 
 
 @define_command("version")
@@ -455,7 +446,7 @@ def version(ctx):
     """
     Display version information.
     """
-    _open_url(ctx, "webmacs://version")
+    url_open(ctx, "webmacs://version", new_buffer=ctx.current_prefix_arg == (4,))
 
 
 class VariableListPrompt(Prompt):
@@ -495,8 +486,7 @@ def describe_command(ctx):
     """
     command = ctx.minibuffer.do_prompt(DescribeCommandsListPrompt(ctx))
     if command in COMMANDS:
-        buffer = create_buffer("webmacs://command/%s" % command)
-        ctx.view.setBuffer(buffer)
+        url_open(ctx, "webmacs://command/%s" % command)
 
 
 class ReportCallHandler(CallHandler):
@@ -562,7 +552,7 @@ def describe_binding(ctx):
         url = "webmacs://key/{key}?command={command}&keymap={keymap}".format(
             **called_with
         )
-        ctx.view.setBuffer(create_buffer(url))
+        url_open(ctx, url, new_buffer=True)
 
 
 @define_command("describe-key-briefly")
