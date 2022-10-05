@@ -18,12 +18,11 @@ import logging
 
 from PyQt6.QtCore import pyqtSlot as Slot, Qt
 
-from PyQt6.QtWebEngineCore import QWebEngineSettings, \
-    QWebEngineUrlRequestInterceptor
+from PyQt6.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtNetwork import QNetworkAccessManager
 
-from . import require
+from . import require, version, GLOBAL_OBJECTS
 from . import version
 from .adblock import Adblocker, AdblockUpdateRunner, adblock_urls_rules
 from .download_manager import DownloadManager
@@ -34,7 +33,6 @@ from .spell_checking import SpellCheckingUpdateRunner, \
     spell_checking_dictionaries
 from .runnable import run
 from .scheme_handlers import register_schemes
-from .variables import define_variable, Bool
 
 
 if version.is_linux:
@@ -46,14 +44,6 @@ if version.is_linux:
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
-
-
-enable_javascript = define_variable(
-    "enable-javascript",
-    "Enable the running of javascript programs. Default to True.",
-    True,
-    type=Bool(),
-)
 
 
 class UrlInterceptor(QWebEngineUrlRequestInterceptor):
@@ -145,28 +135,9 @@ class Application(QApplication):
         self._download_manager = DownloadManager(self)
 
         self.profile = named_profile(profile_name)
-        self.profile.enable(self)
-
-        settings = self.profile.q_profile.settings()
-        settings.setAttribute(
-            QWebEngineSettings.WebAttribute.LinksIncludedInFocusChain, False,
-        )
-        settings.setAttribute(
-            QWebEngineSettings.WebAttribute.PluginsEnabled, True,
-        )
-        settings.setAttribute(
-            QWebEngineSettings.WebAttribute.FullScreenSupportEnabled, True,
-        )
-        settings.setAttribute(
-            QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, True,
-        )
-        settings.setAttribute(
-            QWebEngineSettings.WebAttribute.FocusOnNavigationEnabled, False,
-        )
-        settings.setAttribute(
-            QWebEngineSettings.WebAttribute.JavascriptEnabled,
-            enable_javascript.value,
-        )
+        # to avoid «Release of profile requested but WebEnginePage still not
+        # deleted. Expect troubles !» message
+        GLOBAL_OBJECTS.ref(self.profile)
 
         self.installEventFilter(LOCAL_KEYMAP_SETTER)
 

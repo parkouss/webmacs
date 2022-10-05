@@ -15,7 +15,8 @@
 
 import os
 
-from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEngineScript
+from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEngineScript, \
+    QWebEngineSettings
 from PyQt6.QtCore import QFile, QTextStream
 
 from .scheme_handlers import all_schemes
@@ -23,35 +24,35 @@ from .visited_links import VisitedLinks
 from .ignore_certificates import IgnoredCertificates
 from .bookmarks import Bookmarks
 from .features import Features
-from . import variables, version
+from . import variables, version, require
 from .password_manager import make_password_manager
+from .variables import define_variable, Bool
 
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
+enable_javascript = define_variable(
+    "enable-javascript",
+    "Enable the running of javascript programs. Default to True.",
+    True,
+    type=Bool(),
+)
+
+
+def make_dir(*parts):
+    path = os.path.join(*parts)
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
 class Profile(object):
-    def __init__(self, name, q_profile=None):
+    def __init__(self, name):
         self.name = name
-        if q_profile is None:
-            q_profile = QWebEngineProfile(name)
-
-        self.q_profile = q_profile
-
+        self.q_profile = QWebEngineProfile(name)
         self._scheme_handlers = {}  # keep a python reference
 
-    def update_spell_checking(self):
-        if version.min_qt_version < (5, 8):
-            return
-        dicts = variables.get("spell-checking-dictionaries")
-        self.q_profile.setSpellCheckEnabled(bool(dicts))
-        self.q_profile.setSpellCheckLanguages(dicts)
-
-    def enable(self, app):
-        def make_dir(*parts):
-            path = os.path.join(*parts)
-            os.makedirs(path, exist_ok=True)
-            return path
+        app = require(".application").app()
 
         path = make_dir(app.profiles_path(), self.name)
         persistent_path = make_dir(path, "persistent")
@@ -134,6 +135,34 @@ class Profile(object):
         self.q_profile.scripts().insert(script)
 
         inject_js(os.path.join(THIS_DIR, "scripts", "password_manager.js"))
+
+        settings = self.q_profile.settings()
+        settings.setAttribute(
+            QWebEngineSettings.WebAttribute.LinksIncludedInFocusChain, False,
+        )
+        settings.setAttribute(
+            QWebEngineSettings.WebAttribute.PluginsEnabled, True,
+        )
+        settings.setAttribute(
+            QWebEngineSettings.WebAttribute.FullScreenSupportEnabled, True,
+        )
+        settings.setAttribute(
+            QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, True,
+        )
+        settings.setAttribute(
+            QWebEngineSettings.WebAttribute.FocusOnNavigationEnabled, False,
+        )
+        settings.setAttribute(
+            QWebEngineSettings.WebAttribute.JavascriptEnabled,
+            enable_javascript.value,
+        )
+
+    def update_spell_checking(self):
+        if version.min_qt_version < (5, 8):
+            return
+        dicts = variables.get("spell-checking-dictionaries")
+        self.q_profile.setSpellCheckEnabled(bool(dicts))
+        self.q_profile.setSpellCheckLanguages(dicts)
 
 
 def named_profile(name):
