@@ -110,6 +110,7 @@ class Window(QWidget):
         return self._webviews_layout.split_view(ViewGridLayout.HORIZONTAL)
 
     def _delete_webview(self, webview):
+        webview.setBuffer(None)
         self._webviews_layout.removeWidget(webview)
         webview.deleteLater()
 
