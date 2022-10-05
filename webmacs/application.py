@@ -22,7 +22,7 @@ from PyQt6.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtNetwork import QNetworkAccessManager
 
-from . import require, version, GLOBAL_OBJECTS
+from . import require, version
 from . import version
 from .adblock import Adblocker, AdblockUpdateRunner, adblock_urls_rules
 from .download_manager import DownloadManager
@@ -135,9 +135,6 @@ class Application(QApplication):
         self._download_manager = DownloadManager(self)
 
         self.profile = named_profile(profile_name)
-        # to avoid «Release of profile requested but WebEnginePage still not
-        # deleted. Expect troubles !» message
-        GLOBAL_OBJECTS.ref(self.profile)
 
         self.installEventFilter(LOCAL_KEYMAP_SETTER)
 
