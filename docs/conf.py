@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # to mock everything.
 if True or "READTHEDOCS" in os.environ:
     # We can not install webmacs on readthedocs, as it requires to
-    # buid some C extensions (from dateparser, PyQt5, ...). The
+    # buid some C extensions (from dateparser, PyQt6, ...). The
     # alternative is to mock any dependency used by webmacs.
 
     class Mock(object):
@@ -46,15 +46,15 @@ if True or "READTHEDOCS" in os.environ:
         def __mro_entries__(self, a):  # noqa: E301
             return ()
 
-    MOCK_MODULES = ["PyQt5", "PyQt5.QtCore", "PyQt5.QtGui",
-                    "PyQt5.QtWidgets", "PyQt5.QtWebEngineWidgets",
-                    "PyQt5.QtWebEngineCore", "PyQt5.QtWebChannel",
-                    "PyQt5.QtNetwork", "PyQt5.QtPrintSupport",
+    MOCK_MODULES = ["PyQt6", "PyQt6.QtCore", "PyQt6.QtGui",
+                    "PyQt6.QtWidgets", "PyQt6.QtWebEngineWidgets",
+                    "PyQt6.QtWebEngineCore", "PyQt6.QtWebChannel",
+                    "PyQt6.QtNetwork", "PyQt6.QtPrintSupport",
                     "_adblock", "dateparser"]
     sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
     # the version number is not important, though it must be an int.
-    sys.modules["PyQt5.QtCore"].QT_VERSION \
-        = sys.modules["PyQt5.QtCore"].PYQT_VERSION = 330497
+    sys.modules["PyQt6.QtCore"].QT_VERSION \
+        = sys.modules["PyQt6.QtCore"].PYQT_VERSION = 330497
 
 import webmacs  # noqa: E402
 
@@ -102,7 +102,7 @@ release = version
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

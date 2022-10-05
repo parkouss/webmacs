@@ -97,7 +97,7 @@ If you do not want to or cannot use nix, then use pip/virtualenv - be
 prepared to have a working c and c++ compiler with python development
 library. Note I only have tested on linux.
 
-You will also need the PyQt5 library, as I believe it can't be installed through
+You will also need the PyQt6 library, as I believe it can't be installed through
 pip. It's easy to install using any package manager though.
 
 Then you have to check out the repository (do not forget the *recursive* flag):

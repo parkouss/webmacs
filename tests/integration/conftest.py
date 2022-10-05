@@ -3,8 +3,8 @@ import os
 import time
 import subprocess
 
-from PyQt5.QtTest import QTest
-from PyQt5.QtCore import QEvent, QTimer
+from PyQt6.QtTest import QTest
+from PyQt6.QtCore import QEvent, QTimer
 
 from webmacs.application import Application, _app_requires
 from webmacs import (windows, buffers, WINDOWS_HANDLER, current_buffer,
