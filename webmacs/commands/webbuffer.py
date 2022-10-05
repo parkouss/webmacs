@@ -252,7 +252,8 @@ def go_forward(ctx):
     if not ctx.buffer.history().canGoForward():
         ctx.minibuffer.show_info("Can't go forward in history.")
     else:
-        ctx.buffer.triggerAction(WebBuffer.WebAction.Forward)
+        ctx.buffer.runJavaScript("history.go(1)",
+                                 QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
 
 @define_command("go-backward")
@@ -263,7 +264,8 @@ def go_backward(ctx):
     if not ctx.buffer.history().canGoBack():
         ctx.minibuffer.show_info("Can't go back in history.")
     else:
-        ctx.buffer.triggerAction(WebBuffer.WebAction.Back)
+        ctx.buffer.runJavaScript("history.go(-1)",
+                                 QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
 
 @define_command("scroll-down")
