@@ -19,6 +19,7 @@ import json
 import shlex
 import logging
 import itertools
+import tempfile
 
 from PyQt6.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, \
     QProcess
@@ -46,6 +47,10 @@ keep_temporary_download_dir = variables.define_variable(
 )
 
 
+def dl_path(dl):
+    return os.path.join(dl.downloadDirectory(), dl.suggestedFileName())
+
+
 def get_user_download_dir():
     """
     Returns the directory the user wants to put its download in.
@@ -56,17 +61,6 @@ def get_user_download_dir():
         return TEMPORARY_DOWNLOAD_DIR
     return default_download_dir.value or None
 
-
-def extract_suggested_filename(path):
-    """
-    Split path from chromium into (dirname, filename).
-
-    Chromium always propose paths in ~/Download, so this method removes suffix
-    like (1) to get the "original" suggested filename.
-    """
-    path, fname = os.path.split(path)
-    fname = re.sub(r'\([0-9]+\)(?=\.|$)', "", fname)
-    return path, fname
 
 
 def find_unique_suggested_path(dirname, filename):
@@ -111,7 +105,7 @@ def download_to_json(dlitem):
     except ZeroDivisionError:
         progress = -1
     return json.dumps({
-        "path": dlitem.path(),
+        "path": dl_path(dlitem),
         "state": state_str(dlitem.state()),
         "id": dlitem.id(),
         "isFinished": dlitem.isFinished(),
@@ -157,10 +151,11 @@ class DownloadManager(QObject):
         dl = download_to_json(dlitem)
         for buffer in self._buffers:
             buffer.runJavaScript("add_download(%s);" % dl)
-        dlitem.downloadProgress.connect(self._download_state_changed)
+        dlitem.receivedBytesChanged.connect(self._download_state_changed)
+        dlitem.totalBytesChanged.connect(self._download_state_changed)
         dlitem.stateChanged.connect(self._download_state_changed)
-        dlitem.finished.connect(self._download_state_changed)
-        dlitem.finished.connect(dlitem.deleteLater)
+        dlitem.isFinishedChanged.connect(self._download_state_changed)
+        dlitem.isFinishedChanged.connect(dlitem.deleteLater)
 
     @Slot()
     def _download_state_changed(self):
@@ -173,7 +168,9 @@ class DownloadManager(QObject):
     def download_requested(self, dl):
         minibuff = current_minibuffer()
 
-        prompt = DlChooseActionPrompt(dl.path(), dl.mimeType())
+        prompt = DlChooseActionPrompt(os.path.join(dl.downloadDirectory(),
+                                                   dl.suggestedFileName()),
+                                      dl.mimeType())
         action = minibuff.do_prompt(prompt)
 
         if action == "open":
@@ -182,25 +179,27 @@ class DownloadManager(QObject):
             if executable is None:
                 return
 
-            logging.info("Downloading %s...", dl.path())
+            dl.setDownloadDirectory(tempfile.gettempdir())
+            
+            logging.info(f"Downloading {dl_path(dl)}...")
 
             def finished():
                 if dl.state() == \
                    QWebEngineDownloadRequest.DownloadState.DownloadCompleted:
-                    logging.info("Opening external file %s with %s",
-                                 dl.path(), executable)
-                    self._run_program(executable, dl.path())
+                    logging.info(
+                        f"Opening external file {dl_path(dl)} with {executable}")
+                    self._run_program(executable, dl_path(dl))
 
-            dl.finished.connect(finished)
+            dl.isFinishedChanged.connect(finished)
             self._start_download(dl)
 
         elif action == "download":
-            path = dl.path()
-            user_dir = get_user_download_dir()
-            _, name = extract_suggested_filename(path)
-            if user_dir is not None:
+            dl_dir = get_user_download_dir() or dl.downloadDirectory()
+            name = dl.suggestedFileName()
+            path = os.path.join(dl_dir, name)
+            if os.path.exists(path):
                 try:
-                    path = find_unique_suggested_path(user_dir, name)
+                    path = find_unique_suggested_path(dl_dir, name)
                 except OSError as exc:
                     logging.warning(
                         "Can't use user_dir %s: %s", user_dir, str(exc)
@@ -218,19 +217,20 @@ class DownloadManager(QObject):
                 if not minibuff.do_prompt(OverwriteFilePrompt(path)):
                     return
 
-            dl.setPath(path)
+            dl.setDownloadDirectory(os.path.dirname(path))
+            dl.setDownloadFileName(os.path.basename(path))
             if keep_temporary_download_dir.value:
                 global TEMPORARY_DOWNLOAD_DIR
                 TEMPORARY_DOWNLOAD_DIR = os.path.dirname(path)
 
-            logging.info("Downloading %s...", dl.path())
+            logging.info("Downloading %s...", path)
 
             def finished():
                 state = state_str(dl.state())
-                logging.info("Finished download [%s] of %s", state, dl.path())
+                logging.info("Finished download [%s] of %s", state, dl_path(dl))
                 minibuff.show_info("[{}] download: {}".format(state,
-                                                              dl.path()))
-            dl.finished.connect(finished)
+                                                              dl_path(dl)))
+            dl.isFinishedChanged.connect(finished)
             self._start_download(dl)
 
     def _run_program(self, executable, path):
@@ -243,7 +243,7 @@ class DownloadManager(QObject):
         logging.debug("Executing command: %s %s", shell, " ".join(args))
 
         proc.finished.connect(self._program_finished)
-        proc.start(shell, args, QProcess.ReadOnly)
+        proc.start(shell, args, QProcess.OpenModeFlag.ReadOnly)
 
     @Slot(int, QProcess.ExitStatus)
     def _program_finished(self, code, status):
