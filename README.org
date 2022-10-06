@@ -77,9 +77,9 @@ sudo dnf install herbstluftwm
 
 Then you can run the tests (the virtualenv needs to be activated):
 #+BEGIN_SRC bash
-py.test <path_to_webmacs_sources>/tests
+python -m pytest <path_to_webmacs_sources>/tests
 # you can run them with the windows visible:
-py.test <path_to_webmacs_sources>/tests --no-xvfb
+python -m pytest <path_to_webmacs_sources>/tests --no-xvfb
 #+END_SRC
 
 

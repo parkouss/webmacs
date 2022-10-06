@@ -1,10 +1,4 @@
 import pytest
-from webmacs.version import qt_version
-
-pytestmark = pytest.mark.skipif(
-    qt_version < (5, 10),
-    reason="Qt version >= 5.10 required for iframes"
-)
 
 
 INPUT0 = "document.getElementById('input0')"

@@ -201,8 +201,8 @@ class TestSession(object):
         widget = widget or self.qapp.focusWindow()
         keys = [KeyPress.from_str(k) for k in shortcut.split()]
         for key in keys:
-            evt = key.to_qevent(QEvent.KeyPress)
-            self.keyclick(evt.key(), modifier=evt.modifiers())
+            evt = key.to_qevent(QEvent.Type.KeyPress)
+            self.keyclick(key.key, modifier=evt.modifiers())
 
 
 class Waiter(object):
