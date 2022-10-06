@@ -186,8 +186,7 @@ class Application(QApplication):
         if not bool(spell_checking_dictionaries.value):
             return
 
-        spell_check_path = os.path.join(self.applicationDirPath(),
-                                        "qtwebengine_dictionaries")
+        spell_check_path = os.path.join(self._conf_path, "spell_checking")
 
         def spc_finished(*a):
             self.profile.update_spell_checking()

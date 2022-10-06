@@ -282,6 +282,9 @@ def main():
             "Error reading the user configuration."
         )
 
+
+    os.environ["QTWEBENGINE_DICTIONARIES_PATH"] = os.path.join(conf_path,
+                                                               "spell_checking")
     app = Application(conf_path, [
         # The first argument passed to the QApplication args defines
         # the x11 property WM_CLASS.

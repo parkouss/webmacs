@@ -54,7 +54,7 @@ class Profile(object):
 
         app = require(".application").app()
 
-        path = make_dir(app.profiles_path(), self.name)
+        self.path = path = make_dir(app.profiles_path(), self.name)
         persistent_path = make_dir(path, "persistent")
         cache_path = make_dir(path, "cache")
 
