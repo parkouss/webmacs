@@ -17,7 +17,7 @@ BDIC_FILES_URL = "https://chromium.googlesource.com/chromium/deps/hunspell_dicti
 
 spell_checking_dictionaries = variables.define_variable(
     "spell-checking-dictionaries",
-    "List of dictionaries to use for spell checking. Only usable on Qt >= 5.8",
+    "List of dictionaries to use for spell checking.",
     (),
     type=variables.List(variables.String()),
 )

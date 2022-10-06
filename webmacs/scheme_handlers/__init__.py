@@ -14,7 +14,7 @@
 # along with webmacs.  If not, see <http://www.gnu.org/licenses/>.
 
 from .webmacs import WebmacsSchemeHandler
-from .. import version
+from PyQt6.QtWebEngineCore import QWebEngineUrlScheme
 
 
 def all_schemes():
@@ -22,11 +22,6 @@ def all_schemes():
 
 
 def register_schemes():
-    if version.pyqt_version < (5, 12):
-        return
-
-    from PyQt6.QtWebEngineCore import QWebEngineUrlScheme
-
     for scheme in all_schemes():
         qscheme = QWebEngineUrlScheme(scheme.scheme)
         QWebEngineUrlScheme.registerScheme(qscheme)

@@ -235,9 +235,6 @@ def open_dev_tools(ctx):
     """
     Opens a dev tool page for a buffer.
     """
-    if version.min_qt_version < (5, 11):
-        ctx.minibuffer.show_info("Only available with qt version >= 5.11")
-        return
     buffer = ctx.minibuffer.do_prompt(OpenDevToolsPrompt(ctx))
     if buffer:
         dev_tools = create_buffer()
@@ -577,12 +574,6 @@ def print_buffer(ctx):
     Opens a dialog to select the printer and prints the current buffer.
     """
     from ..application import WithoutAppEventFilter
-
-    if version.min_qt_version < (5, 8):
-        ctx.minibuffer.show_info(
-            "print-buffer not supported, qt version >= 5.8 required"
-        )
-        return
 
     def notif(ok):
         GLOBAL_OBJECTS.unref(printer)

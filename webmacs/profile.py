@@ -158,8 +158,6 @@ class Profile(object):
         )
 
     def update_spell_checking(self):
-        if version.min_qt_version < (5, 8):
-            return
         dicts = variables.get("spell-checking-dictionaries")
         self.q_profile.setSpellCheckEnabled(bool(dicts))
         self.q_profile.setSpellCheckLanguages(dicts)

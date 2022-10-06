@@ -149,14 +149,7 @@ py.test <path_to_webmacs_sources>/tests --no-xvfb
 
 * Qt versions support
 
-Every stable Qt version from (and including) 5.7 should work with webmacs.
-
-Note that there are some known limitations:
-
-- spell checking only works with Qt >= 5.8
-- support for iframes is broken with Qt < 5.10 (webcontent-edit mode is
-  unreachable)
-- dev tools only works with Qt >= 5.11
+Every stable Qt version from (and including) 6.0 should work with webmacs.
 
 
 * Contributions
