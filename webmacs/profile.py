@@ -39,6 +39,14 @@ enable_javascript = define_variable(
     type=Bool(),
 )
 
+enable_pdfviewer = define_variable(
+    "enable-pdfviewer",
+    "Specifies that PDF documents will be opened in the internal PDF viewer."
+    " Default to False",
+    False,
+    type=Bool(),
+)
+
 
 def make_dir(*parts):
     path = os.path.join(*parts)
@@ -155,6 +163,10 @@ class Profile(object):
         settings.setAttribute(
             QWebEngineSettings.WebAttribute.JavascriptEnabled,
             enable_javascript.value,
+        )
+        settings.setAttribute(
+            QWebEngineSettings.WebAttribute.PdfViewerEnabled,
+            enable_pdfviewer.value
         )
 
     def update_spell_checking(self):
