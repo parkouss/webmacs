@@ -91,7 +91,7 @@ class Window(QWidget):
             self._toolbar.deleteLater()
             self._toolbar = None
 
-    def _change_current_webview(self, webview):
+    def set_current_webview(self, webview):
         self.current_webview().show_focused(False)
         if len(self.webviews()) > 1:
             webview.show_focused(True)
@@ -124,7 +124,7 @@ class Window(QWidget):
         index = index + 1
         if index >= len(views):
             index = 0
-        views[index].set_current()
+        self.set_current_webview(views[index])
 
     def close_view(self, view):
         """close the given view"""
@@ -154,7 +154,11 @@ class Window(QWidget):
         if len(self.webviews()) == 1:
             self.current_webview().show_focused(False)
 
-    def update_title(self, title):
+    def update_title(self, title=None):
+        if title is None:
+            mw = self.current_webview()
+            if mw and mw.buffer():
+                title = mw.buffer().title()
         if title:
             self.setWindowTitle("{} - Webmacs".format(title))
         else:

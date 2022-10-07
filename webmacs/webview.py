@@ -75,13 +75,13 @@ class WebView(QFrame):
         if self._internal_view.page():
             self._internal_view.page()._internal_view = None
         self._internal_view.setPage(buffer)
+        self.main_window.update_title()
 
         if buffer is None:
             return
 
         buffer._internal_view = self._internal_view
 
-        buffer.update_title()
         url = buffer.delayed_loading_url()
         if url:
             buffer.load(url.url)
@@ -107,11 +107,6 @@ class WebView(QFrame):
 
     def internal_view(self):
         return self._internal_view
-
-    def set_current(self):
-        self.main_window._change_current_webview(self)
-        self._internal_view.setFocus()
-        self.buffer().update_title()
 
 
 class InternalWebView(QWebEngineView):
@@ -144,7 +139,7 @@ class InternalWebView(QWebEngineView):
         t = evt.type()
         if t == QEvent.Type.MouseButtonPress:
             if view != view.main_window.current_webview():
-                view.set_current()
+                view.main_window.set_current_webview(view)
         elif t == QEvent.Type.FocusIn:
             if self.isEnabled():  # disabled when there is a full-screen window
                 LOCAL_KEYMAP_SETTER.view_focus_changed(view, True)

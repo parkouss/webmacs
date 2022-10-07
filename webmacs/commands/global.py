@@ -128,7 +128,7 @@ def split_window_right(ctx):
     win = ctx.window
     view = win.create_webview_on_right()
     view.setBuffer(_get_or_create_buffer(win))
-    view.set_current()
+    win.set_current_webview(view)
 
 
 @define_command("split-view-bottom")
@@ -139,7 +139,7 @@ def split_window_bottom(ctx):
     win = ctx.window
     view = win.create_webview_on_bottom()
     view.setBuffer(_get_or_create_buffer(win))
-    view.set_current()
+    win.set_current_webview(view)
 
 
 @define_command("make-window")

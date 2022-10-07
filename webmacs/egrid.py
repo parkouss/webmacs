@@ -239,4 +239,4 @@ class ViewGridLayout(QLayout):
             w.show_focused(w == self._current_view)
 
         # required to have the right keyboard focus
-        self._current_view.set_current()
+        main_view.main_window.set_current_webview(main_view)

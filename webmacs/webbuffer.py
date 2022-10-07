@@ -137,7 +137,7 @@ class WebBuffer(QWebEnginePage):
         self.loadFinished.connect(self.finished)
         self.authenticationRequired.connect(self.handle_authentication)
         self.linkHovered.connect(self.on_url_hovered)
-        self.titleChanged.connect(self.update_title)
+        self.titleChanged.connect(self.__on_title_changed)
         self.__delay_loading_url = None
         self.__keymap_mode = Mode.KEYMAP_NORMAL
         self.__mode = get_mode("standard-mode")
@@ -371,14 +371,6 @@ class WebBuffer(QWebEnginePage):
         if view:
             return view.main_window
 
-    def update_title(self, title=None):
-        if self == current_buffer():
-            mw = self.main_window()
-            if mw is not None:
-                mw.update_title(
-                    title if title is not None else self.title()
-                )
-
     def _incr_zoom(self, forward):
         # Zooming constants
         ZOOM_MIN = 25
@@ -405,6 +397,11 @@ class WebBuffer(QWebEnginePage):
 
     def zoom_normal(self):
         self.set_zoom(100)
+
+    @Slot(str)
+    def __on_title_changed(self, title):
+        if self.view():
+            self.view().main_window.update_title(title)
 
 
 # alias to create a web buffer
