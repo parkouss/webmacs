@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+
+- Cookies and persistent data is now really saved on disk, and used on restart.
+- Fixed a possible security issue of the webmacs.ipc file that was readable and
+  writable by others.
+
+### Added
+
+- Added passwordstore support for storing passwords (the linux 'pass' command
+  line tool)
+
+### Changed
+
+- Moved codebase to PyQt6. PyQt5 is no longer supported.
+- Removed support for an internal database to store passwords.
+- Moved path to the spell checking data (to ~/.webmacs/spell_checking/)
+
 ## [0.8] - 2019-09-15
 
 ### Fixed
