@@ -58,8 +58,15 @@ class WebView(QFrame):
         layout.setSpacing(0)
         self.setLayout(layout)
         self.setStyleSheet(webview_stylesheet.value)
-        self._internal_view = InternalWebView(self)
-        self._internal_view.attach()
+
+    def _attach_view(self, view):
+        if self.layout().count() == 0:
+            self.layout().addWidget(view)
+
+    def _detach_view(self):
+        if self.layout().count() > 0:
+            it = self.layout().takeAt(0)
+            it.widget().setParent(None)
 
     def setBuffer(self, buffer, update_last_use=True):
         otherviews = [w for w in self.main_window.webviews()
@@ -72,19 +79,22 @@ class WebView(QFrame):
             if iv:
                 iv.setFocus()
 
-        if self._internal_view.page():
-            self._internal_view.page()._internal_view = None
-        self._internal_view.setPage(buffer)
-        self.main_window.update_title()
+        self._detach_view()
 
         if buffer is None:
+            self.main_window.update_title()
             return
 
-        buffer._internal_view = self._internal_view
+        if buffer._internal_view is None:
+            buffer._internal_view = InternalWebView(self)
+            buffer._internal_view.setPage(buffer)
+
+        self._attach_view(buffer._internal_view)
 
         url = buffer.delayed_loading_url()
         if url:
             buffer.load(url.url)
+        self.main_window.update_title()
         LOCAL_KEYMAP_SETTER.buffer_opened_in_view(buffer)
         # mark the buffer to be the most recently opened
         if update_last_use:
@@ -92,11 +102,12 @@ class WebView(QFrame):
 
         if self.main_window.current_webview() == self:
             # keyboard focus is lost without that.
-            self._internal_view.setFocus()
+            buffer._internal_view.setFocus()
             self.show_focused(True)
 
     def buffer(self):
-        return self._internal_view.page()
+        if self.internal_view():
+            return self.internal_view().page()
 
     def show_focused(self, active):
         self.setProperty("current", active)
@@ -106,23 +117,19 @@ class WebView(QFrame):
         self.setStyle(self.style())
 
     def internal_view(self):
-        return self._internal_view
+        if self.layout().count() > 0:
+            return self.layout().itemAt(0).widget()
 
 
 class InternalWebView(QWebEngineView):
     """Do not instantiate that class directly"""
-    def __init__(self, parent):
-        QWebEngineView.__init__(self, parent)
+    def __init__(self, view):
+        QWebEngineView.__init__(self)
+        self._view = view
         self._fullscreen_state = None
 
     def view(self):
-        return self.parent()
-
-    def attach(self):
-        self.view().layout().addWidget(self)
-
-    def detach(self):
-        self.view().layout().removeWidget(self)
+        return self._view
 
     def event(self, evt):
         if evt.type() == QEvent.Type.ChildAdded:
@@ -133,8 +140,6 @@ class InternalWebView(QWebEngineView):
 
     def eventFilter(self, obj, evt):
         view = self.view()
-        if view.layout().count() == 0:
-            return False
 
         t = evt.type()
         if t == QEvent.Type.MouseButtonPress:
@@ -169,7 +174,7 @@ class FullScreenState(object):
         self.keymap = local_keymap()
 
         set_local_keymap(self.view.buffer().mode.fullscreen_keymap())
-        self.internal_view.detach()
+        self.view._detach_view()
         # show fullscreen on the right place.
         screen = self.view.screen()
         self.internal_view.showFullScreen()
@@ -179,5 +184,5 @@ class FullScreenState(object):
     def restore(self):
         set_local_keymap(self.keymap)
         self.internal_view.showNormal()
-        self.internal_view.attach()
+        self.view._attach_view(self.internal_view)
         self.view.main_window.fullscreen_window = None

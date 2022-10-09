@@ -154,8 +154,8 @@ class WebBuffer(QWebEnginePage):
         return self._internal_view
 
     def view(self):
-        iv = self.internal_view()
-        if iv:
+        iv = self._internal_view
+        if iv and iv.isVisible():
             return iv.view()
 
     @property
