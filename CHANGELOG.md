@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Cookies and persistent data is now really saved on disk, and used on restart.
 - Fixed a possible security issue of the webmacs.ipc file that was readable and
   writable by others.
+- adblock url fetching and parsing is now more verbose on error and more
+  resilient.
 
 ### Added
 

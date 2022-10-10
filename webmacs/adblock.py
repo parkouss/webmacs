@@ -84,31 +84,34 @@ class Adblocker(object):
     def _download_file(self, url, path):
         headers = {'User-Agent': "Magic Browser"}
         req = urllib.request.Request(url, None, headers)
-        with urllib.request.urlopen(req, timeout=5) as conn:
-            if os.path.isfile(path):
-                # check if the file on the server is newer than what we have
-                file_time = datetime.fromtimestamp(os.path.getmtime(path),
-                                                   timezone.utc)
-                try:
-                    last_modified = dateparser.parse(
-                        conn.info()["last-modified"],
-                        languages=["en"])
-                except Exception:
-                    logging.exception(
-                        "Unable to parse the last-modified header for %s",
-                        url)
-                else:
-                    if last_modified < file_time:
-                        logging.info("no need to download adblock rule: %s",
-                                     url)
-                        # touch on the file
-                        os.utime(path, None)
-                        return False
-            logging.info("downloading adblock rule: %s", url)
-            with open(path, "w") as f:
-                data = conn.read()
-                f.write(data.decode("utf-8"))
-            return True
+        try:
+            with urllib.request.urlopen(req, timeout=5) as conn:
+                if os.path.isfile(path):
+                    # check if the file on the server is newer than what we have
+                    file_time = datetime.fromtimestamp(os.path.getmtime(path),
+                                                       timezone.utc)
+                    try:
+                        last_modified = dateparser.parse(
+                            conn.info()["last-modified"],
+                            languages=["en"])
+                    except Exception:
+                        logging.exception(
+                            "Unable to parse the last-modified header for %s",
+                            url)
+                    else:
+                        if last_modified < file_time:
+                            logging.info("no need to download adblock rule: %s",
+                                         url)
+                            # touch on the file
+                            os.utime(path, None)
+                            return False
+                logging.info("downloading adblock rule: %s", url)
+                with open(path, "w") as f:
+                    data = conn.read()
+                    f.write(data.decode("utf-8"))
+                return True
+        except Exception:
+            logging.exception(f"Error using adblock list from {url}")
 
     def _fetch_urls(self):
         modified = False
@@ -150,8 +153,11 @@ class Adblocker(object):
         if modified or not os.path.isfile(cache):
             for path in self._urls.values():
                 logging.info("parsing adblock file: %s", path)
-                with open(path) as f:
-                    adblock.parse(f.read())
+                try:
+                    with open(path) as f:
+                        adblock.parse(f.read())
+                except Exception:
+                    logging.exception(f"Unable to parse {f.name} adblock file")
             adblock.save(cache)
             logging.info("updating adblock cache file %s." % cache)
             self.save_cached_urls(self._urls)
