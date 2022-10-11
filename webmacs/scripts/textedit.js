@@ -65,7 +65,11 @@ textedit.select_text = function(direction, granularity) {
         post_message(elt.contentWindow, "textedit.select_text", [direction, granularity]);
     } else {
         textedit.clear_mark();
-        document.getSelection().modify("extend", direction, granularity);
+        if (!direction && !granularity) {
+            elt.select();
+        } else {
+            document.getSelection().modify("extend", direction, granularity);
+        }
     }
 }
 

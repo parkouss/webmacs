@@ -238,3 +238,11 @@ def redo(ctx):
     Redo the last editing action.
     """
     ctx.buffer.triggerAction(WebBuffer.WebAction.Redo)
+
+
+@define_command("content-edit-select-all")
+def select_all(ctx):
+    """
+    Select all text of the current input.
+    """
+    run_js(ctx, "textedit.select_text()")
