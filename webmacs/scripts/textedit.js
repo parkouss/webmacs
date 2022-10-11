@@ -62,7 +62,7 @@ textedit.copy_text = function(reset_selection) {
 textedit.select_text = function(direction, granularity) {
     let elt = document.activeElement;
     if (elt.tagName == "IFRAME") {
-        post_message(elt.contentWindow, "textedit.select_text", null);
+        post_message(elt.contentWindow, "textedit.select_text", [direction, granularity]);
     } else {
         textedit.clear_mark();
         document.getSelection().modify("extend", direction, granularity);
