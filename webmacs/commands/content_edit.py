@@ -29,7 +29,7 @@ def send_raw_key(ctx, key, with_ctrl=False, auto_shift=True):
         if ctx.buffer.hasSelection() and not ctx.buffer.text_edit_mark:
             ctx.buffer.set_text_edit_mark(True)
         if ctx.buffer.text_edit_mark:
-            modifiers |= Qt.ShiftModifier
+            modifiers |= Qt.KeyboardModifier.ShiftModifier
     if with_ctrl:
         modifiers |= Qt.KeyboardModifier.ControlModifier
 
