@@ -85,7 +85,7 @@ class Adblocker(object):
         headers = {'User-Agent': "Magic Browser"}
         req = urllib.request.Request(url, None, headers)
         try:
-            with urllib.request.urlopen(req, timeout=5) as conn:
+            with urllib.request.urlopen(req, timeout=320) as conn:
                 if os.path.isfile(path):
                     # check if the file on the server is newer than what we have
                     file_time = datetime.fromtimestamp(os.path.getmtime(path),
