@@ -22,7 +22,8 @@ from ..minibuffer import Prompt
 from ..minibuffer.prompt import PromptTableModel, PromptHistory
 from ..application import app
 from ..webbuffer import create_buffer
-from ..keymaps import KeyPress, VISITEDLINKS_KEYMAP, BOOKMARKS_KEYMAP, KEYMAPS
+from ..keymaps import KeyPress, VISITEDLINKS_KEYMAP, BOOKMARKS_KEYMAP, \
+    KEYMAPS, GLOBAL_KEYMAP
 from ..keyboardhandler import send_key_event, local_keymap, KEY_EATER, \
     CallHandler
 from .. import BUFFERS, windows, variables
@@ -41,10 +42,26 @@ class CommandsListPrompt(Prompt):
     }
     history = PromptHistory()
 
+    def __init__(self, ctx, local_keymap=None):
+        Prompt.__init__(self, ctx)
+        self.__local_keymap = local_keymap
+
     def completer_model(self):
-        model = QStringListModel(self)
-        model.setStringList(sorted(k for k, v in COMMANDS.items()
-                                   if v.visible))
+        if self.__local_keymap:
+            bindings = {}
+            def add(prefix, cmd, parent):
+                bindings[cmd] = " ".join(str(k) for k in prefix)
+            # add bindings from currently active keymaps: global and the local
+            # one, registered before opening the minibuffer.
+            GLOBAL_KEYMAP.traverse_commands(add)
+            self.__local_keymap.traverse_commands(add)
+
+            data = [(k, bindings.get(k, ""))
+                    for k, v in COMMANDS.items() if v.visible]
+        else:
+            data = [(k,) for k, v in COMMANDS.items() if v.visible]
+
+        model = PromptTableModel(data, self)
         return model
 
 
@@ -61,7 +78,7 @@ def commands(ctx):
     """
     Prompt for a command name to execute.
     """
-    prompt = CommandsListPrompt(ctx)
+    prompt = CommandsListPrompt(ctx, local_keymap())
     value = ctx.minibuffer.do_prompt(prompt)
     try:
         COMMANDS[value](ctx)
