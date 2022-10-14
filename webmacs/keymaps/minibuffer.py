@@ -50,7 +50,7 @@ KEYMAP.define_key("M-d", "minibuffer-delete-forward-word")
 KEYMAP.define_key("C-a", "minibuffer-beginning-of-line")
 KEYMAP.define_key("C-e", "minibuffer-end-of-line")
 KEYMAP.define_key("C-/", "minibuffer-undo")
-KEYMAP.define_key("C-?", "minibuffer-undo")
+KEYMAP.define_key("C-?", "minibuffer-redo")
 
 
 VISITEDLINKS_KEYMAP.define_key("C-k", "visited-links-delete-highlighted")

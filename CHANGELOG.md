@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - adblock url fetching and parsing is now more verbose on error and more
   resilient.
 - Fixed text selection within iframes.
+- Fixed minibuffer line input redo binding.
 
 ### Added
 
