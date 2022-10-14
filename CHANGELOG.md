@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Added passwordstore support for storing passwords (the linux 'pass' command
   line tool)
 - Added **content-edit-select-all** in content edit mode, bound to **C-x h**.
+- Added **minibuffer-select-all** in minibuffer keymap, bound to **C-x h**.
 - Added bindings currently attached to commands when using **M-x** command.
 
 ### Changed

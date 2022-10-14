@@ -173,6 +173,15 @@ def set_mark(ctx):
         minibuffer_input.deselect()
 
 
+@define_command("minibuffer-select-all")
+def select_all(ctx):
+    """
+    Select all text in the minibuffer.
+    """
+    edit = ctx.minibuffer.input()
+    edit.selectAll()
+
+
 @define_command("minibuffer-forward-char")
 def forward_char(ctx):
     """
