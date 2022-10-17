@@ -15,12 +15,14 @@
 
 
 from . import BasePaswordManager, Credentials, PasswordManagerNotReady
+from ..task import Task
 from .. import variables
 
+from PyQt6.QtCore import QProcess
+
 import os
+import logging
 import glob
-import subprocess
-import threading
 
 
 pass_store_path = variables.define_variable(
@@ -84,33 +86,69 @@ class PassCredentials:
         return self.__cred_by_name[name]
 
 
-def read_credentials():
-    """
-    Read passwordstore credentials, and returns an instance of PassCredentials.
-    """
-    names = [os.path.splitext(fname)[0] for fname in
-             glob.glob("**/*.gpg", recursive=True,
-                       root_dir=pass_store_path.value)]
+class ReadCredentialsTask(Task):
+    def __init__(self):
+        Task.__init__(self)
+        self.__names = None
+        # one proc at a time, otherwise authentication might fail;;
+        self.__proc = None
+        self.__output = b""
+        self.__credentials = PassCredentials()
 
-    data = PassCredentials()
-    for name in names:
-        proc = subprocess.Popen(["pass", "show", name], text=True,
-                                stdout=subprocess.PIPE)
-        passwd = proc.stdout.readline().rstrip()
-        fields = {}
-        for line in proc.stdout:
-            try:
-                k, v = line.split(":", 1)
-            except ValueError:
-                pass
-            else:
-                fields[k.rstrip()] = v.strip()
-        proc.wait()
+    def start(self):
+        self.__names = [os.path.splitext(fname)[0] for fname in
+                        glob.glob("**/*.gpg", recursive=True,
+                                  root_dir=pass_store_path.value)]
 
-        username = fields.pop("login", None)
-        data.add_credential(name, fields.pop("url", None),
-                            Credentials(username, passwd, fields))
-    return data
+        self.__process_next()
+
+    def __process_next(self):
+        self.__output = b""
+        if not self.__names:
+            self.finished.emit()
+            return
+
+        self.__name = name = self.__names.pop(0)
+        self.__proc = QProcess()
+        self.__proc.finished.connect(self.__process_finished)
+        self.__proc.readyReadStandardOutput.connect(self.__process_read)
+        logging.info(f"Running external command: pass show {name}")
+        self.__proc.start("pass", ["show", name])
+
+    def __process_finished(self, code, status):
+        if status == QProcess.ExitStatus.CrashExit:
+            self.set_error_message("The pass process crashed.")
+            self.finished.emit()
+        elif code != 0:
+            self.set_error_message(f"The pass process exited with {code}.")
+            self.finished.emit()
+        else:
+            lines = self.__output.decode("utf-8").splitlines()
+            passwd = lines[0].rstrip()
+            fields = {}
+            for line in lines[1:]:
+                try:
+                    k, v = line.split(":", 1)
+                except ValueError:
+                    pass
+                else:
+                    fields[k.rstrip()] = v.strip()
+                username = fields.pop("login", None)
+                self.__credentials.add_credential(self.__name, fields.pop("url", None),
+                                                  Credentials(username, passwd, fields))
+            self.__process_next()
+
+    def __process_read(self):
+        self.__output += bytes(self.__proc.readAllStandardOutput())
+
+    def credentials(self):
+        return self.__credentials
+
+    def abort(self):
+        if self.__proc:
+            self.__proc.finished.disconnect(self.__process_finished)
+            self.__proc.kill()
+            self.__proc.waitForFinished(300)
 
 
 class Pass(BasePaswordManager):
@@ -123,23 +161,27 @@ class Pass(BasePaswordManager):
     def __init__(self):
         BasePaswordManager.__init__(self)
         self.__creds = None
-        self.__reloading = threading.Event()
+        self.__reloading = False
         self.reload()
 
-    def __reload(self):
-        try:
-            self.__creds = read_credentials()
-        finally:
-            self.__reloading.clear()
+    def __on_reloaded(self):
+        self.__reloading = False
+        task = self.sender()
+        if not task.error():
+            self.__creds = task.credentials()
 
     def reload(self):
-        if not self.__reloading.is_set():
-            self.__reloading.set()
-            th = threading.Thread(target=self.__reload)
-            th.start()
+        from ..application import app as _app
+        if not self.__reloading:
+            self.__reloading = True
+
+            app = _app()
+            task = ReadCredentialsTask()
+            task.finished.connect(self.__on_reloaded)
+            app.task_runner.run(task)
 
     def credential_for_url(self, url):
-        if self.__reloading.is_set():
+        if self.__reloading:
             raise PasswordManagerNotReady(
                 "passwordstore not ready - still reading configuration.")
         return self.__creds.for_url(url)
