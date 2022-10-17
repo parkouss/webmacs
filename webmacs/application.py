@@ -23,13 +23,13 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtNetwork import QNetworkAccessManager
 
 from . import require, version
-from . import version
+from .task import TaskRunner
 from .adblock import Adblocker, AdblockUpdateRunner, adblock_urls_rules
 from .download_manager import DownloadManager
 from .profile import named_profile
 from .minibuffer.right_label import init_minibuffer_right_labels
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
-from .spell_checking import SpellCheckingUpdateRunner, \
+from .spell_checking import SpellCheckingTask, \
     spell_checking_dictionaries
 from .runnable import run
 from .scheme_handlers import register_schemes
@@ -119,6 +119,7 @@ class Application(QApplication):
         QApplication.__init__(self, args)
         self.__class__.INSTANCE = self
         self.instance_name = instance_name
+        self.task_runner = TaskRunner()
 
         if version.is_mac:
             self.setAttribute(
@@ -141,6 +142,8 @@ class Application(QApplication):
         self.setQuitOnLastWindowClosed(False)
 
         self.network_manager = QNetworkAccessManager(self)
+
+        self.aboutToQuit.connect(self.task_runner.stop)
 
     def conf_path(self):
         return self._conf_path
@@ -191,9 +194,9 @@ class Application(QApplication):
         def spc_finished(*a):
             self.profile.update_spell_checking()
 
-        runner = SpellCheckingUpdateRunner(spell_check_path,
-                                           on_finished=spc_finished)
-        run(runner)
+        task = SpellCheckingTask(self, spell_check_path)
+        task.finished.connect(spc_finished)
+        self.task_runner.run(task)
 
     def post_init(self):
         self.adblock_update()
