@@ -51,15 +51,6 @@ def cache_file(cache_path):
     return os.path.join(cache_path, "cache.dat")
 
 
-def local_adblock(cache_path):
-    adblock = AdBlock()
-    cache = cache_file(cache_path)
-    if os.path.isfile(cache):
-        logging.info("loading adblock cached data: %s", cache)
-        adblock.load(cache)
-    return adblock
-
-
 class AdBlockUpdateTask(Task):
     adblock_ready = Signal(AdBlock)
 

@@ -24,7 +24,7 @@ from PyQt6.QtNetwork import QNetworkAccessManager
 
 from . import require, version
 from .task import TaskRunner
-from .adblock import AdBlockUpdateTask, adblock_urls_rules, local_adblock
+from .adblock import AdBlockUpdateTask, adblock_urls_rules, AdBlock
 from .download_manager import DownloadManager
 from .profile import named_profile
 from .minibuffer.right_label import init_minibuffer_right_labels
@@ -48,13 +48,7 @@ THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 class UrlInterceptor(QWebEngineUrlRequestInterceptor):
     def __init__(self, app):
         QWebEngineUrlRequestInterceptor.__init__(self)
-        if not adblock_urls_rules.value:
-            # no adblock rules, just don't create any ad-blocker
-            self._adblock = None
-        else:
-            # else create an initial ad-blocker with the current cache
-            # it might be updated later on if the cache is not up to date
-            self._adblock = local_adblock(app.adblock_path())
+        self._adblock = AdBlock()
         self._use_adblock = True
 
     @Slot(object)
@@ -68,7 +62,6 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
         url = request.requestUrl()
         url_s = url.toString()
         if (self._use_adblock
-            and self._adblock
             and self._adblock.matches(
                 url_s,
                 request.firstPartyUrl().toString())):
