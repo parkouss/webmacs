@@ -24,14 +24,13 @@ from PyQt6.QtNetwork import QNetworkAccessManager
 
 from . import require, version
 from .task import TaskRunner
-from .adblock import Adblocker, AdblockUpdateRunner, adblock_urls_rules
+from .adblock import AdBlockUpdateTask, adblock_urls_rules, local_adblock
 from .download_manager import DownloadManager
 from .profile import named_profile
 from .minibuffer.right_label import init_minibuffer_right_labels
 from .keyboardhandler import LOCAL_KEYMAP_SETTER
 from .spell_checking import SpellCheckingTask, \
     spell_checking_dictionaries
-from .runnable import run
 from .scheme_handlers import register_schemes
 
 
@@ -55,7 +54,7 @@ class UrlInterceptor(QWebEngineUrlRequestInterceptor):
         else:
             # else create an initial ad-blocker with the current cache
             # it might be updated later on if the cache is not up to date
-            self._adblock = Adblocker(app.adblock_path()).local_adblock()
+            self._adblock = local_adblock(app.adblock_path())
         self._use_adblock = True
 
     @Slot(object)
@@ -176,14 +175,15 @@ class Application(QApplication):
         if not adblock_urls_rules.value:
             return
 
-        def adblock_thread_finished(error, adblock):
+        task = AdBlockUpdateTask(self, self.adblock_path())
+
+        def adblock_finished():
+            adblock = task.adblock()
             if adblock:
                 self._interceptor.update_adblock(adblock)
 
-        generator = Adblocker(self.adblock_path())
-        runner = AdblockUpdateRunner(generator,
-                                     on_finished=adblock_thread_finished)
-        run(runner)
+        task.finished.connect(adblock_finished)
+        self.task_runner.run(task)
 
     def update_spell_checking(self):
         if not bool(spell_checking_dictionaries.value):

@@ -25,7 +25,10 @@ from _adblock import AdBlock
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import urllib.request
 from . import variables
-from .runnable import Runner
+from .task import Task
+
+from PyQt6.QtNetwork import QNetworkRequest, QNetworkReply
+from PyQt6.QtCore import QUrl, QThreadPool, pyqtSignal as Signal, Qt
 
 
 DEFAULT_EASYLIST = [
@@ -44,132 +47,153 @@ adblock_urls_rules = variables.define_variable(
 )
 
 
-class Adblocker(object):
-    def __init__(self, cache_path):
+def cache_file(cache_path):
+    return os.path.join(cache_path, "cache.dat")
+
+
+def local_adblock(cache_path):
+    adblock = AdBlock()
+    cache = cache_file(cache_path)
+    if os.path.isfile(cache):
+        logging.info("loading adblock cached data: %s", cache)
+        adblock.load(cache)
+    return adblock
+
+
+class AdBlockUpdateTask(Task):
+    adblock_ready = Signal(AdBlock)
+
+    def __init__(self, app, cache_path, ):
+        Task.__init__(self)
+        self.app = app
         if not os.path.isdir(cache_path):
             os.makedirs(cache_path)
         self._cache_path = cache_path
-        self._urls = {}
-        self.register_filter_urls()
-        self.cached_urls_path = os.path.join(self._cache_path, "urls.json")
+        self._cached_urls_path = os.path.join(self._cache_path, "urls.json")
+        self._cache_file = cache_file(cache_path)
+        self._user_urls = {
+            url: os.path.join(self._cache_path, url.rsplit("/", 1)[-1])
+            for url in adblock_urls_rules.value
+        }
 
-    def register_filter_urls(self):
-        """
-        Register urls from the adblock_rules variable.
-        """
-        for url in adblock_urls_rules.value:
-            self.register_filter_url(url)
+        self.adblock_ready.connect(self._on_adblock_ready,
+                                   Qt.ConnectionType.BlockingQueuedConnection)
 
-    def register_filter_url(self, url, destfile=None):
-        if destfile is None:
-            destfile = url.rsplit("/", 1)[-1]
-        self._urls[url] = os.path.join(self._cache_path, destfile)
+        self._adblock = None
+        self._replies = {}
+        self._modified = False
+        self.__thread_running = False
 
-    def load_cached_urls(self):
-        if not os.path.isfile(self.cached_urls_path):
-            return None
-        try:
-            with open(self.cached_urls_path) as f:
-                return json.load(f)
-        except Exception:
-            logging.exception("Could not load cached urls. Removing %s."
-                              % self.cached_urls_path)
-            os.unlink(self.cached_urls_path)
-            return None
-
-    def save_cached_urls(self, cached_urls):
-        with open(self.cached_urls_path, "w") as f:
-            json.dump(cached_urls, f)
-
-    def _download_file(self, url, path):
-        headers = {'User-Agent': "Magic Browser"}
-        req = urllib.request.Request(url, None, headers)
-        try:
-            with urllib.request.urlopen(req, timeout=320) as conn:
-                if os.path.isfile(path):
-                    # check if the file on the server is newer than what we have
-                    file_time = datetime.fromtimestamp(os.path.getmtime(path),
-                                                       timezone.utc)
-                    try:
-                        last_modified = dateparser.parse(
-                            conn.info()["last-modified"],
-                            languages=["en"])
-                    except Exception:
-                        logging.exception(
-                            "Unable to parse the last-modified header for %s",
-                            url)
-                    else:
-                        if last_modified < file_time:
-                            logging.info("no need to download adblock rule: %s",
-                                         url)
-                            # touch on the file
-                            os.utime(path, None)
-                            return False
-                logging.info("downloading adblock rule: %s", url)
-                with open(path, "w") as f:
-                    data = conn.read()
-                    f.write(data.decode("utf-8"))
-                return True
-        except Exception:
-            logging.exception(f"Error using adblock list from {url}")
-
-    def _fetch_urls(self):
-        modified = False
-        # do not try to download if files are less than a day old
-        to_download = [(url, path) for url, path in self._urls.items()
+    def start(self):
+        to_download = [(url, path) for url, path in self._user_urls.items()
                        if not os.path.isfile(path)
                        or (os.path.getmtime(path) + 3600) < time.time()]
-        if to_download:
-            with ThreadPoolExecutor(max_workers=5) as executor:
-                futures = [executor.submit(self._download_file, url, path)
-                           for url, path in to_download]
+        for url, path in to_download:
+            reply = self.app.network_manager.get(QNetworkRequest(QUrl(url)))
+            reply.readyRead.connect(self._dl_ready_read)
+            reply.finished.connect(self._dl_finished)
+            self._replies[reply] = {"path": path}
+        self._maybe_finish()
 
-                for future in as_completed(futures):
-                    if future.result():
-                        modified = True
+    def _maybe_finish(self):
+        if self._replies:
+            return
 
-        return modified
+        if not self._modified:
+            try:
+                with open(self._cached_urls_path) as f:
+                    cached_urls = json.load(f)
+            except FileNotFoundError:
+                self._modified = True
+            except Exception:
+                logging.exception("Could not load cached urls. Removing %s."
+                                  % self._cached_urls_path)
+                os.unlink(self._cached_urls_path)
+                self._modified = True
+            else:
+                if cached_urls != self._user_urls or not os.path.exists(self._cache_file):
+                    self._modified = True
 
-    def cache_file(self):
-        return os.path.join(self._cache_path, "cache.dat")
+        self.__thread_running = True
+        QThreadPool.globalInstance().start(
+            self._parse_adblock_files if self._modified else self._adblock_from_cache)
 
-    def local_adblock(self):
+    def _adblock_from_cache(self):
         adblock = AdBlock()
-        cache = self.cache_file()
-        if os.path.isfile(cache):
-            logging.info("loading adblock cached data: %s", cache)
-            adblock.load(cache)
-        return adblock
+        adblock.load(self._cache_file)
+        self.adblock_ready.emit(adblock)
 
-    def maybe_update_adblock(self):
+    def _parse_adblock_files(self):
         adblock = AdBlock()
-        cache = self.cache_file()
-        cached_urls = self.load_cached_urls()
-        if cached_urls != self._urls:
-            self._fetch_urls()
-            modified = True
-        else:
-            modified = self._fetch_urls()
-        if modified or not os.path.isfile(cache):
-            for path in self._urls.values():
-                logging.info("parsing adblock file: %s", path)
+        for path in self._user_urls.values():
+            logging.info("parsing adblock file: %s", path)
+            try:
+                with open(path) as f:
+                    adblock.parse(f.read())
+            except Exception:
+                logging.exception(f"Unable to parse {f.name} adblock file")
+            adblock.save(self._cache_file)
+        self.adblock_ready.emit(adblock)
+
+    def _on_adblock_ready(self, adblock):
+        self.__thread_running = False
+        with open(self._cached_urls_path, "w") as f:
+            json.dump(self._user_urls, f)
+        self._adblock = adblock
+        self.finished.emit()
+
+    def adblock(self):
+        return self._adblock
+
+    def _dl_ready_read(self):
+        reply = self.sender()
+        data = self._replies[reply]
+        if "file" not in data:
+            headers = {bytes(k).lower(): bytes(v)
+                       for k, v in reply.rawHeaderPairs()}
+            if os.path.isfile(data["path"]):
                 try:
-                    with open(path) as f:
-                        adblock.parse(f.read())
+                    last_modified = dateparser.parse(
+                        headers[b"last-modified"].decode("utf-8"),
+                        languages=["en"])
                 except Exception:
-                    logging.exception(f"Unable to parse {f.name} adblock file")
-            adblock.save(cache)
-            logging.info("updating adblock cache file %s." % cache)
-            self.save_cached_urls(self._urls)
-            return adblock
+                    logging.exception(
+                        "Unable to parse the last-modified header for %s",
+                        reply.url().toString())
+                else:
+                    file_time = datetime.fromtimestamp(
+                        os.path.getmtime(data["path"]), timezone.utc)
+                    if last_modified < file_time:
+                        logging.info("no need to download adblock rule: %s", url)
+                        # touch on the file
+                        os.utime(path, None)
+                        self._close_reply(reply)
+                        self._maybe_finish()
+                        return
+            logging.info("downloading adblock rule: %s", reply.url().toString())
+            data["file"] = open(data["path"], "w")
 
+        data["file"].write(bytes(reply.readAll()).decode("utf-8"))
 
-class AdblockUpdateRunner(Runner):
-    description = "adblock updater"
+    def _dl_finished(self):
+        reply = self.sender()
+        self._modified = True
+        data = self._replies.pop(reply)
+        data["file"].close()
+        self._maybe_finish()
 
-    def __init__(self, adblocker, **kwargs):
-        Runner.__init__(self, **kwargs)
-        self.adblocker = adblocker
+    def _close_reply(self, reply):
+        del self._replies[reply]
+        reply.readyRead.disconnect(self._dl_ready_read)
+        reply.finished.disconnect(self._dl_finished)
+        reply.close()
 
-    def run_in_thread(self):
-        return self.adblocker.maybe_update_adblock()
+    def abort(self):
+        for reply, data in list(self._replies.items()):
+            self._close_reply(reply)
+            if "file" in data:
+                data["file"].close()
+                os.unlink(data["path"])
+        # wait for any thread to join
+        if self.__thread_running:
+            QThreadPool.globalInstance().waitForDone(1000)
