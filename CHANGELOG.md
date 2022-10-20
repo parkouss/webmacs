@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   resilient.
 - Fixed text selection within iframes.
 - Fixed minibuffer line input redo binding.
+- Fixed exiting webmacs as fast as possible by rewriting long-running tasks
+  asynchronously.
+
 
 ### Added
 
