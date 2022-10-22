@@ -26,6 +26,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Added **content-edit-select-all** in content edit mode, bound to **C-x h**.
 - Added **minibuffer-select-all** in minibuffer keymap, bound to **C-x h**.
 - Added bindings currently attached to commands when using **M-x** command.
+- Added support for an off-the-record (private) mode. It is enabled by starting
+  webmacs using **--off-the-record** flag, or using the command
+  **open-off-the-record**.
 
 ### Changed
 

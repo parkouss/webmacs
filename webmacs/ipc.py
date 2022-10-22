@@ -190,7 +190,7 @@ def ipc_dispatch(data):
     # this is quite hard to raise a window. The following works fine
     # for me with gnome 3.
     flags = win.windowFlags()
-    win.setWindowFlags(flags | Qt.Popup)
+    win.setWindowFlags(flags | Qt.WindowType.Popup)
     win.raise_()
     win.activateWindow()
     win.setWindowFlags(flags)

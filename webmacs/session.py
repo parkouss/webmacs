@@ -105,6 +105,8 @@ def session_load(session_file):
     Must be called at application startup, when no buffers nor views is set up
     already.
     """
+    if session_file is None:
+        return
     try:
         with open(session_file, "r") as f:
             _session_load(f)
@@ -116,6 +118,8 @@ def session_load(session_file):
 
 
 def session_save(session_file):
+    if session_file is None:
+        return
     """
     Save the session for the given profile.
     """

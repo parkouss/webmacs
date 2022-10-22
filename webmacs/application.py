@@ -107,7 +107,7 @@ class Application(QApplication):
     INSTANCE = None
 
     def __init__(self, conf_path, args, instance_name="default",
-                 profile_name="default"):
+                 profile_name="default", off_the_record=False):
         QApplication.__init__(self, args)
         self.__class__.INSTANCE = self
         self.instance_name = instance_name
@@ -127,7 +127,8 @@ class Application(QApplication):
 
         self._download_manager = DownloadManager(self)
 
-        self.profile = named_profile(profile_name)
+        self.profile = named_profile(profile_name,
+                                     off_the_record=off_the_record)
 
         self.installEventFilter(LOCAL_KEYMAP_SETTER)
 

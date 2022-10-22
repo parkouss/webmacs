@@ -138,6 +138,9 @@ def parse_args(argv=None):
     parser.add_argument("--list-instances", action="store_true",
                         help="List running instances and exit.")
 
+    parser.add_argument("--off-the-record", action="store_true",
+                        help="Private browsing mode.")
+
     parser.add_argument("url", nargs="?",
                         help="url to open")
 
@@ -187,7 +190,7 @@ def init(opts):
     if home_page:
         create_window(home_page)
         return
-    if os.path.exists(session_file):
+    if session_file and os.path.exists(session_file):
         try:
             session_load(session_file)
             return
@@ -282,7 +285,6 @@ def main():
             "Error reading the user configuration."
         )
 
-
     os.environ["QTWEBENGINE_DICTIONARIES_PATH"] = os.path.join(conf_path,
                                                                "spell_checking")
     app = Application(conf_path, [
@@ -290,7 +292,8 @@ def main():
         # the x11 property WM_CLASS.
         "webmacs" if opts.instance == "default"
         else "webmacs-%s" % opts.instance
-    ], instance_name=opts.instance, profile_name=opts.profile)
+    ], instance_name=opts.instance, profile_name=opts.profile,
+                      off_the_record=opts.off_the_record)
     server = IpcServer(opts.instance)
     atexit.register(server.cleanup)
 
@@ -309,7 +312,7 @@ def main():
                 % user_init.__file__
             )
 
-    if log_to_disk.value > 0:
+    if log_to_disk.value > 0 and not opts.off_the_record:
         setup_logging_on_disk(os.path.join(conf_path, "logs"),
                               backup_count=log_to_disk.value)
     app.post_init()

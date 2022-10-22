@@ -55,16 +55,15 @@ def make_dir(*parts):
 
 
 class Profile(object):
-    def __init__(self, name):
+    def __init__(self, name, off_the_record=False):
         self.name = name
-        self.q_profile = QWebEngineProfile(name)
+        if off_the_record:
+            self.q_profile = QWebEngineProfile()
+        else:
+            self.q_profile = QWebEngineProfile(name)
         self._scheme_handlers = {}  # keep a python reference
 
         app = require(".application").app()
-
-        self.path = path = make_dir(app.profiles_path(), self.name)
-        persistent_path = make_dir(path, "persistent")
-        cache_path = make_dir(path, "cache")
 
         self.q_profile.setUrlRequestInterceptor(app.url_interceptor())
 
@@ -73,27 +72,39 @@ class Profile(object):
             self._scheme_handlers[handler.scheme] = h
             self.q_profile.installUrlSchemeHandler(handler.scheme, h)
 
-        self.q_profile.setPersistentStoragePath(persistent_path)
-        self.q_profile.setPersistentCookiesPolicy(
-            QWebEngineProfile.PersistentCookiesPolicy.ForcePersistentCookies)
-        self.q_profile.setHttpCacheType(QWebEngineProfile.HttpCacheType.DiskHttpCache)
+        self.path = None
+        self.session_file = None
 
-        if app.instance_name == "default":
-            session_fname = "session.json"
-        else:
-            session_fname = "session-{}.json".format(app.instance_name)
-        self.session_file = os.path.join(path, session_fname)
+        visited_links, ignored_certs, bookmarks, features = \
+            ":memory:", ":memory:", ":memory:", ":memory:"
 
-        self.visitedlinks \
-            = VisitedLinks(os.path.join(path, "visitedlinks.db"))
-        self.ignored_certs \
-            = IgnoredCertificates(os.path.join(path, "ignoredcerts.db"))
-        self.bookmarks \
-            = Bookmarks(os.path.join(path, "bookmarks.db"))
-        self.features \
-            = Features(os.path.join(path, "features.db"))
+        if not off_the_record:
+            self.path = path = make_dir(app.profiles_path(), self.name)
+            persistent_path = make_dir(path, "persistent")
+            cache_path = make_dir(path, "cache")
 
-        self.q_profile.setCachePath(cache_path)
+            self.q_profile.setPersistentStoragePath(persistent_path)
+            self.q_profile.setPersistentCookiesPolicy(
+                QWebEngineProfile.PersistentCookiesPolicy.ForcePersistentCookies)
+            self.q_profile.setHttpCacheType(QWebEngineProfile.HttpCacheType.DiskHttpCache)
+            self.q_profile.setCachePath(cache_path)
+
+            if app.instance_name == "default":
+                session_fname = "session.json"
+            else:
+                session_fname = "session-{}.json".format(app.instance_name)
+            self.session_file = os.path.join(path, session_fname)
+
+            visited_links = os.path.join(path, "visitedlinks.db")
+            ignored_certs = os.path.join(path, "ignoredcerts.db")
+            bookmarks = os.path.join(path, "bookmarks.db")
+            features = os.path.join(path, "features.db")
+
+        self.visitedlinks = VisitedLinks(visited_links)
+        self.ignored_certs = IgnoredCertificates(ignored_certs)
+        self.bookmarks = Bookmarks(bookmarks)
+        self.features = Features(features)
+
         self.q_profile.downloadRequested.connect(
             app.download_manager().download_requested
         )
@@ -174,6 +185,8 @@ class Profile(object):
         self.q_profile.setSpellCheckEnabled(bool(dicts))
         self.q_profile.setSpellCheckLanguages(dicts)
 
+    def is_off_the_record(self):
+        return self.q_profile.isOffTheRecord()
 
-def named_profile(name):
-    return Profile(name)
+
+named_profile = Profile

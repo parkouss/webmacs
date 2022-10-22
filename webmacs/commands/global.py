@@ -15,7 +15,8 @@
 
 import itertools
 import os
-from PyQt6.QtCore import QStringListModel, QModelIndex
+import sys
+from PyQt6.QtCore import QStringListModel, QModelIndex, QProcess
 
 from . import define_command, COMMANDS, register_prompt_opener_commands
 from ..minibuffer import Prompt
@@ -670,3 +671,22 @@ def current_instance(ctx):
     Show the current instance name.
     """
     ctx.minibuffer.show_info("Current instance name: %s" % app().instance_name)
+
+
+@define_command("is-off-the-record")
+def is_off_the_record(ctx):
+    """
+    Print wether browsing is off the record.
+    """
+    ctx.minibuffer.show_info(
+        f"Is off the record: {app().profile.is_off_the_record()}")
+
+@define_command("open-off-the-record")
+def open_off_the_record(ctx):
+    """
+    Opens a new webmacs instance with off-the-record enabled.
+    """
+    proc = QProcess()
+    proc.setProgram(sys.argv[0])
+    proc.setArguments(["--off-the-record", "--instance", ""])
+    proc.startDetached()

@@ -38,6 +38,7 @@ def update_minibuffer_right_label(window):
 
 
 def _update_minibuffer_right_label(window):
+    from ..application import app
     try:
         # KeyError if the window was closed, in such case no update is
         # required.
@@ -54,7 +55,12 @@ def _update_minibuffer_right_label(window):
     else:
         loading = " loading: %d%% " % loading_p
 
-    window.minibuffer().rlabel.setText(
+    label = window.minibuffer().rlabel
+    if not label.text():
+        # first time we update the label
+        if app().profile.is_off_the_record():
+            label.setStyleSheet("QLabel { background: orangered }")
+    label.setText(
         MINIBUFFER_RIGHTLABEL.value.format(
             buffer_current=BUFFERS.index(buff) + 1,
             buffer_count=len(BUFFERS),
