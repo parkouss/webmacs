@@ -44,9 +44,26 @@ close_buffer_close_window = variables.define_variable(
     type=variables.String(choices=("never", "all", "all-but-last")),
 )
 
+save_session_on_buffer_event = variables.define_variable(
+    "save-session-on-buffer-event",
+    "If set to True, the session file will get updated every time"
+    " a buffer is opened or closed.",
+    False,
+    type=variables.Bool(),
+)
+
 
 # a tuple of QUrl, str to delay loading of a page.
 DelayedLoadingUrl = namedtuple("DelayedLoadingUrl", ("url", "title"))
+
+
+def save_session():
+    """
+    Save windows and buffers.
+    """
+    if save_session_on_buffer_event.value:
+        from .session import session_save
+        session_save(app().profile.session_file)
 
 
 def close_buffer(wb):
@@ -91,6 +108,7 @@ def close_buffer(wb):
     BUFFERS.remove(wb)
     wb.deleteLater()
     hooks.webbuffer_closed(wb)
+    save_session()
     return True
 
 
@@ -308,6 +326,8 @@ class WebBuffer(QWebEnginePage):
         self.set_mode(get_auto_modename_for_url(self.url().toString()))
 
         hooks.webbuffer_load_finished(self)
+
+        save_session()
 
         # We lose the keyboard focus without that with Qt 5.11. Though it
         # happens quite randomly, but a combination of follow, go back, google
