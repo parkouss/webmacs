@@ -155,9 +155,9 @@ class AdBlockUpdateTask(Task):
                     file_time = datetime.fromtimestamp(
                         os.path.getmtime(data["path"]), timezone.utc)
                     if last_modified < file_time:
-                        logging.info("no need to download adblock rule: %s", url)
+                        logging.info("no need to download adblock rule: %s", reply.url().toString())
                         # touch on the file
-                        os.utime(path, None)
+                        os.utime(data["path"], None)
                         self._close_reply(reply)
                         self._maybe_finish()
                         return
