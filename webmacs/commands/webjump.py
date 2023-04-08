@@ -43,6 +43,12 @@ webjump_default = variables.define_variable(
     type=variables.String(choices=WEBJUMPS),
 )
 
+webjump_use_default_for_query_with_spaces = variables.define_variable(
+    "webjump-use-default-query-on-spaces",
+    "Should default webjump be used to handle query with spaces?",
+    False,
+    type=variables.Bool(),
+)
 
 def define_webjump(name, url, doc="", complete_fn=None, protocol=False):
     """
@@ -392,6 +398,11 @@ class WebJumpPrompt(Prompt):
             candidates = [wj for wj in WEBJUMPS if wj.startswith(command)]
             if len(candidates) == 1:
                 webjump = WEBJUMPS[candidates[0]]
+
+        if (webjump_use_default_for_query_with_spaces.value and
+                webjump is None and " " in value):
+            webjump = WEBJUMPS.get(webjump_default.value)
+            args = [webjump_default.value, " ".join(args)]
 
         if webjump:
             if not webjump.allow_args:
