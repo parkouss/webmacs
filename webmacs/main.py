@@ -316,7 +316,8 @@ def main():
         setup_logging_on_disk(os.path.join(conf_path, "logs"),
                               backup_count=log_to_disk.value)
     app.post_init()
-    signal_wakeup(app)
+    if os.name != "nt":
+        signal_wakeup(app)
     signal.signal(signal.SIGINT, lambda s, h: app.quit())
     sys.exit(app.exec())
 
