@@ -75,8 +75,11 @@ class IPcReader(QObject):
 class IpcServer(QObject):
     @classmethod
     def get_sock_name(cls, instance):
-        run_path = f"/run/user/{os.getuid()}"
-        prefix = run_path if os.access(run_path, os.W_OK) else ""
+        if os.name == "nt":
+            prefix = ""
+        else:
+            run_path = f"/run/user/{os.getuid()}"
+            prefix = run_path if os.access(run_path, os.W_OK) else ""
 
         if instance == "default":
             return os.path.join(prefix, "webmacs.ipc")

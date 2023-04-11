@@ -33,8 +33,11 @@ Short list of features:
 Be prepared to have a working c and c++ compiler with python development
 library. Note I only have tested on linux.
 
-You will also need the PyQt6 library, as I believe it can't be installed through
-pip. It's easy to install using any package manager though.
+You will also need the PyQt6 library, which can be installed via pip (or the
+system package manager):
+#+BEGIN_SRC bash
+pip install PyQt6 PyQt6-WebEngine
+#+END_SRC
 
 Then you have to check out the repository (do not forget the *recursive* flag):
 
