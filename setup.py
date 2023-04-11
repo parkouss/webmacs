@@ -49,7 +49,7 @@ adblocker = Extension(
         os.path.join(adblock_dir, "cosmetic_filter.cc"),
         os.path.join(adblock_dir, "no_fingerprint_domain.cc"),
         os.path.join(adblock_dir, "protocol.cc"),
-        os.path.join(THIS_DIR, "c", "adblock.c"),
+        os.path.join(THIS_DIR, "c", "adblock.cc"),
     ])
 
 
